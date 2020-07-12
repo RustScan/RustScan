@@ -1,4 +1,6 @@
-![Rust Scan](pictures/rustscan.png)
+<p align="center">
+<img src="pictures/rustscan.png">
+</p>
 
 # RustScan
 1. Find ports quickly using Rust.
