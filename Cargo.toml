@@ -1,5 +1,5 @@
 [package]
-name = "RustScan"
+name = "Rust_Scan"
 version = "0.1.0"
 authors = ["Brandon <brandonskerritt51@gmail.com>"]
 edition = "2018"
