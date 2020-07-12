@@ -1,3 +1,5 @@
+![Rust Scan](pictures/rustscan.png)
+
 # RustScan
 1. Find ports quickly using Rust.
 2. Automatically runs `nmap -A -sV -p $ports -vvv` on those ports and IP addresses

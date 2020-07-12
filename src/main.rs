@@ -5,9 +5,16 @@ use std::{str::FromStr, io};
 // Upper Port Limit
 const MAX: u16 = 65535;
 
-
+// The default config for users
+struct Config {
+    ip: IpAddr,
+    nmap_command: String,
+    ports: [i32],
+}
 
 fn main() {
+    let vals = 0..100;
+
     let matches = App::new("RustScan")
         .author(crate_authors!())
         .about("Fast Port Scanner built in Rust")
@@ -25,6 +32,9 @@ fn main() {
     // validatses the IP address and turns it into an IpAddr type
     let addr = IpAddr::from_str(&matches.free[0])
         .expect("IPADDR must be a valid IPv4 or IPv6 address");
+
+    // if ports not specified, use this:
+    let ports = 0..MAX;
     
     
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
@@ -36,7 +46,8 @@ fn print_opening(){
     | |__) |   _ ___| |_| (___   ___ __ _ _ __  
     |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\ 
     | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
-    |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|"; 
+    |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
+    Faster nmap scanning with rust."; 
         println!("{} \n {} \n {}", s.green(), "Automated Decryption Tool - https://github.com/ciphey/ciphey".red(),"Creator https://github.com/brandonskerritt".green());
     
 }
