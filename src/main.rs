@@ -23,15 +23,22 @@ fn main() {
         // IP address is a required argument
         .arg(Arg::with_name("i")
             .required(true)
+            .index(1)
             .help("The IP address to scan"))
         .arg(Arg::with_name("p")
+        .   index(2)
             .help("The port range you want to scan"))
         .get_matches();
+
     print_opening();
 
+    if matches.is_present("i"){
+        println!("IP address was used!")
+    }
+
     // validatses the IP address and turns it into an IpAddr type
-    let addr = IpAddr::from_str(&matches.free[0])
-        .expect("IPADDR must be a valid IPv4 or IPv6 address");
+    //let addr = IpAddr::from_str(&matches.free[0])
+    //    .expect("IPADDR must be a valid IPv4 or IPv6 address");
 
     // if ports not specified, use this:
     let ports = 0..MAX;

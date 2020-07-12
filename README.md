@@ -4,27 +4,20 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 </p>
 <hr>
 
-# RustScan
-1. Find ports quickly using Rust.
-2. Automatically runs `nmap -A -sV -p $ports -vvv` on those ports and IP addresses
+| General Linux | Cargo | Arch |
+| ----- | ----- | ----- | ----- |
+| img1 | img2 | img3 | img4 |
+| Binaries | Cargo install | yay rustscan |
+
+<hr>
+
+# 🤔 What is this?
+If you are a competitive CTF player and often find yourself running masscan / a basic nmap scan before running a more comprehensive scan, this tool is for you.
+1. Find ports quickly using Rustscan. 
+2. Automatically runs `nmap -A -sV -p $ports -vvv` on those ports.
 3. Profit???
 
-## Explanation
-Nmap is the only good portscanner for CTFs. RustScan knows this, and does not try to replace it.
-
-However, in a CTF, nmap scanning all 65k ports is **very** slow.
-
-RustScan **compliements** Nmap. RustScan scns all 65k ports with extreme speed and concurrency, and then it pipes those ports into Nmap.
-
-### Why not Massscan or copy and paste?
-It takes time to physically type out the port numbers into Nmap from masscan. 
-
-Masscan probably wouldn't add this feature, as they are looking to be a competitor to Nmap.
-
-RustScan will execute Nmap the second it finds all the open ports. RustScan only wants to compliement Nmap, not beat it.
-
-
-TL;DR RustScan developers throw away their ego, and understand that no tool will ever come close to Nmap and instead chooses to compliement Nmap.
+Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # RustScan vs Nmap vs MassScan
 
@@ -33,6 +26,7 @@ TL;DR RustScan developers throw away their ego, and understand that no tool will
 | Fast                                                                                       | ✅        | ❌    | ✅       |
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌      |
+
 
 ## FAQ
 > I think this would be a great port scanner on its own without Nmap!
