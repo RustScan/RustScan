@@ -6,7 +6,10 @@ fn main() {
         .author(crate_authors!())
         .about("Fast Port Scanner built in Rust")
         .version("0.01")
+
+        // IP address is a required argument
         .arg(Arg::with_name("i")
+            .required(true)
             .help("The IP address to scan"))
         .arg(Arg::with_name("p")
             .help("The port range you want to scan"))
