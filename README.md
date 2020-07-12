@@ -30,9 +30,9 @@ TL;DR RustScan developers throw away their ego, and understand that no tool will
 
 | **Name**                                                                                   | RustScan | Nmap | Masscan |
 | ------------------------------------------------------------------------------------------ | -------- | ---- | ------- |
-| Fast                                                                                       | Y        | N    | Y       |
-| Actually useful                                                                            | N        | Y    | N       |
-| Realises it's not useful, and pipes the only useful data into the only useful port scanner | Y        | N    | N       |
+| Fast                                                                                       | ✅        | ❌    | ✅       |
+| Actually useful                                                                            | ❌        | ✅    | ❌       |
+| Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌      |
 
 ## FAQ
 > I think this would be a great port scanner on its own without Nmap!
