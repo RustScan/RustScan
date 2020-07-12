@@ -4,10 +4,10 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 </p>
 <hr>
 
-| General Linux | Cargo | Arch |
-| ----- | ----- | ----- | ----- |
-| img1 | img2 | img3 | img4 |
-| Binaries | Cargo install | yay rustscan |
+| General Linux | Cargo         | Arch         | 
+| ------------- | ------------- | ------------ |
+| img1          | img2          | img3         |
+| Binaries      | Cargo install | yay rustscan |
 
 <hr>
 
@@ -25,7 +25,7 @@ Rustscans **only** job is to reduce the friction between finding open ports and 
 | ------------------------------------------------------------------------------------------ | -------- | ---- | ------- |
 | Fast                                                                                       | ✅        | ❌    | ✅       |
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
-| Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌      |
+| Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
 
 
 ## FAQ
