@@ -1,7 +1,8 @@
 <p align="center">
-<img src="pictures/rustscan.png">
+<img src="pictures/rustscan.png"><br>
 Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. Built with Rust. 
 </p>
+<hr>
 
 # RustScan
 1. Find ports quickly using Rust.
