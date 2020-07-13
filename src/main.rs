@@ -64,7 +64,7 @@ fn main() {
     for port in 0..65535{
         println!("{}", port);
     }
-    let r = (0..65535).into_par_iter().for_each::<_>(|port: i32| scan(addr, port));
+
     perform_scan(addr);
     // println!("{}. {}", addr, port);
     // scan(addr, port)
@@ -77,6 +77,11 @@ fn main() {
 }
 
 /// Performs the scan
+
+fn thread_scan(addr: IpAddr){
+    let ports = (0..65535).into_par_iter().for_each::<_>(|port: i32| scan(addr, port));
+}
+
 fn perform_scan(addr: IpAddr){
     // TODO would be best if IpAddr was global
 
@@ -88,7 +93,7 @@ fn perform_scan(addr: IpAddr){
     .for_each(|i| println!("{}", i));
 } 
 
-fn scan(addr: IpAddr, port: u32) {
+fn scan(addr: IpAddr, port: i32) {
     println!("Running scan");
     match TcpStream::connect((addr, port)) {
         Ok(_) => {
