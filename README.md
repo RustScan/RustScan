@@ -45,6 +45,11 @@ The only contributions RustScan are accecpting is:
 * User Experience
 * Making port scanning faster
 
+# Other Hacking Projects
+## Ciphey
+
+
+
 # Ideas
 
 - [ ] Do popular ports first (80, 445, 8080, 21, 22)

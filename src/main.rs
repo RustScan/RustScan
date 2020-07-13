@@ -60,8 +60,12 @@ fn main() {
     for (i, v) in ports.iter_mut().enumerate() {
         *v = i as i32
     }*/
-    let ports = 0..100;
-    perform_scan(addr, ports);
+    let ports: Range<u32> = 0..100;
+    for port in 0..65535{
+        println!("{}", port);
+    }
+    let r = (0..65535).into_par_iter().for_each::<_>(|port: i32| scan(addr, port));
+    perform_scan(addr);
     // println!("{}. {}", addr, port);
     // scan(addr, port)
 
@@ -73,15 +77,18 @@ fn main() {
 }
 
 /// Performs the scan
-fn perform_scan(addr: IpAddr, ports: [u16]){
+fn perform_scan(addr: IpAddr){
     // TODO would be best if IpAddr was global
-    let r = (0..NUM).into_par_iter()
-                   .map(|port: u16| scan(addr, port));
-    ports.par_iter().map(|port| scan(addr, port)
 
-}
 
-fn scan(addr: IpAddr, port:u16) {
+    let r = (0..65535).into_par_iter()
+    .for_each(|port| scan(addr, port));
+
+    (0..100).into_par_iter()
+    .for_each(|i| println!("{}", i));
+} 
+
+fn scan(addr: IpAddr, port: u32) {
     println!("Running scan");
     match TcpStream::connect((addr, port)) {
         Ok(_) => {
