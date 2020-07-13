@@ -1,6 +1,6 @@
 use colored::*;
 use clap::{App, crate_authors, Arg};
-use std::{str::FromStr, net::{IpAddr, TcpStream}, ops::Range, u16};
+use std::{str::FromStr, net::{IpAddr, TcpStream}, ops::Range, u16, io};
 use rayon::prelude::*;
 use arrayvec::ArrayVec;
 
@@ -60,12 +60,8 @@ fn main() {
     for (i, v) in ports.iter_mut().enumerate() {
         *v = i as i32
     }*/
-    let ports: Range<u32> = 0..100;
-    for port in 0..65535{
-        println!("{}", port);
-    }
 
-    perform_scan(addr);
+    thread_scan(addr);
     // println!("{}. {}", addr, port);
     // scan(addr, port)
 
@@ -76,35 +72,28 @@ fn main() {
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
 }
 
-/// Performs the scan
-
+/// Runs Rayon to paralleise the scan
 fn thread_scan(addr: IpAddr){
-    let ports = (0..65535).into_par_iter().for_each::<_>(|port: i32| scan(addr, port));
+    // performs the scan using rayon
+    for x in (80..81){
+        scan(addr, x);
+    }
+    //et ports = (1..65535).into_par_iter().for_each::<_>(|port: u16| scan(addr, port));
 }
 
-fn perform_scan(addr: IpAddr){
-    // TODO would be best if IpAddr was global
-
-
-    let r = (0..65535).into_par_iter()
-    .for_each(|port| scan(addr, port));
-
-    (0..100).into_par_iter()
-    .for_each(|i| println!("{}", i));
-} 
-
-fn scan(addr: IpAddr, port: i32) {
-    println!("Running scan");
-    match TcpStream::connect((addr, port)) {
+fn scan(ip: IpAddr, start_port: u16){
+    // ports is a list slice of X ports
+    // This depends on the threads useud
+    // Usually around ~5 ports
+    // 
+    match TcpStream::connect((ip, start_port)) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
-            print!("Found ip {} and port {}", addr, port);
+            print!("Found ip {} and port {}", ip, start_port);
         }
         Err(_) => {}
-    }
 
-}
-
+}}
 fn print_opening(){
     let s = "
      _____           _    _____                 
@@ -117,3 +106,4 @@ fn print_opening(){
         println!("{} \n {} \n {}", s.green(), "Automated Decryption Tool - https://github.com/ciphey/ciphey".red(),"Creator https://github.com/brandonskerritt".green());
     
 }
+
