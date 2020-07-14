@@ -1,7 +1,7 @@
 use colored::*;
 use clap::{App, crate_authors, Arg};
 use std::{str::FromStr, net::{IpAddr, TcpStream, SocketAddr}, ops::Range, u16, io};
-use rayon::prelude::*;
+use rayon::{current_num_threads, prelude::*};
 use arrayvec::ArrayVec;
 use std::time::Duration;
 
@@ -74,15 +74,32 @@ fn main() {
 }
 
 /// Runs Rayon to paralleise the scan
+
 fn thread_scan(addr: IpAddr){
+    // (IP, _)
+    
+    // timeout in miliseconds
+    // TODO set this to ping
+    let duration_timeout = Duration::from_millis(100);
+
     // performs the scan using rayon
-    for x in (79..82) {
-        scan(addr, x);
-    }
+    (1..1000).into_par_iter().for_each(|x: i32| {
+        let string_list = vec![addr.to_string(), x.to_string()].join(":");
+        let server: SocketAddr = string_list
+        .parse()
+        .expect("Unable to parse socket address");
+        println!("{}", current_num_threads());
+        scan(server, duration_timeout);
+    })
+    
+    /*for x in (1..83){
+        scan(addr, x, duration_timeout);
+    }*/
     //et ports = (1..65535).into_par_iter().for_each::<_>(|port: u16| scan(addr, port));
 }
 
-fn scan(ip: IpAddr, start_port: u16){
+fn scan(server: SocketAddr, duration_timeout: Duration){
+    println!("Running scan");
     // ports is a list slice of X ports
     // This depends on the threads useud
     // Usually around ~5 ports
@@ -90,19 +107,13 @@ fn scan(ip: IpAddr, start_port: u16){
 
     // TODO move this out to thread_scan
     // TODO Please speed up this code
-    let string_list = vec![ip.to_string(), start_port.to_string()];
-    let to_scan = string_list.join(":");
-    let duration = Duration::from_millis(300);
-    let five_seconds = Duration::new(3, 0);
-    let server: SocketAddr = to_scan
-    .parse()
-    .expect("Unable to parse socket address");
+    // makes the ip + port number
 
-    
-    match TcpStream::connect_timeout(&server, duration) {
+    // pings it to see if its open
+    match TcpStream::connect_timeout(&server, duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
-            print!("Found ip {} and port {}", ip, start_port);
+            print!("{}", server);
         }
         Err(_) => {}
 
