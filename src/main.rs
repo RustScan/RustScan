@@ -3,7 +3,7 @@ use clap::{App, crate_authors, Arg};
 use std::{str::FromStr, net::{IpAddr, TcpStream, SocketAddr}, ops::Range, u16, io};
 use rayon::{current_num_threads, prelude::*};
 use arrayvec::ArrayVec;
-use std::time::Duration;
+use std::{sync::Mutex, time::Duration};
 
 /// Faster Nmap scanning with Rust
 ///
@@ -30,7 +30,6 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("i").unwrap_or("None");
-
     if ip == "None"{
         println!("{}", "Error: No input was given.".red());
         return ();
@@ -55,31 +54,38 @@ fn thread_scan(addr: IpAddr){
     // timeout in miliseconds
     // TODO set this to ping
     let duration_timeout = Duration::from_millis(600);
+    
+    let mut arr = Mutex::new(Vec::new());
 
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
-    (1..65536).into_par_iter().for_each(|x: i32| {
-        let string_list = vec![addr.to_string(), x.to_string()].join(":");
-        let server: SocketAddr = string_list
-        .parse()
-        .expect("Unable to parse socket address");
-        scan(server, duration_timeout);
+    (1..100).into_par_iter().for_each(|x: i32| {
+        // if valid port, 
+        let result = scan(addr, x, duration_timeout);
+        if result.0 == true{
+            arr.push(result.2);
+        }
         }
     )
 }
     
 
-fn scan(server: SocketAddr, duration_timeout: Duration){
+fn scan(addr: IpAddr, port_num: i32, duration_timeout: Duration) -> (bool, IpAddr, String){
     // pings it to see if its open
+    let string_list = vec![addr.to_string(), ].join(":");
+    let server: SocketAddr = string_list
+    .parse()
+    .expect("Unable to parse socket address");
     //     match TcpStream::connect_timeout(&server, duration_timeout) {
-
     match TcpStream::connect_timeout(&server,duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
             println!("{}", server.to_string().green());
+            return (true, addr, port_num.to_string());
         }
-        Err(_) => {}
-
+        Err(_) => {
+            return (false, addr, port_num.to_string());
+        }
     }
 }
 fn print_opening(){
