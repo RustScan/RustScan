@@ -1,8 +1,9 @@
 use colored::*;
 use clap::{App, crate_authors, Arg};
-use std::{str::FromStr, net::{IpAddr, TcpStream}, ops::Range, u16, io};
+use std::{str::FromStr, net::{IpAddr, TcpStream, SocketAddr}, ops::Range, u16, io};
 use rayon::prelude::*;
 use arrayvec::ArrayVec;
+use std::time::Duration;
 
 // Upper Port Limit
 const NUM: u32 = 65535;
@@ -75,7 +76,7 @@ fn main() {
 /// Runs Rayon to paralleise the scan
 fn thread_scan(addr: IpAddr){
     // performs the scan using rayon
-    for x in (80..81){
+    for x in (79..82) {
         scan(addr, x);
     }
     //et ports = (1..65535).into_par_iter().for_each::<_>(|port: u16| scan(addr, port));
@@ -85,15 +86,28 @@ fn scan(ip: IpAddr, start_port: u16){
     // ports is a list slice of X ports
     // This depends on the threads useud
     // Usually around ~5 ports
-    // 
-    match TcpStream::connect((ip, start_port)) {
+    // #
+
+    // TODO move this out to thread_scan
+    // TODO Please speed up this code
+    let string_list = vec![ip.to_string(), start_port.to_string()];
+    let to_scan = string_list.join(":");
+    let duration = Duration::from_millis(300);
+    let five_seconds = Duration::new(3, 0);
+    let server: SocketAddr = to_scan
+    .parse()
+    .expect("Unable to parse socket address");
+
+    
+    match TcpStream::connect_timeout(&server, duration) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
             print!("Found ip {} and port {}", ip, start_port);
         }
         Err(_) => {}
 
-}}
+    }
+}
 fn print_opening(){
     let s = "
      _____           _    _____                 
