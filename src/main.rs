@@ -57,8 +57,8 @@ fn thread_scan(addr: IpAddr){
     let duration_timeout = Duration::from_millis(600);
 
     // performs the scan using rayon
-    // 65535
-    (1..65535).into_par_iter().for_each(|x: i32| {
+    // 65535 + 1 because of 0 indexing
+    (1..65536).into_par_iter().for_each(|x: i32| {
         let string_list = vec![addr.to_string(), x.to_string()].join(":");
         let server: SocketAddr = string_list
         .parse()
