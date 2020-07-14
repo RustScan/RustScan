@@ -5,7 +5,8 @@ use rayon::{current_num_threads, prelude::*};
 use arrayvec::ArrayVec;
 use std::time::Duration;
 
-
+/// Faster Nmap scanning with Rust
+///
 fn main() {
     let vals = 0..100;
 
@@ -41,6 +42,7 @@ fn main() {
 
     println!("IP is {}", addr);
 
+    rayon::ThreadPoolBuilder::new().num_threads(1000).build_global().unwrap();
     thread_scan(addr);
 
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
@@ -52,9 +54,10 @@ fn thread_scan(addr: IpAddr){
     
     // timeout in miliseconds
     // TODO set this to ping
-    let duration_timeout = Duration::from_millis(100);
+    let duration_timeout = Duration::from_millis(600);
 
     // performs the scan using rayon
+    // 65535
     (1..65535).into_par_iter().for_each(|x: i32| {
         let string_list = vec![addr.to_string(), x.to_string()].join(":");
         let server: SocketAddr = string_list
@@ -68,10 +71,12 @@ fn thread_scan(addr: IpAddr){
 
 fn scan(server: SocketAddr, duration_timeout: Duration){
     // pings it to see if its open
-    match TcpStream::connect_timeout(&server, duration_timeout) {
+    //     match TcpStream::connect_timeout(&server, duration_timeout) {
+
+    match TcpStream::connect_timeout(&server,duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
-            print!("{}", server);
+            println!("{}", server.to_string().green());
         }
         Err(_) => {}
 
