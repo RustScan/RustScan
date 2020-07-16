@@ -9,60 +9,45 @@
 #include <set>
 
 #include <iostream>
-std::set<uint16_t>
 
-/*
-void print_help(std::ostream& os) {
-  os << "-i, --ip     The IP address to scan." << std::endl
-     << "-p, --ports  The ports to scan."      << std::endl;
-}
-*/
+int main(){
+    // TODO arg parsing
 
-int main(int argc, char *argv[]){
-  argc==0;
-  std::cout << "Port Scanner" << std::endl;
-  if (argc == 1){
-    std::cout << "not enough arguments supplied." << std::endl;
-    return 1;
-  }
-  if (argc >= 2){
-    return 1;
-  }
+    // set times here
+    auto timeout = std::chrono::milliseconds{500};
 
-  // argc == 2
-  std::string ip_str = "45.33.32.156";
-  std::vector<uint16_t> ports{80, 443, 1337};
-  auto ip = boost::asio::ip::make_address(ip_str);
-
-  using socket = boost::asio::ip::tcp::socket;
-
-  for (auto& i : ports) {
     boost::asio::io_context io_ctx;
-    socket sock{io_ctx};
-    
-    auto ep = boost::asio::ip::tcp::endpoint{ip, i};
-    
-    sock.async_connect(ep, [](){});
-  }
-}
+    boost::asio::thread_pool threads;
 
-std::vector<bool> is_open(ports.size());
+    // for testing use scanme.nmap.org 45.33.32.156
+    std::string ip_str = "45.33.32.156";
+    std::vector<uint16_t> ports;
 
-  for (size_t i = 0; i < ports.size(); ++i) {
-    socks.emplace_back(io_ctx);
-    auto& sock = socks.back();
+    // adds all 65k ports to ports
+    for (int i = 1; i <= 65356; ++i){
+        ports.push_back(i);
+    }
 
-    auto ep = boost::asio::ip::tcp::endpoint{ip, ports[i]};
-    sock.async_connect(ep, [i, &is_open](boost::system::error_code err) {
-      is_open[i] = !err.failed();
-    });
-  }
 
-  io_ctx.run_for(1s);
-  for (auto& sock: socks)
-    sock.close();
+    // makes ip_str into ip_addr
+    auto ip = boost::asio::ip::make_address(ip_str);
+    using socket = boost::asio::ip::tcp::socket;
 
-  for (size_t i = 0; i < ports.size(); ++i) {
-    std::cout << ports[i] << ": " << std::boolalpha << is_open[i] << std::endl;
-  }
+    // reverses the size for ports in socks
+    std::vector<socket> socks;
+    socks.reserve(ports.size());
+
+
+    std::vector<bool> is_open(ports.size());
+
+    // does the scanning over the ports
+    for (size_t i = 0; i < ports.size(); ++i) {
+        socks.emplace_back(io_ctx);
+        auto& sock = socks.back();
+
+        auto ep = boost::asio::ip::tcp::endpoint{ip, ports[i]};
+        sock.async_connect(ep, [i, &is_open](boost::system::error_code err) {
+        is_open[i] = !err.failed();
+        });
+    }
 }

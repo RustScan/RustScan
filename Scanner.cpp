@@ -31,13 +31,13 @@ int main(){
     // makes ip_str into ip_addr
     auto ip = boost::asio::ip::make_address(ip_str);
     using socket = boost::asio::ip::tcp::socket;
-    boost::asio::io_context io_ctx;
 
     // reverses the size for ports in socks
     std::vector<socket> socks;
     socks.reserve(ports.size());
 
-      std::vector<bool> is_open(ports.size());
+      
+    std::vector<bool> is_open(ports.size());
 
     // does the scanning over the ports
     for (size_t i = 0; i < ports.size(); ++i) {
