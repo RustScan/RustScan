@@ -3,11 +3,8 @@ use clap::{App, crate_authors, Arg};
 use std::{str::FromStr, ops::Range, u16, io};
 use rayon::{current_num_threads, prelude::*};
 use arrayvec::ArrayVec;
-use std::{sync::Mutex, time::Duration, net::IpAddr};
-use tokio::net::TcpStream;
-use tokio::{prelude::*};
-use tokio::stream::{self, StreamExt};
-use futures::executor::block_on;
+use std::{sync::Mutex, time::Duration, net::IpAddr, net::TcpStream};
+use futures::stream::{self, StreamExt};
 
 /// Faster Nmap scanning with Rust
 ///
@@ -63,26 +60,24 @@ async fn thread_scan(addr: IpAddr){
     // 65535 + 1 because of 0 indexing
 
     // asymv run all 65k porrs
+    
     println!("I execute");
-    let mut stream = stream::iter(1..=65536);
+    let mut nice = stream::iter(1..=65536);
     println!("I have a stream");
-    let stream = stream.map(|x| scan(addr, x));
+    let stream = nice.map(|x| scan(addr, x));
     stream.collect::<Vec<_>>().await;
+    
 }
 
     
 
-#[tokio::main]
-async fn scan(addr: IpAddr, port_num: i32) -> i32 {
-    println!("Scanning");
+fn scan(addr: IpAddr, port_num: i32) -> i32 {
     // pings it to see if its open
     
     
     let string_list = vec![addr.to_string(), port_num.to_string()].join(":");
     //     match TcpStream::connect_timeout(&server, duration_timeout) {
-    
-    let mut stream = TcpStream::connect(string_list).await;
-    match stream{
+    match TcpStream::connect(string_list){
         Ok(_) => {
             println!("{}", port_num);
             return port_num;
