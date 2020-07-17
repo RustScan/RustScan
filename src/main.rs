@@ -71,16 +71,28 @@ fn main() {
     let clone_ports = Arc::clone(&status_ports);
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
-    let output: Vec<i32> = (1..65536).into_par_iter()
+    // TODO https://docs.rs/rayon/1.3.1/rayon/iter/trait.IndexedParallelIterator.html#method.collect_into_vec
+    let output: Vec<bool> = (1..65536).into_par_iter()
     .map(|x: i32| scan(addr, x, duration_timeout))
     .collect();
+
+    // prints ports and places them into nmap string
+    let nmap_str_ports = Vec::New();
+
+    for (i, item) in output.iter().enumerate(){
+        if item == &true{
+            println!("{}", item.to_string().green());
+            // appends it to port
+            nmap_str_ports.push(i);
+        }
+    }
 
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
 }
 
 
 
-fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> i32 {
+fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
     let string_list = vec![addr.to_string(), port.to_string()].join(":");
     let server: SocketAddr = string_list        
         .parse()
@@ -89,11 +101,11 @@ fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> i32 {
     match TcpStream::connect_timeout(&server,duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
-            println!("{}", server.to_string().green());
-            return port;
+
+            return true;
             
         }
-        Err(_) => {return 0;}
+        Err(_) => {return false;}
 
     }
 }
