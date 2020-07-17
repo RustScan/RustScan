@@ -51,7 +51,7 @@ The only contributions RustScan are accecpting is:
 
 
 # Ideas
-
+- [ ] Use Async instead of threading
 - [ ] Do popular ports first (80, 445, 8080, 21, 22)
 - [ ] Option for top 1k ports
 - [ ] Affter 1k ports print the nmap command to scan the first 1k so user can run while rustscanner finishes
