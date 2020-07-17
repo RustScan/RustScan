@@ -71,10 +71,10 @@ fn main() {
     let clone_ports = Arc::clone(&status_ports);
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
-    let output: Vec<i32> = (1..65536).into_par_iter()
+    let output: Vec<i32> = (1..1000).into_par_iter()
     .map(|x: i32| scan(addr, x, duration_timeout))
     .collect();
-    //println!("{:?}", output);
+    println!("{:?}", output);
 
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
 }
