@@ -77,7 +77,7 @@ fn main() {
     .collect();
 
     // prints ports and places them into nmap string
-    let nmap_str_ports = Vec::New();
+    /*let nmap_str_ports = Vec::New();
 
     for (i, item) in output.iter().enumerate(){
         if item == &true{
@@ -85,7 +85,7 @@ fn main() {
             // appends it to port
             nmap_str_ports.push(i);
         }
-    }
+    }*/
 
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
 }
