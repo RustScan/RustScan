@@ -33,6 +33,7 @@ fn main() {
             .short("t")
             .long("threads")
             .takes_value(true)
+            .default_value(1000)
             .help("How many threads do you want to use? Default 1000"))
         .arg(Arg::with_name("n")
             .short("n")
@@ -44,7 +45,7 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("i").unwrap_or("None");
-    let threads_str = matches.value_of("t").unwrap_or("None");
+    let threads_str:  = matches.value_of("t").unwrap_or("None");
     let nmap_arg = matches.value_of("n").unwrap_or("None");
 
     if ip == "None"{
@@ -62,32 +63,35 @@ fn main() {
 
     rayon::ThreadPoolBuilder::new().num_threads(threads).build_global().unwrap();
    
-    let duration_timeout = Duration::from_millis(100);
+    let duration_timeout = Duration::from_millis(1000);
+    let mut ports_full: Vec<bool> = vec![false; 65536];
 
-
-    // here I commit war crimes and try to do concurrency
-    // for the first time in my life
-    let mut status_ports: std::sync::Arc<std::sync::Mutex<std::vec::Vec<i32>>> = Arc::new(Mutex::new(Vec::new()));
-    let clone_ports = Arc::clone(&status_ports);
+    
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO https://docs.rs/rayon/1.3.1/rayon/iter/trait.IndexedParallelIterator.html#method.collect_into_vec
-    let output: Vec<bool> = (1..65536).into_par_iter()
+    (1..65536).into_par_iter()
     .map(|x: i32| scan(addr, x, duration_timeout))
-    .collect();
+    .collect_into_vec(&mut ports_full);
 
     // prints ports and places them into nmap string
-    /*let nmap_str_ports = Vec::New();
+    let mut nmap_str_ports = Vec::new();
 
-    for (i, item) in output.iter().enumerate(){
+    for (i, item) in ports_full.iter().enumerate(){
         if item == &true{
-            println!("{}", item.to_string().green());
             // appends it to port
-            nmap_str_ports.push(i);
+            nmap_str_ports.push(i.to_string());
         }
-    }*/
+    }
+    
+    // if no ports are found, suggest running with less threads
+    if nmap_str_ports.len() == 0{
+        println!("Looks like I didn't find any open ports. This is usually caused by using too many threads. I used {} threads, consider lowering to {} or a comftorable number for your system.", {threads_str}, (threads / 2).to_string());
+    }
+    println!("{:?}", nmap_str_ports)
 
     // let _nmap: &str = "nmap -A -sV -vvv -p $ports $ipaddr"
+    // Did I close without running nmap? Try running me with less threads
 }
 
 
@@ -101,6 +105,7 @@ fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
     match TcpStream::connect_timeout(&server,duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress and send to main thread
+            println!("Port {} open", port.to_string().green());
 
             return true;
             
