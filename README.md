@@ -4,13 +4,17 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 </p>
 <hr>
 
-| General Linux | Cargo         | Arch         | HomeBrew |
-| ------------- | ------------- | ------------ | -------- |
-| img1          | img2          | img3         | im4 |
-| Binaries      | Cargo install | yay rustscan | brew install rustscan|
+| <p align="center"><a href="https://pypi.org/project/ciphey">🐍 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p>  |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| <p align="center"><img src="pictures/rust.png" /></p>                        | <p align="center"><img src="pictures/arch.png" /></p>           | <p align="center"><img src="pictures/apple.png" /></p>                      |
+| `cargo install rust_scan`                                                 | `yay rustscan`                                                                | `brew install rustscan`                                                               | 
 
 **Note**: You must have Nmap installed.
 <hr>
+
+# TODO
+debian package
+terminal gifs
 
 # 🤔 What is this?
 If you are a competitive CTF player and often find yourself running masscan / a basic nmap scan before running a more comprehensive scan, this tool is for you.
@@ -50,3 +54,6 @@ Great! I'd love some help with this. Read the [contributing.md] file for more in
 ## Ciphey
 Ciphey is an automated decryption tool using artifical intelligence & natural language processing.
 [Check it out here!](https://github.com/ciphey/ciphey)
+
+# Full Installation Guide
+The easiest way to install RustScan is to use one of the packages provided for your system, such as HomeBrew or Yay for Arch Linux.

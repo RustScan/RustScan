@@ -85,7 +85,7 @@ fn main() {
     }
 
     // Tells the user we are now switching to Nmap
-    println!("{} -A -p {:?} -vvv {}", "Starting nmap".red(), nmap_str_ports, ip);
+    println!("{} -A -p {:?} -vvv {}", "Starting nmap".blue(), nmap_str_ports, ip);
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
