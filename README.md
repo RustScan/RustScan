@@ -1,25 +1,45 @@
 <p align="center">
 <img src="pictures/rustscan.png"><br>
 Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. Built with Rust. 
+<br>
+<img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
 </p>
 <hr>
 
-| General Linux | Cargo         | Arch         | 
-| ------------- | ------------- | ------------ |
-| img1          | img2          | img3         |
-| Binaries      | Cargo install | yay rustscan |
+| <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p>  |
+| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| <p align="center"><img src="pictures/rust.png" /></p>                        | <p align="center"><img src="pictures/arch.png" /></p>           | <p align="center"><img src="pictures/apple.png" /></p>                      |
+| _`cargo install rust_scan` _                                                | `yay rustscan`                                                                | `brew install rustscan`                                                               | 
 
+**Note**: You must have Nmap installed.
 <hr>
+
+# TODO
+* debian package
+* terminal gifs
+* Emojis in titles
 
 # 🤔 What is this?
 If you are a competitive CTF player and often find yourself running masscan / a basic nmap scan before running a more comprehensive scan, this tool is for you.
-1. Find ports quickly using Rustscan. 
+1. Find ports quickly using Rustscan (**27 seconds on average**).
 2. Automatically runs `nmap -A -sV -p $ports -vvv` on those ports.
 3. Profit???
 
+[ GIFS HERE ]
+
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
-# RustScan vs Nmap vs MassScan
+# ✨ Features
+* Scans all 64k ports in 27 seconds (on average).
+* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
+* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
+
+# 🔭 Why RustScan?
+
+## 🔬 Without RustScan
+* Gif here comparison
+
+## 📊 RustScan vs Nmap vs MassScan
 
 | **Name**                                                                                   | RustScan | Nmap | Masscan |
 | ------------------------------------------------------------------------------------------ | -------- | ---- | ------- |
@@ -28,9 +48,9 @@ Rustscans **only** job is to reduce the friction between finding open ports and 
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
 
 
-## FAQ
+## 🙋 FAQ
 > I think this would be a great port scanner on its own without Nmap!
-> 
+
 No. If you want a fast port scanner, use Masscan.
 > I have this great idea for a script to get information on ports / hosts
 
@@ -41,18 +61,21 @@ If you're a pentester, then yes, you have Nmap installed.
 
 > I want to contribute!
 
-The only contributions RustScan are accecpting is:
-* User Experience
-* Making port scanning faster
+Great! I'd love some help with this. Read the [contributing.md file](contributing.md) file for more information!
 
-# Other Hacking Projects
+# 📖 Full Installation Guide
+**You need Nmap**. If you have Kali Linux or Parrot OS installed, you already have Nmap. If not, [follow the nmap install guide](https://nmap.org/download.html).
+
+The easiest way to install RustScan is to use one of the packages provided for your system, such as HomeBrew or Yay for Arch Linux.
+
+The most universal way is to use `cargo`, Rust's built in package manager (think Pip but for Rust). [Follow this guide to installing Rust & Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
+
+If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows. 
+
+# 🎪 Contributing
+Please read the [contributing.md file](contributing.md)
+
+# 💻 Other Hacking Projects By This Author
 ## Ciphey
-
-
-
-# Ideas
-- [ ] Use Async instead of threading
-- [ ] Do popular ports first (80, 445, 8080, 21, 22)
-- [ ] Option for top 1k ports
-- [ ] Affter 1k ports print the nmap command to scan the first 1k so user can run while rustscanner finishes
-- [ ] Tar pit prevention (look for different sized payloads)
+Ciphey is an automated decryption tool using artifical intelligence & natural language processing.
+[Check it out here!](https://github.com/ciphey/ciphey)
