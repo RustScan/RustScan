@@ -1,0 +1,27 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "brandonskerritt",
+      "name": "Brandon",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10378052?v=4",
+      "profile": "https://skerritt.blog",
+      "contributions": [
+        "infra",
+        "test",
+        "code",
+        "design"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "RustScan",
+  "projectOwner": "brandonskerritt",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
