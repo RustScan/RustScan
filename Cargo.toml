@@ -6,7 +6,7 @@ edition = "2018"
 description = "Faster Nmap Scanning with Rust"
 homepage = "https://github.com/brandonskerritt/rustscan"
 repository = "https://github.com/brandonskerritt/rustscan"
-license = "GNU"
+license = "MIT"
 keywords = ["port", "scanning", "nmap"]
 categories = ["command-line-utilities"]
 
