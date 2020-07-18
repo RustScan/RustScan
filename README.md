@@ -6,10 +6,11 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 </p>
 <hr>
 
-| <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p>  |
-| ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| <p align="center"><img src="pictures/rust.png" /></p>                        | <p align="center"><img src="pictures/arch.png" /></p>           | <p align="center"><img src="pictures/apple.png" /></p>                      |
-| _`cargo install rust_scan` _                                                | `yay rustscan`                                                                | `brew install rustscan`                                                               | 
+
+| <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Kali / Debian </p> |
+| ---- | ---- | ---- | --- |
+| <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
+| `cargo install rust_scan` | `yay rustscan` | `brew install rustscan` | `dpkg -i rustscan.deb` |
 
 **Note**: You must have Nmap installed.
 <hr>
@@ -17,7 +18,6 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 # TODO
 * debian package
 * terminal gifs
-* Emojis in titles
 
 # 🤔 What is this?
 If you are a competitive CTF player and often find yourself running masscan / a basic nmap scan before running a more comprehensive scan, this tool is for you.
@@ -30,7 +30,7 @@ If you are a competitive CTF player and often find yourself running masscan / a 
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
-* Scans all 64k ports in 27 seconds (on average).
+* Scans all 64k ports in 27 seconds (on 1k threads).
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 
@@ -76,6 +76,7 @@ If you face any issues at all, please leave a GitHub issue. I have only tested t
 Please read the [contributing.md file](contributing.md)
 
 # 💻 Other Hacking Projects By This Author
-## Ciphey
+## 🧮 Ciphey
 Ciphey is an automated decryption tool using artifical intelligence & natural language processing.
 [Check it out here!](https://github.com/ciphey/ciphey)
+

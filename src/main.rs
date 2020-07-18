@@ -30,8 +30,8 @@ fn main() {
             .short("T")
             .long("timeout")
             .takes_value(true)
-            .default_value("1000")
-            .help("The timeout before a port is assumed to be close. Default 1000"))
+            .default_value("250")
+            .help("The timeout before a port is assumed to be close. Default 250, but can go up to 1000."))
         /*.arg(Arg::with_name("n")
             .short("n")
             .long("nmap-1000")
@@ -81,7 +81,7 @@ fn main() {
     
     // if no ports are found, suggest running with less threads
     if nmap_str_ports.len() == 0{
-        println!("{} Looks like I didn't find any open ports. This is usually caused by using too many threads, or the host not having open ports. I used {} threads, consider lowering to {} with {} or a comfortable number for your system. \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), threads_str, (threads / 2).to_string().green(), "'rustscan -t <thread_nums> <ip address>'".green());
+        panic!("{} Looks like I didn't find any open ports. This is usually caused by too many threads. \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), threads_str, (threads / 2).to_string().green(), "'rustscan -t <thread_nums> <ip address>'".green());
     }
 
     // Tells the user we are now switching to Nmap
@@ -91,14 +91,14 @@ fn main() {
     let ports_str = nmap_str_ports.join(",");
 
     // Runs the nmap command and spawns it as a process.
-     Command::new("nmap")
+     /*Command::new("nmap")
             .arg("-A")
             .arg("-p")
             .arg(ports_str)
             .arg("-vvv")
             .arg(ip)
             .spawn()
-            .expect("failed to execute process");
+            .expect("failed to execute process");*/
 }
 
 fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
