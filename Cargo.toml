@@ -9,6 +9,7 @@ repository = "https://github.com/brandonskerritt/rustscan"
 license = "MIT"
 keywords = ["port", "scanning", "nmap"]
 categories = ["command-line-utilities"]
+readme="README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
