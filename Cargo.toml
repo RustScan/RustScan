@@ -1,5 +1,5 @@
 [package]
-name = "RustScan"
+name = "rust_scan"
 version = "0.1.0"
 authors = ["Bee <brandon@skerritt.blog>"]
 edition = "2018"
@@ -7,6 +7,8 @@ description = "Faster Nmap Scanning with Rust"
 homepage = "https://github.com/brandonskerritt/rustscan"
 repository = "https://github.com/brandonskerritt/rustscan"
 license = "GNU"
+keywords = ["port", "scanning", "nmap", "port scanning"]
+categories = ["command-line-utilities"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
