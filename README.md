@@ -16,11 +16,8 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 **Note**: You must have Nmap installed.
 <hr>
 
-# TODO
-* debian package
-
 # 🤔 What is this?
-1. Find ports quickly using Rustscan (**27 seconds on average**).
+1. Find ports quickly using Rustscan (**26 seconds**).
 2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
 3. Profit???
 
@@ -29,20 +26,19 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
-* Scans all 64k ports in 27 seconds (on 1k threads).
+* Scans all 64k ports in 26 seconds (on 1k threads).
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
 ## 🔬 Nmap with and without RustScan
-* Gif here comparison
 
 | **Name** | ⚡ Nmap with RustScan  | 🐢 Nmap without RustScan |
 | ----- | -------------- | ---------------------|
 | **Gifs** | ![The guy she tells you not to worry about](pictures/with_rustscan.gif) | ![you](pictures/without_rustscan.gif) | 
 | **Setup** | 1000 threads, using scanme.nmap.org. The nmap command ran was `nmap -A -p {ports} {IP}`. | `nmap -A -p- {IP}`|
-| **Time** | **39 seconds**. 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap.  | **17 minutes and 41 seconds** Estimated by Nmap.
+| **Time** | **39 seconds**. 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap to scan the found ports.  | **17 minutes and 41 seconds** Estimated by Nmap.
 
 
 ## 📊 RustScan vs Nmap vs MassScan
