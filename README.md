@@ -29,15 +29,23 @@ If you are a competitive CTF player and often find yourself running masscan / a 
 
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
+
+
 # ✨ Features
 * Scans all 64k ports in 27 seconds (on 1k threads).
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 
 # 🔭 Why RustScan?
-
-## 🔬 Without RustScan
+Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
+## 🔬 Using Nmap with and without RustScan
 * Gif here comparison
+
+| ⚡ Nmap with RustScan  | 🐢 Nmap without RustScan |
+| ----- | -------------- | ---------------------|
+| Gifs | ![The guy she tells you not to worry about](pictures/with_rustscan.gif) | ![you](pictures/without_rustscan.gif) | 
+| Setup | 1000 threads, using scanme.nmap.org. The nmap command ran was `nmap -A -p {ports} {IP}`. | `nmap -A -p- {IP}`|
+| Time | 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap. **39 seconds**. | Estimated **17 minutes and 41 seconds**.
 
 ## 📊 RustScan vs Nmap vs MassScan
 

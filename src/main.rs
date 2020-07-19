@@ -30,7 +30,7 @@ fn main() {
             .short("T")
             .long("timeout")
             .takes_value(true)
-            .default_value("250")
+            .default_value("1000")
             .help("The timeout before a port is assumed to be close. Default 250, but can go up to 1000."))
         /*.arg(Arg::with_name("n")
             .short("n")
@@ -91,14 +91,14 @@ fn main() {
     let ports_str = nmap_str_ports.join(",");
 
     // Runs the nmap command and spawns it as a process.
-     /*Command::new("nmap")
+    Command::new("nmap")
             .arg("-A")
             .arg("-p")
             .arg(ports_str)
             .arg("-vvv")
             .arg(ip)
             .spawn()
-            .expect("failed to execute process");*/
+            .expect("failed to execute process");
 }
 
 fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
