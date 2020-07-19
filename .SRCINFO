@@ -1,0 +1,14 @@
+pkgbase = rustscan-bin
+	pkgdesc = Faster Nmap Scanning with Rust
+	pkgver = 1.0.1
+	pkgrel = 1
+	url = https://github.com/brandonskerritt/rustscan
+	arch = x86_64
+	license = MIT
+	provides = rustscan
+	options = strip
+	source = https://github.com/brandonskerritt/rustscan/releases/download/v1.0.1/rustscan-1.0.1-x86_64.tar.gz
+	sha256sums = b29e62903d1577fafee819c06ca2a6660da8a45ab74d46e4a14b6ce95a6892ab
+
+pkgname = rustscan-bin
+
