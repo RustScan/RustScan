@@ -11,7 +11,7 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 | <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Kali / Debian </p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
-| `cargo install rust_scan` | `yay rustscan` | `brew install rustscan` | `dpkg -i rustscan.deb` |
+| `cargo install rust_scan` | `yay rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | Read the install guide below. |
 
 **Note**: You must have Nmap installed.
 <hr>
@@ -91,6 +91,26 @@ The easiest way to install RustScan is to use one of the packages provided for y
 The most universal way is to use `cargo`, Rust's built in package manager (think Pip but for Rust). [Follow this guide to installing Rust & Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
 If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows. 
+
+## Debian / Kali
+
+Download the .deb file from the releases page:
+[https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1](https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1)
+Run the commpand `dpkg -i` on the file. Note: sometimes you can double click the file to achieve the same result.
+
+## HomeBrew
+
+Tap the brew:
+
+```
+brew tap brandonskerritt/rustscan
+```
+
+Install it:
+
+```
+brew install rustscan
+```
 
 # 🎪 Contributing
 Please read the [contributing.md file](contributing.md)
