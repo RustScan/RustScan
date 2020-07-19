@@ -38,7 +38,7 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 | ----- | -------------- | ---------------------|
 | **Gifs** | ![The guy she tells you not to worry about](pictures/with_rustscan.gif) | ![you](pictures/without_rustscan.gif) | 
 | **Setup** | 1000 threads, using scanme.nmap.org. The nmap command ran was `nmap -A -p {ports} {IP}`. | `nmap -A -p- {IP}`|
-| **Time** | **39 seconds**. 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap.  | **17 minutes and 41 seconds** Estimated by Nmap.
+| **Time** | **39 seconds**. 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap to scan the found ports.  | **17 minutes and 41 seconds** Estimated by Nmap.
 
 
 ## 📊 RustScan vs Nmap vs MassScan
