@@ -1,9 +1,12 @@
-use colored::*;
 use clap::{App, Arg};
-use std::{str::FromStr, net::{IpAddr, TcpStream, SocketAddr}};
+use colored::*;
 use rayon::prelude::*;
-use std::time::Duration;
 use std::process::Command;
+use std::time::Duration;
+use std::{
+    net::{IpAddr, SocketAddr, TcpStream},
+    str::FromStr,
+};
 /// Faster Nmap scanning with Rust
 
 fn main() {
@@ -42,84 +45,94 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("i").unwrap_or("None");
-    let threads_str: &str  = matches.value_of("t").unwrap_or("None");
+    let threads_str: &str = matches.value_of("t").unwrap_or("None");
     // let nmap_arg = matches.value_of("n").unwrap_or("None");
     let threads: usize = threads_str.parse::<usize>().unwrap();
     // gets timeout duration
-    let duration_timeout=  Duration::from_millis(matches.value_of("T").unwrap_or("None").parse::<u64>().unwrap());
+    let duration_timeout = Duration::from_millis(
+        matches
+            .value_of("T")
+            .unwrap_or("None")
+            .parse::<u64>()
+            .unwrap(),
+    );
     // let ports = if !(nmap_arg == "None") { NMAP_1000.iter() } else {(1..65536)};
-    
-    
-    // validates the IP address and turns it into an IpAddr type
-    let addr = IpAddr::from_str(&ip)
-        .expect("IPADDR must be a valid IPv4 or IPv6 address");
 
+    // validates the IP address and turns it into an IpAddr type
+    let addr = IpAddr::from_str(&ip).expect("IPADDR must be a valid IPv4 or IPv6 address");
 
     // increases thread pool
-    rayon::ThreadPoolBuilder::new().num_threads(threads).build_global().unwrap();
-   
+    rayon::ThreadPoolBuilder::new()
+        .num_threads(threads)
+        .build_global()
+        .unwrap();
+
     // collect_into_vec is faster than into_vec
     let mut ports_full: Vec<bool> = vec![false; 65536];
 
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    (1..65536).into_par_iter()
-    .map(|x: i32| scan(addr, x, duration_timeout))
-    .collect_into_vec(&mut ports_full);
+    (1..65536)
+        .into_par_iter()
+        .map(|x: i32| scan(addr, x, duration_timeout))
+        .collect_into_vec(&mut ports_full);
 
     // prints ports and places them into nmap string
     let mut nmap_str_ports = Vec::new();
 
     // makes vector of open ports
-    for (i, item) in ports_full.iter().enumerate(){
-        if item == &true{
+    for (i, item) in ports_full.iter().enumerate() {
+        if item == &true {
             // appends it to port
             nmap_str_ports.push((i + 1).to_string());
         }
     }
-    
+
     // if no ports are found, suggest running with less threads
-    if nmap_str_ports.len() == 0{
+    if nmap_str_ports.is_empty() {
         panic!("{} Looks like I didn't find any open ports. This is usually caused by too many threads. \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), threads_str, (threads / 2).to_string().green(), "'rustscan -t <thread_nums> <ip address>'".green());
     }
 
     // Tells the user we are now switching to Nmap
-    println!("{} -A -p {:?} -vvv {}", "Starting nmap".blue(), nmap_str_ports, ip);
+    println!(
+        "{} -A -p {:?} -vvv {}",
+        "Starting nmap".blue(),
+        nmap_str_ports,
+        ip
+    );
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
 
     // Runs the nmap command and spawns it as a process.
     Command::new("nmap")
-            .arg("-A")
-            .arg("-p")
-            .arg(ports_str)
-            .arg("-vvv")
-            .arg(ip)
-            .spawn()
-            .expect("failed to execute process");
+        .arg("-A")
+        .arg("-p")
+        .arg(ports_str)
+        .arg("-vvv")
+        .arg(ip)
+        .spawn()
+        .expect("failed to execute process");
 }
 
 fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
     let string_list = vec![addr.to_string(), port.to_string()].join(":");
-    let server: SocketAddr = string_list        
-        .parse()
-        .expect("Unable to parse socket address");
+    let server: SocketAddr = string_list.parse().expect("Unable to parse socket address");
 
-    match TcpStream::connect_timeout(&server,duration_timeout) {
+    match TcpStream::connect_timeout(&server, duration_timeout) {
         Ok(_) => {
             // Found open port, indicate progress
             println!("{} open", port.to_string().green());
 
-            return true;
-            
+            true
         }
-        Err(_) => {return false;}
-
+        Err(_) => {
+            false
+        }
     }
 }
-fn print_opening(){
+fn print_opening() {
     let s = "
      _____           _    _____                 
     |  __ \\         | |  / ____|                
@@ -127,8 +140,11 @@ fn print_opening(){
     |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\ 
     | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
-    Faster nmap scanning with rust."; 
-        println!("{} \n {} \n {}", s.green(), "Automated Decryption Tool - https://github.com/ciphey/ciphey".red(),"Creator https://github.com/brandonskerritt".green());
-    
+    Faster nmap scanning with rust.";
+    println!(
+        "{} \n {} \n {}",
+        s.green(),
+        "Automated Decryption Tool - https://github.com/ciphey/ciphey".red(),
+        "Creator https://github.com/brandonskerritt".green()
+    );
 }
-
