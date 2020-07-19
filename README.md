@@ -1,8 +1,8 @@
 <p align="center">
-
 <img src="pictures/rustscan.png"><br>
 Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. Built with Rust. 
-<br>
+</p>
+<p align="center">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
 </p>
 <hr>

@@ -30,7 +30,7 @@ fn main() {
             .short("T")
             .long("timeout")
             .takes_value(true)
-            .default_value("1000")
+            .default_value("250")
             .help("The timeout before a port is assumed to be close. Default 250, but can go up to 1000."))
         /*.arg(Arg::with_name("n")
             .short("n")
