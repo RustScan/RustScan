@@ -113,6 +113,14 @@ Install it:
 brew install rustscan
 ```
 
+# 🤸 Usage
+
+```
+rustscan -h
+```
+
+The format is `rustcan -t 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 threads with a timeout of 1500ms. The timeout is how long Rustscan waits for a response until it assumes the port is closed.
+
 # 🎪 Contributing
 Please read the [contributing.md file](contributing.md)
 
