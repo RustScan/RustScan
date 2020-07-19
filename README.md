@@ -4,11 +4,12 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 </p>
 <p align="center">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
+<img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
 </p>
 <hr>
 
 
-| <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Arch </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> HomeBrew </a></p> | <p align="center"><a href="https://pypi.org/project/ciphey"> Kali / Debian </p> |
+| <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> HomeBrew </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Kali / Debian </p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
 | `cargo install rust_scan` | `yay rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
