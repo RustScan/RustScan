@@ -24,7 +24,7 @@ fn main() {
             .short("t")
             .long("threads")
             .takes_value(true)
-            .default_value("1000")
+            .default_value("250")
             .help("How many threads do you want to use? Default 1000"))
         .arg(Arg::with_name("T")
             .short("T")

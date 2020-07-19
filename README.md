@@ -20,16 +20,13 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 * debian package
 
 # 🤔 What is this?
-If you are a competitive CTF player and often find yourself running masscan / a basic nmap scan before running a more comprehensive scan, this tool is for you.
 1. Find ports quickly using Rustscan (**27 seconds on average**).
-2. Automatically runs `nmap -A -sV -p $ports -vvv` on those ports.
+2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
 3. Profit???
 
 ![gif](/pictures/intro.gif)
 
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
-
-
 
 # ✨ Features
 * Scans all 64k ports in 27 seconds (on 1k threads).
@@ -38,7 +35,7 @@ Rustscans **only** job is to reduce the friction between finding open ports and 
 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
-## 🔬 Using Nmap with and without RustScan
+## 🔬 Nmap with and without RustScan
 * Gif here comparison
 
 | **Name** | ⚡ Nmap with RustScan  | 🐢 Nmap without RustScan |
