@@ -1,0 +1,143 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: zsh 
+  
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /home/bee/Documents/RustScan
+  
+  # Export additional ENV variables
+  env:
+    recording: true
+  
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 108
+  
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 46
+  
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+  
+  # Quality
+  # 1 - 100
+  quality: 100
+  
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+  
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: auto
+  
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: Terminalizer
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+  
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+  
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+  
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+  
+  # The size of the font
+  fontSize: 12
+  
+  # The height of lines
+  lineHeight: 1
+  
+  # The spacing between letters
+  letterSpacing: 0
+  
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 1016
+    content: "\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                           \r \r\e]2;bee@beePC: ~/Documents/RustScan\a\e]1;..ents/RustScan\a"
+  - delay: 172
+    content: "\r\e[0m\e[27m\e[24m\e[J\r\n\e[1m\e[0m\e[1m\e[36mRustScan\e[0m\e[36m\e[39m\e[1m \e[0m\e[1mon \e[0m\e[1m\e[37m\e[1m\e[37m\e[0m\e[37m\e[1m\e[37m\e[35m master\e[0m\e[35m\e[39m\e[1m\e[0m\e[1m\e[0m\e[1m\e[31m [$✘!]\e[0m\e[31m\e[39m\e[1m\e[0m\e[0m\e[39m\e[1m \e[0m\e[1mis \e[0m\e[1m\e[31m\U0001F4E6 vrustscan:1.0.1\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mvia \e[0m\e[1m\e[31m\U0001D5E5 v1.45.0\e[0m\e[31m\e[39m\e[1m \e[0m\r\n\e[1m\e[0m\e[1m\e[32m➜ \e[0m\e[32m\e[39m\e[1m\e[0m\e[K\e[?1h\e[?2004h"
+  - delay: 448
+    content: "\e[32mn\e[39m\e[90mmap -A -p- -T5 45.33.32.156 -Pn\e[39m\e[31D"
+  - delay: 179
+    content: "\b\e[32mn\e[32mm\e[39m"
+  - delay: 80
+    content: "\b\b\e[1m\e[31mn\e[1m\e[31mm\e[1m\e[31ma\e[0m\e[39m"
+  - delay: 322
+    content: "\b\b\b\e[0m\e[32mn\e[0m\e[32mm\e[0m\e[32ma\e[32mp\e[39m\e[39m \e[39m-\e[39mA\e[39m \e[39m-\e[39mp\e[39m-\e[39m \e[39m-\e[39mT\e[39m5\e[39m \e[39m4\e[39m5\e[39m.\e[39m3\e[39m3\e[39m.\e[39m3\e[39m2\e[39m.\e[39m1\e[39m5\e[39m6\e[39m \e[39m-\e[39mP\e[39mn"
+  - delay: 191
+    content: "\e[?1l"
+  - delay: 5
+    content: "\e[?2004l\r\r\n\e]2;nmap -A -p- -T5 45.33.32.156 -Pn\a\e]1;nmap\a"
+  - delay: 5
+    content: "Starting Nmap 7.80 ( https://nmap.org ) at 2020-07-19 23:00 BST\r\n"
+  - delay: 45951
+    content: "Warning: 45.33.32.156 giving up on port because retransmission cap hit (2).\r\n"
+  - delay: 37563
+    content: "Stats: 0:01:23 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan\r\nConnect Scan Timing: About 0.90% done\r\n"
+  - delay: 82569
+    content: "Stats: 0:02:46 elapsed; 0 hosts completed (1 up), 1 undergoing Connect Scan\r\nConnect Scan Timing: About 1.78% done; ETC: 01:36 (2:32:49 remaining)\r\n"
+  - delay: 1557
+    content: "\r\n\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                           \r \r\e]2;bee@beePC: ~/Documents/RustScan\a\e]1;..ents/RustScan\a"
+  - delay: 177
+    content: "\r\e[0m\e[27m\e[24m\e[J\r\n\e[1m\e[0m\e[1m\e[36mRustScan\e[0m\e[36m\e[39m\e[1m \e[0m\e[1mon \e[0m\e[1m\e[37m\e[1m\e[37m\e[0m\e[37m\e[1m\e[37m\e[35m master\e[0m\e[35m\e[39m\e[1m\e[0m\e[1m\e[0m\e[1m\e[31m [$✘!]\e[0m\e[31m\e[39m\e[1m\e[0m\e[0m\e[39m\e[1m \e[0m\e[1mis \e[0m\e[1m\e[31m\U0001F4E6 vrustscan:1.0.1\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mvia \e[0m\e[1m\e[31m\U0001D5E5 v1.45.0\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mtook \e[0m\e[1m\e[33m2m 48s\e[0m\e[33m\e[39m\e[1m \e[0m\r\n\e[1m\e[0m\e[1m\e[31m➜ \e[0m\e[31m\e[39m\e[1m\e[0m\e[K\e[?1h\e[?2004h"
+  - delay: 2040
+    content: "\e[?2004l\r\r\n"
