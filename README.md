@@ -17,7 +17,7 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 <hr>
 
 # 🤔 What is this?
-1. Find ports quickly using Rustscan (**27 seconds on average**).
+1. Find ports quickly using Rustscan (**26 seconds**).
 2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
 3. Profit???
 
@@ -26,7 +26,7 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
-* Scans all 64k ports in 27 seconds (on 1k threads).
+* Scans all 64k ports in 26 seconds (on 1k threads).
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 
