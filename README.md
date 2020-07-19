@@ -16,9 +16,6 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 **Note**: You must have Nmap installed.
 <hr>
 
-# TODO
-* debian package
-
 # 🤔 What is this?
 1. Find ports quickly using Rustscan (**27 seconds on average**).
 2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
@@ -36,7 +33,6 @@ Rustscans **only** job is to reduce the friction between finding open ports and 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
 ## 🔬 Nmap with and without RustScan
-* Gif here comparison
 
 | **Name** | ⚡ Nmap with RustScan  | 🐢 Nmap without RustScan |
 | ----- | -------------- | ---------------------|
