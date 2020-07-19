@@ -34,12 +34,30 @@ Rustscans **only** job is to reduce the friction between finding open ports and 
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
 ## 🔬 Nmap with and without RustScan
 
-| **Name** | ⚡ Nmap with RustScan  | 🐢 Nmap without RustScan |
-| ----- | -------------- | ---------------------|
-| **Gifs** | ![The guy she tells you not to worry about](pictures/with_rustscan.gif) | ![you](pictures/without_rustscan.gif) | 
-| **Setup** | 1000 threads, using scanme.nmap.org. The nmap command ran was `nmap -A -p {ports} {IP}`. | `nmap -A -p- {IP}`|
-| **Time** | **39 seconds**. 26 seconds for RustScan to scan **all ports**, and 13 seconds for nmap to scan the found ports.  | **17 minutes and 41 seconds** Estimated by Nmap.
+<table>
+  <tr>
+  <th>Name</th>
+    <th>⚡ Nmap with RustScan ⚡ </th>
+    <th>🐢 Nmap 🐢</th>
+  </tr>
+  <tr>
+  <th>Gif</th>
+    <td><img src="pictures/with_rustscan.gif" alt="The guy she tells you not to worry about"></td>
+    <td><img src="pictures/without_rustscan.gif" alt="You"></td>
+  </tr>
+  <tr>
+  <th>Time</th>
+    <td>39 seconds</td>
+    <td>17 minutes and 41 seconds</td>
+  </tr>
+    <tr>
+  <th>Setup</th>
+    <td><ul><li>Set threads to 1000</li></ul></td>
+    <td><ul><li>Run nmap with -A for all scripts</li><li>Run Nmap with -p- for all ports</li></ul></td>
+  </tr>
+</table>
 
+<sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
 
 ## 📊 RustScan vs Nmap vs MassScan
 
