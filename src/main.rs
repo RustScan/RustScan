@@ -11,6 +11,7 @@ use std::{
 use async_std::prelude::*;
 use futures::stream::FuturesUnordered;
 use futures::executor::block_on;
+use std::process;
 /// Faster Nmap scanning with Rust
 fn main() {
     // NMAP top 1k ports
@@ -72,9 +73,10 @@ fn main() {
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    let test = run_batched("45.33.32.156".to_string(), 1, 100, Duration::from_millis(1000), 100);
+    let test = run_batched("192.168.0.1".to_string(), 1, 65535, Duration::from_millis(1500),  8500);
     let reports_fullsult = block_on(test);
-    println!("{:?}", ports_full);
+    println!("{:?}", reports_fullsult);
+    panic!("ending");
 
     // prints ports and places them into nmap string
     let mut nmap_str_ports = Vec::new();
@@ -88,6 +90,11 @@ fn main() {
     }
 
     // if no ports are found, suggest running with less threads
+    /*
+    22/tcp   open  ssh     syn-ack
+    53/tcp   open  domain  syn-ack
+    80/tcp   open  http    syn-ack
+    1900/tcp open  upnp    syn-ack*/
     if nmap_str_ports.is_empty() {
         panic!("{} Looks like I didn't find any open ports. This is usually caused by too many threads. \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), threads_str, (threads / 2).to_string().green(), "'rustscan -t <thread_nums> <ip address>'".green());
     }
@@ -169,6 +176,7 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<S
                 match stream_result.shutdown(Shutdown::Both) {
                     _ => {}
                 }
+                println!("Sock is open {}", sock_addr);
                 Ok(sock_addr)
             }
             Err(e) => match e.kind() {
