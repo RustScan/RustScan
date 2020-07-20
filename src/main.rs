@@ -1,14 +1,16 @@
+use async_std::io;
+use async_std::net::TcpStream;
 use clap::{App, Arg};
 use colored::*;
-use rayon::prelude::*;
 use std::process::Command;
 use std::time::Duration;
 use std::{
-    net::{IpAddr, SocketAddr},
-    str::FromStr,
+    net::{IpAddr, SocketAddr, Shutdown},
+    str::FromStr, io::ErrorKind,
 };
-use async_std::net::TcpStream;
 use async_std::prelude::*;
+use futures::stream::FuturesUnordered;
+use futures::executor::block_on;
 /// Faster Nmap scanning with Rust
 fn main() {
     // NMAP top 1k ports
@@ -74,10 +76,8 @@ fn main() {
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    (1..65536)
-        .into_par_iter()
-        .map(|x: i32| scan(addr, x, duration_timeout))
-        .collect_into_vec(&mut ports_full);
+    let test = run_batched("127.0.0.1".to_string(), 1, 65535, Duration::from_millis(1), 9000);
+    block_on(test);
 
     // prints ports and places them into nmap string
     let mut nmap_str_ports = Vec::new();
@@ -116,24 +116,85 @@ fn main() {
         .spawn()
         .expect("failed to execute process");
 }
-
-
-async fn scan(addr: IpAddr, port: i32, duration_timeout: Duration) -> bool {
+/*
     let string_list = vec![addr.to_string(), port.to_string()].join(":");
     let server: SocketAddr = string_list.parse().expect("Unable to parse socket address");
 
-    match TcpStream::connect(&server).await?{
-        Ok(_) => {
-            // Found open port, indicate progress
-            println!("{} open", port.to_string().green());
+    */
 
-            true
+pub async fn run_batched(
+    host: String,
+    port_start: u32,
+    port_end: u32,
+    timeout: Duration,
+    batch: u32,
+) -> Vec<SocketAddr> {
+    // run the scans in batches
+    let mut begin = port_start;
+    let mut end = begin + batch;
+    let mut all_addrs = Vec::new();
+
+    while end <= port_end {
+        let mut batch_addrs = execute(host.clone(), begin, end, timeout).await;
+        all_addrs.append(&mut batch_addrs);
+        begin = end+1;
+        end += batch;
+    }
+    all_addrs
+}
+async fn execute(
+    host: String,
+    port_start: u32,
+    port_end: u32,
+    timeout: Duration,
+) -> Vec<SocketAddr> {
+    // runs a scan against a range of ports
+    let mut ftrs = FuturesUnordered::new();
+    for port in port_start..port_end {
+        ftrs.push(try_connect(host.clone(), port, timeout));
+    }
+
+    let mut open_addrs: Vec<SocketAddr> = Vec::new();
+    while let Some(result) = ftrs.next().await {
+        match result {
+            Ok(addr) => open_addrs.push(addr),
+            Err(_) => {}
         }
-        Err(_) => {
-            false
+    }
+    open_addrs
+}
+
+async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<SocketAddr> {
+    let addr = host.to_string() + ":" + &port.to_string();
+    match addr.parse() {
+        Ok(sock_addr) => match connect(sock_addr, timeout).await {
+            Ok(stream_result) => {
+                match stream_result.shutdown(Shutdown::Both) {
+                    _ => {}
+                }
+                Ok(sock_addr)
+            }
+            Err(e) => match e.kind() {
+                ErrorKind::Other => {
+                    eprintln!("{:?}", e); // in case we get too many open files
+                    Err(e)
+                }
+                _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
+            },
+        },
+        Err(e) => {
+            eprintln!("Unable to convert to socket address {:?}", e);
+            Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
         }
     }
 }
+
+
+async fn connect(addr: SocketAddr, timeout: Duration) -> io::Result<TcpStream> {
+    let stream = io::timeout(timeout, async move { TcpStream::connect(addr).await }).await?;
+    Ok(stream)
+}
+
 fn print_opening() {
     let s = "
      _____           _    _____                 
