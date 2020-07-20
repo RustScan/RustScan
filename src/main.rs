@@ -65,10 +65,6 @@ fn main() {
     let addr = IpAddr::from_str(&ip).expect("IPADDR must be a valid IPv4 or IPv6 address");
 
     // increases thread pool
-    rayon::ThreadPoolBuilder::new()
-        .num_threads(threads)
-        .build_global()
-        .unwrap();
 
     // collect_into_vec is faster than into_vec
     let mut ports_full: Vec<bool> = vec![false; 65536];
@@ -76,8 +72,9 @@ fn main() {
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    let test = run_batched("127.0.0.1".to_string(), 1, 65535, Duration::from_millis(1), 9000);
-    block_on(test);
+    let test = run_batched("45.33.32.156".to_string(), 1, 100, Duration::from_millis(1000), 100);
+    let reports_fullsult = block_on(test);
+    println!("{:?}", ports_full);
 
     // prints ports and places them into nmap string
     let mut nmap_str_ports = Vec::new();
