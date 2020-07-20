@@ -38,7 +38,7 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 <table>
   <tr>
   <th>Name</th>
-    <th>⚡ Nmap with RustScan ⚡ </th>
+    <th>⚡ Nmap <b>with RustScan</b> ⚡ </th>
     <th>🐢 Nmap 🐢</th>
   </tr>
   <tr>
@@ -48,8 +48,8 @@ Why spend time running fast scans and manually copying the ports, or waiting for
   </tr>
   <tr>
   <th>Time</th>
-    <td>39 seconds</td>
-    <td>17 minutes and 41 seconds</td>
+    <td><b>39 seconds</b></td>
+    <td><b>17 minutes and 41 seconds</b></td>
   </tr>
     <tr>
   <th>Setup</th>
