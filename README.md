@@ -47,7 +47,9 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 
 <sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
 
-Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
+**RustScan takes the Nmap scan down to 39 seconds from 17 minutes and 41 seconds.**
+
+RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
 * Scans all 64k ports in 26 seconds (on 1k threads).
@@ -118,7 +120,7 @@ brew install rustscan
 rustscan -h
 ```
 
-The format is `rustcan -t 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 threads with a timeout of 1500ms. The timeout is how long Rustscan waits for a response until it assumes the port is closed.
+The format is `rustcan -t 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 threads with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
 
 # 🎪 Contributing
 Please read the [contributing.md file](contributing.md)
