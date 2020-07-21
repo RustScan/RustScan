@@ -113,6 +113,8 @@ fn main() {
     // Runs the nmap command and spawns it as a process.
     Command::new("nmap")
         .arg("-A")
+        .arg("-Pn")
+        .arg("-sV")
         .arg("-p")
         .arg(ports_str)
         .arg("-vvv")
