@@ -22,19 +22,6 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
 3. Profit???
 
-![gif](/pictures/intro.gif)
-
-Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
-
-# ✨ Features
-* Scans all 64k ports in 26 seconds (on 1k threads).
-* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
-* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
-
-# 🔭 Why RustScan?
-Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
-## 🔬 Nmap with and without RustScan
-
 <table>
   <tr>
   <th>Name</th>
@@ -59,6 +46,18 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 </table>
 
 <sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
+
+Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
+
+# ✨ Features
+* Scans all 64k ports in 26 seconds (on 1k threads).
+* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
+* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
+
+# 🔭 Why RustScan?
+Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
+
+![gif](/pictures/intro.gif)
 
 ## 📊 RustScan vs Nmap vs MassScan
 
