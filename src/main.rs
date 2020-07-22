@@ -2,7 +2,7 @@ use async_std::io;
 use async_std::net::TcpStream;
 use clap::{App, Arg, AppSettings};
 use colored::*;
-use std::process::Command;
+use std::process::{exit, Command};
 use std::time::Duration;
 use std::{
     net::{SocketAddr, Shutdown},
@@ -176,7 +176,7 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<u
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
                     eprintln!("{:?}", e); // in case we get too many open files
-                    panic!("Too many open files. Please reduce batch size.");
+                    panic!("Too many open files. Please reduce batch size. The default is 5000. Try -B 2500.");
                     Err(e)
                 }
                 _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
