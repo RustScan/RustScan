@@ -1,10 +1,12 @@
 <p align="center">
 <img src="pictures/rustscan.png"><br>
-Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. Built with Rust. 
+<u><b> Turns a 17 minutes Nmap scan into 39 seconds. </b></u><br> Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. 
 </p>
 <p align="center">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
 <img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
+<img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/brandonskerritt/rustscan">
 </p>
 <hr>
 
@@ -22,23 +24,10 @@ Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap
 2. Automatically runs `nmap -A -p $ports -vvv` on those ports.
 3. Profit???
 
-![gif](/pictures/intro.gif)
-
-Rustscans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
-
-# ✨ Features
-* Scans all 64k ports in 26 seconds (on 1k threads).
-* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
-* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
-
-# 🔭 Why RustScan?
-Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
-## 🔬 Nmap with and without RustScan
-
 <table>
   <tr>
   <th>Name</th>
-    <th>⚡ Nmap with RustScan ⚡ </th>
+    <th>⚡ Nmap <b>with RustScan</b> ⚡ </th>
     <th>🐢 Nmap 🐢</th>
   </tr>
   <tr>
@@ -48,8 +37,8 @@ Why spend time running fast scans and manually copying the ports, or waiting for
   </tr>
   <tr>
   <th>Time</th>
-    <td>39 seconds</td>
-    <td>17 minutes and 41 seconds</td>
+    <td><b>39 seconds</b></td>
+    <td><b>17 minutes and 41 seconds</b></td>
   </tr>
     <tr>
   <th>Setup</th>
@@ -59,6 +48,20 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 </table>
 
 <sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
+
+**RustScan takes the Nmap scan down to 39 seconds from 17 minutes and 41 seconds.**
+
+RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
+
+# ✨ Features
+* Scans all 64k ports in 26 seconds (on 1k threads).
+* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
+* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
+
+# 🔭 Why RustScan?
+Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
+
+![gif](/pictures/intro.gif)
 
 ## 📊 RustScan vs Nmap vs MassScan
 
@@ -119,7 +122,7 @@ brew install rustscan
 rustscan -h
 ```
 
-The format is `rustcan -t 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 threads with a timeout of 1500ms. The timeout is how long Rustscan waits for a response until it assumes the port is closed.
+The format is `rustcan -t 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 threads with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
 
 # 🎪 Contributing
 Please read the [contributing.md file](contributing.md)
