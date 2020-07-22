@@ -14,6 +14,7 @@
 | <p align="center"><a href="https://crates.io/crates/rust_scan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> HomeBrew </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Kali / Debian </p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
+| Version 1.0.1 | Version 1.0.0 | Version 1.0.0 | Version 1.0.0 |
 | `cargo install rust_scan` | `yay rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
 
 **Note**: You must have Nmap installed.
@@ -49,13 +50,13 @@
 RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
-* Scans all 64k ports in **8 seconds** (on 10k batch size).
+* Scans all 65k ports in **8 seconds** (on 10k batch size).
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 * Let's you choose what Nmap commands to run, or uses the default.
 
 # 🔭 Why RustScan?
-Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 64k ports in less than a minute?
+Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
 ![gif](pictures/8seconds.gif)
 
@@ -125,12 +126,22 @@ The format is `rustcan -b 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 
 The batch size determines how fast RustScan is. Set it to 65k, and it will scan all 65k ports at the same time. This means at at 65k batch size, RustScan will take TIMEOUT long to scan all ports. Essentially, if timeout is 1000ms, **RustScan can scan in 1 second**. 
 
 Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly I will be releasing a dockerised version with a much larger open file limit, so this will be possible.
-
+## 🔌 Nmap
 To run your own nmap commands, end the RustScan command with `-- -A` where `--` indicates "end of RustScan flags, please do not parse anything further" and any flags after that will be entered into nmap.
 
 RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, execute the command `rustscan 127.0.0.1 -- -A`. 
 
 **Note**: due to how Nmap behaves, sometimes you cannot SIGINT ctrl+c to end the scan and it acts like it is running in the background, but printing to STD::OUT. There is nothing I can do about this, unless I create a TTY shell for the sole purpose of running Nmap. Sorry 😓 I'll try to fix in an upcoming release. If any Rust experts want to help, please do!
+
+## 🎯 Increasing speed / accuracy
+* Batch size
+This increases speed, by allowing us to process more at once. Something experimental I am working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-B 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
+
+For non-experimental speed increases, slowly increase the batch size until it no longer gets open ports, or it breaks.
+* Accuracy (and some speed)
+To increase accuracy, the easiest way is to increase the timeout. The default is 1.5 seconds, by setting it to 4 seconds (4000) we are telling RustScan "if we do not hear back from a port in 4 seconds, assume it is closed".
+
+Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
 # 🎪 Contributing
 Please read the [contributing.md file](contributing.md)

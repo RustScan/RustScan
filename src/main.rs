@@ -32,7 +32,7 @@ fn main() {
             .short("b")
             .long("batch")
             .takes_value(true)
-            .default_value("5500")
+            .default_value("4500")
             .help("Increases speed of scanning. The batch size for port scanning. Depends on your open file limit of OS. If you do 65535 it will do every port at the same time. Although, your OS may not support this."))
         .arg(Arg::with_name("T")
             .short("T")
