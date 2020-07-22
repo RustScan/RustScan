@@ -43,9 +43,7 @@
   </tr>
 </table>
 
-<sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
-
-**RustScan takes the Nmap scan down to 39 seconds from 17 minutes and 41 seconds.**
+<sub><b>Note</b> This is an older gif. RustScan's current top speed is 8 seconds for all 65k ports. This gif is 26 seconds.</sub><br>
 
 RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
