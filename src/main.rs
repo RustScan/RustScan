@@ -5,13 +5,12 @@ use colored::*;
 use std::process::Command;
 use std::time::Duration;
 use std::{
-    net::{IpAddr, SocketAddr, Shutdown},
-    str::FromStr, io::ErrorKind,
+    net::{SocketAddr, Shutdown},
+    io::ErrorKind,
 };
 use async_std::prelude::*;
 use futures::stream::FuturesUnordered;
 use futures::executor::block_on;
-use std::process;
 /// Faster Nmap scanning with Rust
 fn main() {
     // NMAP top 1k ports
@@ -27,18 +26,24 @@ fn main() {
             .index(1)
             .long("ip-address")
             .help("The IP address to scan"))
-        .arg(Arg::with_name("t")
-            .short("t")
-            .long("threads")
+        .arg(Arg::with_name("b")
+            .short("b")
+            .long("batch")
             .takes_value(true)
-            .default_value("250")
-            .help("How many threads do you want to use? Default 1000"))
+            .default_value("5500")
+            .help("Increases speed of scanning. The batch size for port scanning. Depends on your open file limit of OS. If you do 65535 it will do every port at the same time. Although, your OS may not support this."))
         .arg(Arg::with_name("T")
             .short("T")
             .long("timeout")
             .takes_value(true)
             .default_value("1500")
-            .help("The timeout before a port is assumed to be close. Default 250, but can go up to 1000."))
+            .help("The timeout before a port is assumed to be close. In MS."))
+        .arg(Arg::with_name("n")
+            .short("n")
+            .long("nmap")
+            .help("The Nmap command you want to run. Starts the command with 'nmap', ends it with '-p $PORTS $IP'")
+            .takes_value(true)
+            .default_value("-A -Pn -sV -vvv"))
         /*.arg(Arg::with_name("n")
             .short("n")
             .long("nmap-1000")
@@ -49,10 +54,14 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("i").unwrap_or("None");
-    let threads_str: &str = matches.value_of("t").unwrap_or("None");
-    // let nmap_arg = matches.value_of("n").unwrap_or("None");
-    let threads: usize = threads_str.parse::<usize>().unwrap();
-    // gets timeout 
+    let batch_size: u32 = matches
+                        .value_of("b")
+                        .unwrap_or("None")
+                        .parse::<u32>()
+                        .unwrap();
+                            
+    // let nmap_arg = matches.value_of("n").unwrap_or("None");s
+    // gets timeout
     let duration_timeout =
         matches
             .value_of("T")
@@ -71,8 +80,7 @@ fn main() {
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    let test = run_batched(ip.to_string(), 1, 
-    65535, Duration::from_millis(duration_timeout),  8000);
+    let test = run_batched(ip.to_string(), 1, 65535, Duration::from_millis(duration_timeout),  batch_size);
     let reports_fullsult = block_on(test);
     println!("{:?}", reports_fullsult);
 
@@ -93,15 +101,15 @@ fn main() {
     80/tcp   open  http    syn-ack
     1900/tcp open  upnp    syn-ack*/
     if nmap_str_ports.is_empty() {
-        panic!("{} Looks like I didn't find any open ports. This is usually caused by too many threads. \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), threads_str, (threads / 2).to_string().green(), "'rustscan -t <thread_nums> <ip address>'".green());
+        panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
+        \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. 
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), batch_size, (batch_size / 2).to_string().green(), "'rustscan -b <batch_size> <ip address>'".green());
     }
 
     // Tells the user we are now switching to Nmap
     println!(
-        "{} -A -p {:?} -vvv {}",
+        "{}",
         "Starting nmap".blue(),
-        nmap_str_ports,
-        ip
     );
 
     // nmap port style is 80,443. Comma seperated with no spaces.

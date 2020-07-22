@@ -1,6 +1,6 @@
 <p align="center">
 <img src="pictures/rustscan.png"><br>
-<u><b> Turns a 17 minutes Nmap scan into 39 seconds. </b></u><br> Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. 
+<u><b> Turns a 17 minutes Nmap scan into 24 seconds. </b></u><br> Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. 
 </p>
 <p align="center">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
