@@ -40,11 +40,6 @@
     <td><b>39 seconds</b></td>
     <td><b>17 minutes and 41 seconds</b></td>
   </tr>
-    <tr>
-  <th>Setup</th>
-    <td><ul><li>Set threads to 1000</li></ul></td>
-    <td><ul><li>Run nmap with -A for all scripts</li><li>Run Nmap with -p- for all ports</li></ul></td>
-  </tr>
 </table>
 
 <sub><b>Note</b> The nmap command used was the same for both of them. Nmap -A.</sub><br>
