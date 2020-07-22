@@ -1,0 +1,167 @@
+# The configurations that used for the recording, feel free to edit them
+config:
+
+  # Specify a command to be executed
+  # like `/bin/bash -l`, `ls`, or any other commands
+  # the default is bash for Linux
+  # or powershell.exe for Windows
+  command: zsh 
+  
+  # Specify the current working directory path
+  # the default is the current working directory path
+  cwd: /home/bee/Documents/RustScan
+  
+  # Export additional ENV variables
+  env:
+    recording: true
+  
+  # Explicitly set the number of columns
+  # or use `auto` to take the current
+  # number of columns of your shell
+  cols: 108
+  
+  # Explicitly set the number of rows
+  # or use `auto` to take the current
+  # number of rows of your shell
+  rows: 45
+  
+  # Amount of times to repeat GIF
+  # If value is -1, play once
+  # If value is 0, loop indefinitely
+  # If value is a positive number, loop n times
+  repeat: 0
+  
+  # Quality
+  # 1 - 100
+  quality: 100
+  
+  # Delay between frames in ms
+  # If the value is `auto` use the actual recording delays
+  frameDelay: auto
+  
+  # Maximum delay between frames in ms
+  # Ignored if the `frameDelay` isn't set to `auto`
+  # Set to `auto` to prevent limiting the max idle time
+  maxIdleTime: auto
+  
+  # The surrounding frame box
+  # The `type` can be null, window, floating, or solid`
+  # To hide the title use the value null
+  # Don't forget to add a backgroundColor style with a null as type
+  frameBox:
+    type: floating
+    title: Terminalizer
+    style:
+      border: 0px black solid
+      # boxShadow: none
+      # margin: 0px
+  
+  # Add a watermark image to the rendered gif
+  # You need to specify an absolute path for
+  # the image on your machine or a URL, and you can also
+  # add your own CSS styles
+  watermark:
+    imagePath: null
+    style:
+      position: absolute
+      right: 15px
+      bottom: 15px
+      width: 100px
+      opacity: 0.9
+  
+  # Cursor style can be one of
+  # `block`, `underline`, or `bar`
+  cursorStyle: block
+  
+  # Font family
+  # You can use any font that is installed on your machine
+  # in CSS-like syntax
+  fontFamily: "Monaco, Lucida Console, Ubuntu Mono, Monospace"
+  
+  # The size of the font
+  fontSize: 12
+  
+  # The height of lines
+  lineHeight: 1
+  
+  # The spacing between letters
+  letterSpacing: 0
+  
+  # Theme
+  theme:
+    background: "transparent"
+    foreground: "#afafaf"
+    cursor: "#c7c7c7"
+    black: "#232628"
+    red: "#fc4384"
+    green: "#b3e33b"
+    yellow: "#ffa727"
+    blue: "#75dff2"
+    magenta: "#ae89fe"
+    cyan: "#708387"
+    white: "#d5d5d0"
+    brightBlack: "#626566"
+    brightRed: "#ff7fac"
+    brightGreen: "#c8ed71"
+    brightYellow: "#ebdf86"
+    brightBlue: "#75dff2"
+    brightMagenta: "#ae89fe"
+    brightCyan: "#b1c6ca"
+    brightWhite: "#f9f9f4"
+  
+# Records, feel free to edit them
+records:
+  - delay: 895
+    content: "No protocol specified\r\nCan't open display :0\r\n"
+  - delay: 253
+    content: "\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                           \r \r\e]2;bee@beehive: ~/Documents/RustScan\a\e]1;..ents/RustScan\a"
+  - delay: 29
+    content: c
+  - delay: 131
+    content: a
+  - delay: 29
+    content: "\r\e[0m\e[27m\e[24m\e[J\r\n\e[1m\e[0m\e[1m\e[36mRustScan\e[0m\e[36m\e[39m\e[1m \e[0m\e[1mon \e[0m\e[1m\e[37m\e[1m\e[37m\e[0m\e[37m\e[1m\e[37m\e[35m asyncMaster\e[0m\e[35m\e[39m\e[1m\e[0m\e[1m\e[0m\e[1m\e[31m [$!]\e[0m\e[31m\e[39m\e[1m\e[0m\e[0m\e[39m\e[1m \e[0m\e[1mis \e[0m\e[1m\e[31m\U0001F4E6 vrustscan:1.0.1\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mvia \e[0m\e[1m\e[31m\U0001D5E5 v1.45.0\e[0m\e[31m\e[39m\e[1m \e[0m\r\n\e[1m\e[0m\e[1m\e[32m➜ \e[0m\e[32m\e[39m\e[1m\e[0m\e[K\e[?1h\e[?2004hc"
+  - delay: 5
+    content: "\b\e[1m\e[31mc\e[1m\e[31ma\e[0m\e[39m\e[90mrgo build --release && ./target/release/rustscan 127.0.0.1\e[39m\e[58D"
+  - delay: 719
+    content: "\b\b\e[1m\e[31mc\e[1m\e[31ma\e[1m\e[31mr\e[0m\e[39m"
+  - delay: 697
+    content: "\b\b\b\e[1m\e[31mc\e[1m\e[31ma\e[0m\e[39m\e[0m\e[90mr\b"
+  - delay: 172
+    content: "\b\b\e[0m\e[32mc\e[39m\e[0m\e[90md\e[90m \e[90mR\e[90mu\e[90ms\e[90mt\e[90mS\e[90mc\e[90ma\e[90mn\e[39m\e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[59D"
+  - delay: 174
+    content: "\b\e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[39m \e[11D"
+  - delay: 2955
+    content: "\e[32mc\e[39m\e[90md RustScan\e[39m\e[10D"
+  - delay: 111
+    content: "\b\e[1m\e[31mc\e[1m\e[31ma\e[0m\e[39m\e[90mr\e[90mg\e[90mo\e[90m \e[90mb\e[90mu\e[90mi\e[90ml\e[90md\e[90m --release && ./target/release/rustscan 127.0.0.1\e[39m\e[58D"
+  - delay: 99
+    content: "\b\b\e[1m\e[31mc\e[1m\e[31ma\e[1m\e[31mr\e[0m\e[39m"
+  - delay: 192
+    content: "\b\b\b\e[0m\e[32mc\e[0m\e[32ma\e[0m\e[32mr\e[32mg\e[32mo\e[39m\e[39m \e[39mb\e[39mu\e[39mi\e[39ml\e[39md\e[39m \e[39m-\e[39m-\e[39mr\e[39me\e[39ml\e[39me\e[39ma\e[39ms\e[39me\e[39m \e[39m&\e[39m&\e[39m \e[32m.\e[32m/\e[32mt\e[32ma\e[32mr\e[32mg\e[32me\e[32mt\e[32m/\e[32mr\e[32me\e[32ml\e[32me\e[32ma\e[32ms\e[32me\e[32m/\e[32mr\e[32mu\e[32ms\e[32mt\e[32ms\e[32mc\e[32ma\e[32mn\e[39m\e[39m \e[39m1\e[39m2\e[39m7\e[39m.\e[39m0\e[39m.\e[39m0\e[39m.\e[39m1"
+  - delay: 217
+    content: "\e[?1l\e[?2004l\r\r\n\e]2;cargo build --release && ./target/release/rustscan 127.0.0.1\a\e]1;cargo\a"
+  - delay: 38
+    content: "\e[0m\e[0m\e[1m\e[36m    Building\e[0m [                                                          ] 0/92: autocfg                   \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [==========================================>              ] 70/92: crossbeam-utils(build.r...\r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [==========================================>              ] 71/92: crossbeam-utils(build.r...\r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [============================================>            ] 73/92: crossbeam-utils(build),...\r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [=============================================>           ] 75/92: crossbeam-utils, quote    \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [==============================================>          ] 76/92: crossbeam-epoch, crossb...\r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [===============================================>         ] 78/92: crossbeam-deque, quote    \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [=================================================>       ] 81/92: rayon, syn                \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [===================================================>     ] 85/92: pin-project               \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [====================================================>    ] 86/92: futures-util              \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [=====================================================>   ] 88/92: async-std, futures-exec...\r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [======================================================>  ] 89/92: futures-executor          \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [======================================================>  ] 90/92: futures                   \r\e[0m\e[0m\e[1m\e[36m    Building\e[0m [=======================================================> ] 91/92: rustscan(bin)             \r\e[K\e[0m\e[1m\e[33mwarning\e[0m\e[0m\e[1m: unreachable expression\e[0m\r\n\e[0m   \e[0m\e[0m\e[1m\e[38;5;12m--> \e[0m\e[0msrc/main.rs:193:13\e[0m\r\n\e[0m    \e[0m\e[0m\e[1m\e[38;5;12m|\e[0m\r\n\e[0m\e[1m\e[38;5;12m192\e[0m\e[0m \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m            panic!(\"Unable to convert to socket address\");\e[0m\r\n\e[0m    \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m            \e[0m\e[0m\e[1m\e[38;5;12m----------------------------------------------\e[0m\e[0m \e[0m\e[0m\e[1m\e[38;5;12many code following this expression is unreachable\e[0m\r\n\e[0m\e[1m\e[38;5;12m193\e[0m\e[0m \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m            Err(io::Error::new(io::ErrorKind::Other, e.to_string()))\e[0m\r\n\e[0m    \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m            \e[0m\e[0m\e[1m\e[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\e[0m\e[0m \e[0m\e[0m\e[1m\e[33munreachable expression\e[0m\r\n\e[0m    \e[0m\e[0m\e[1m\e[38;5;12m|\e[0m\r\n\e[0m    \e[0m\e[0m\e[1m\e[38;5;12m= \e[0m\e[0m\e[1mnote\e[0m\e[0m: `#[warn(unreachable_code)]` on by default\e[0m\r\n\r\n\e[0m\e[1m\e[33mwarning\e[0m\e[0m\e[1m: unused variable: `x`\e[0m\r\n\e[0m  \e[0m\e[0m\e[1m\e[38;5;12m--> \e[0m\e[0msrc/main.rs:57:14\e[0m\r\n\e[0m   \e[0m\e[0m\e[1m\e[38;5;12m|\e[0m\r\n\e[0m\e[1m\e[38;5;12m57\e[0m\e[0m \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m        Some(x) => {\e[0m\r\n\e[0m   \e[0m\e[0m\e[1m\e[38;5;12m| \e[0m\e[0m             \e[0m\e[0m\e[1m\e[33m^\e[0m\e[0m \e[0m\e[0m\e[1m\e[33mhelp: if this is intentional, prefix it with an underscore: `_x`\e[0m\r\n\e[0m   \e[0m\e[0m\e[1m\e[38;5;12m|\e[0m\r\n\e[0m   \e[0m\e[0m\e[1m\e[38;5;12m= \e[0m\e[0m\e[1mnote\e[0m\e[0m: `#[warn(unused_variables)]` on by default\e[0m\r\n\r\n\e[0m\e[1m\e[33mwarning\e[0m\e[0m\e[1m: 2 warnings emitted\e[0m\r\n\r\n\e[0m\e[0m\e[1m\e[32m    Finished\e[0m release [optimized] target(s) in 0.03s\r\n\e[32m\r\n     _____           _    _____                 \r\n    |  __ \\         | |  / ____|                \r\n    | |__) |   _ ___| |_| (___   ___ __ _ _ __  \r\n    |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\ \r\n    | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |\r\n    |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|\r\n    Faster nmap scanning with rust.\e[0m \r\n \e[31mAutomated Decryption Tool - https://github.com/ciphey/ciphey\e[0m \r\n \e[32mCreator https://github.com/brandonskerritt\e[0m\r\n"
+  - delay: 309
+    content: "Open \e[35m53\e[0m\r\nOpen \e[35m631\e[0m\r\n"
+  - delay: 1132
+    content: "Open \e[35m46624\e[0m\r\n"
+  - delay: 136
+    content: "Open \e[35m51934\e[0m\r\n"
+  - delay: 159
+    content: "\e[34mStarting nmap.\e[0m\r\n\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                           \r \r\e]2;bee@beehive: ~/Documents/RustScan\a\e]1;..ents/RustScan\aStarting Nmap 7.80 ( https://nmap.org ) at 2020-07-22 22:09 BST\r\n"
+  - delay: 156
+    content: "\r\e[0m\e[27m\e[24m\e[J\r\n\e[1m\e[0m\e[1m\e[36mRustScan\e[0m\e[36m\e[39m\e[1m \e[0m\e[1mon \e[0m\e[1m\e[37m\e[1m\e[37m\e[0m\e[37m\e[1m\e[37m\e[35m asyncMaster\e[0m\e[35m\e[39m\e[1m\e[0m\e[1m\e[0m\e[1m\e[31m [$!]\e[0m\e[31m\e[39m\e[1m\e[0m\e[0m\e[39m\e[1m \e[0m\e[1mis \e[0m\e[1m\e[31m\U0001F4E6 vrustscan:1.0.1\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mvia \e[0m\e[1m\e[31m\U0001D5E5 v1.45.0\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mtook \e[0m\e[1m\e[33m2s\e[0m\e[33m\e[39m\e[1m \e[0m\r\n\e[1m\e[0m\e[1m\e[32m➜ \e[0m\e[32m\e[39m\e[1m\e[0m\e[K\e[?1h\e[?2004h"
+  - delay: 75
+    content: "NSE: Loaded 151 scripts for scanning.\r\nNSE: Script Pre-scanning.\r\nNSE: Starting runlevel 1 (of 3) scan.\r\nInitiating NSE at 22:09\r\nCompleted NSE at 22:09, 0.00s elapsed\r\nNSE: Starting runlevel 2 (of 3) scan.\r\nInitiating NSE at 22:09\r\nCompleted NSE at 22:09, 0.00s elapsed\r\nNSE: Starting runlevel 3 (of 3) scan.\r\nInitiating NSE at 22:09\r\nCompleted NSE at 22:09, 0.00s elapsed\r\n"
+  - delay: 21
+    content: "Initiating Ping Scan at 22:09\r\nScanning 127.0.0.1 [2 ports]\r\nCompleted Ping Scan at 22:09, 0.00s elapsed (1 total hosts)\r\nInitiating Connect Scan at 22:09\r\nScanning localhost (127.0.0.1) [4 ports]\r\nDiscovered open port 53/tcp on 127.0.0.1\r\nDiscovered open port 631/tcp on 127.0.0.1\r\nDiscovered open port 46624/tcp on 127.0.0.1\r\nCompleted Connect Scan at 22:09, 0.00s elapsed (4 total ports)\r\n"
+  - delay: 55
+    content: "Initiating Service scan at 22:09\r\nScanning 3 services on localhost (127.0.0.1)\r\n"
+  - delay: 42
+    content: "\e[?2004l\r\r\n\e[1m\e[7m%\e[27m\e[1m\e[0m                                                                                                           \r \r\e]2;bee@beehive: ~/Documents/RustScan\a\e]1;..ents/RustScan\a"
+  - delay: 168
+    content: "\r\e[0m\e[27m\e[24m\e[J\r\n\e[1m\e[0m\e[1m\e[36mRustScan\e[0m\e[36m\e[39m\e[1m \e[0m\e[1mon \e[0m\e[1m\e[37m\e[1m\e[37m\e[0m\e[37m\e[1m\e[37m\e[35m asyncMaster\e[0m\e[35m\e[39m\e[1m\e[0m\e[1m\e[0m\e[1m\e[31m [$!]\e[0m\e[31m\e[39m\e[1m\e[0m\e[0m\e[39m\e[1m \e[0m\e[1mis \e[0m\e[1m\e[31m\U0001F4E6 vrustscan:1.0.1\e[0m\e[31m\e[39m\e[1m \e[0m\e[1mvia \e[0m\e[1m\e[31m\U0001D5E5 v1.45.0\e[0m\e[31m\e[39m\e[1m \e[0m\r\n\e[1m\e[0m\e[1m\e[31m➜ \e[0m\e[31m\e[39m\e[1m\e[0m\e[K\e[?1h\e[?2004h"
+  - delay: 403
+    content: "\e[?2004l\r\r\n"
