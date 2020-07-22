@@ -42,7 +42,7 @@ fn main() {
             .help("The timeout before a port is assumed to be close. In MS."))
         .arg(
             Arg::with_name("command")
-                .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'")
+                .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands} -vvv -p $PORTS ")
                 .takes_value(true)
                 .multiple(true),
         )
@@ -51,22 +51,17 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("ip").unwrap_or("None");
-    println!("{}", ip);
-    let mut nmap_str = matches.value_of("n").unwrap_or("None");
     let command_matches= matches.values_of("command");
     let command_run: String = match command_matches {
-        // The division was valid
+        // We use the user supplied args
         Some(x) => {
+            // TODO x is the same as below, use that instead
             matches.values_of("command").unwrap().collect::<Vec<_>>().join(" ")
         }
+        // we default
         None    => "-A -vvv".to_string()
-        // -A -vvv -sC -sV
 
     };
-
-    println!("this is it {:?}", command_run);
-
-
 
     let batch_size: u32 = matches
                         .value_of("b")
@@ -74,7 +69,6 @@ fn main() {
                         .parse::<u32>()
                         .unwrap();
                             
-    // let nmap_arg = matches.value_of("n").unwrap_or("None");s
     // gets timeout
     let duration_timeout =
         matches
@@ -82,19 +76,10 @@ fn main() {
             .unwrap_or("None")
             .parse::<u64>()
             .unwrap();
-    // let ports = if !(nmap_arg == "None") { NMAP_1000.iter() } else {(1..65536)};
 
-    // validates the IP address and turns it into an IpAddr type
-    // let addr = IpAddr::from_str(&ip).expect("IPADDR must be a valid IPv4 or IPv6 address");
 
-    // increases thread pool
-
-    // collect_into_vec is faster than into_vec
-
-    // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
-    // TODO let the user decide max port number
-    let test = run_batched(ip.to_string(), 1, 65535, Duration::from_millis(duration_timeout),  batch_size);
+    let test = run_batched(ip.to_string(), 1, 65536, Duration::from_millis(duration_timeout),  batch_size);
     let reports_fullsult = block_on(test);
 
 
@@ -107,32 +92,24 @@ fn main() {
             nmap_str_ports.push(i.to_string());
     }
 
-    // if no ports are found, suggest running with less threads
-    /*
-    22/tcp   open  ssh     syn-ack
-    53/tcp   open  domain  syn-ack
-    80/tcp   open  http    syn-ack
-    1900/tcp open  upnp    syn-ack*/
+    // if no ports are found, suggest running with less 
     if nmap_str_ports.is_empty() {
         panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
         \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. 
-        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 1500 for 1.5 second timeout.", "ERROR".red(), batch_size, (batch_size / 2).to_string().green(), "'rustscan -b <batch_size> <ip address>'".green());
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(), batch_size, (batch_size / 2).to_string().green(), "'rustscan -b <batch_size> <ip address>'".green());
     }
 
     // Tells the user we are now switching to Nmap
     println!(
         "{}",
-        "Starting nmap".blue(),
+        "Starting nmap.".blue(),
     );
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
-    let string_format = format!("{} {} {} {}", command_run, "-p", &ports_str, ip);
+    let string_format = format!("{} {} {} {} {}", command_run, "-vvv", "-p", &ports_str, ip);
     let command_list = string_format.split_whitespace();
     let vec = command_list.collect::<Vec<&str>>();
-    println!("{:?}", vec);
-    //println!("{}", command);
-    // nmap_command, "-p".to_string(), ports_str, ip.to_string()
 
     // Runs the nmap command and spawns it as a process.
     Command::new("nmap")
@@ -140,11 +117,6 @@ fn main() {
         .spawn()
         .expect("failed to execute process");
 }
-/*
-    let string_list = vec![addr.to_string(), port.to_string()].join(":");
-    let server: SocketAddr = string_list.parse().expect("Unable to parse socket address");
-
-    */
 
 pub async fn run_batched(
     host: String,
@@ -204,6 +176,7 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<u
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
                     eprintln!("{:?}", e); // in case we get too many open files
+                    panic!("Too many open files. Please reduce batch size.");
                     Err(e)
                 }
                 _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
