@@ -54,6 +54,8 @@ fn main() {
     print_opening();
 
     let ip = matches.value_of("i").unwrap_or("None");
+    let nmap_str = matches.value_of("n").unwrap_or("none");
+    println!("{}", nmap_str);
     let batch_size: u32 = matches
                         .value_of("b")
                         .unwrap_or("None")
@@ -82,7 +84,6 @@ fn main() {
     // TODO let the user decide max port number
     let test = run_batched(ip.to_string(), 1, 65535, Duration::from_millis(duration_timeout),  batch_size);
     let reports_fullsult = block_on(test);
-    println!("{:?}", reports_fullsult);
 
 
     // prints ports and places them into nmap string
@@ -116,14 +117,10 @@ fn main() {
     let ports_str = nmap_str_ports.join(",");
 
     // Runs the nmap command and spawns it as a process.
+    let command_str = format!("{} {} {} {}", &nmap_str, "-p", &ports_str, ip);
+    println!("{}", command_str);
     Command::new("nmap")
-        .arg("-A")
-        .arg("-Pn")
-        .arg("-sV")
-        .arg("-p")
-        .arg(ports_str)
-        .arg("-vvv")
-        .arg(ip)
+        .args(&[&command_str])
         .spawn()
         .expect("failed to execute process");
 }
@@ -185,7 +182,7 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<u
                 match stream_result.shutdown(Shutdown::Both) {
                     _ => {}
                 }
-                println!("Open {}", port);
+                println!("Open {}", port.to_string().purple());
                 Ok(port)
             }
             Err(e) => match e.kind() {
