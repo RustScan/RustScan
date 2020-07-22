@@ -20,7 +20,7 @@ fn main() {
     let matches = App::new("RustScan")
         .author("Bee https://github.com/brandonskerritt")
         .about("Fast Port Scanner built in Rust")
-        .version("0.01")
+        .version("1.2.0")
         // IP address is a required argument
         .arg(Arg::with_name("i")
             .required(true)
@@ -37,7 +37,7 @@ fn main() {
             .short("T")
             .long("timeout")
             .takes_value(true)
-            .default_value("250")
+            .default_value("1500")
             .help("The timeout before a port is assumed to be close. Default 250, but can go up to 1000."))
         /*.arg(Arg::with_name("n")
             .short("n")
@@ -52,41 +52,38 @@ fn main() {
     let threads_str: &str = matches.value_of("t").unwrap_or("None");
     // let nmap_arg = matches.value_of("n").unwrap_or("None");
     let threads: usize = threads_str.parse::<usize>().unwrap();
-    // gets timeout duration
-    let duration_timeout = Duration::from_millis(
+    // gets timeout 
+    let duration_timeout =
         matches
             .value_of("T")
             .unwrap_or("None")
             .parse::<u64>()
-            .unwrap(),
-    );
+            .unwrap();
     // let ports = if !(nmap_arg == "None") { NMAP_1000.iter() } else {(1..65536)};
 
     // validates the IP address and turns it into an IpAddr type
-    let addr = IpAddr::from_str(&ip).expect("IPADDR must be a valid IPv4 or IPv6 address");
+    // let addr = IpAddr::from_str(&ip).expect("IPADDR must be a valid IPv4 or IPv6 address");
 
     // increases thread pool
 
     // collect_into_vec is faster than into_vec
-    let mut ports_full: Vec<bool> = vec![false; 65536];
 
     // performs the scan using rayon
     // 65535 + 1 because of 0 indexing
     // TODO let the user decide max port number
-    let test = run_batched("192.168.0.1".to_string(), 1, 65535, Duration::from_millis(1500),  8500);
+    let test = run_batched(ip.to_string(), 1, 
+    65535, Duration::from_millis(duration_timeout),  8000);
     let reports_fullsult = block_on(test);
     println!("{:?}", reports_fullsult);
-    panic!("ending");
+
 
     // prints ports and places them into nmap string
-    let mut nmap_str_ports = Vec::new();
+    let mut nmap_str_ports: Vec<String> = Vec::new();
 
     // makes vector of open ports
-    for (i, item) in ports_full.iter().enumerate() {
-        if item == &true {
+    for i in reports_fullsult.iter() {
             // appends it to port
-            nmap_str_ports.push((i + 1).to_string());
-        }
+            nmap_str_ports.push(i.to_string());
     }
 
     // if no ports are found, suggest running with less threads
@@ -134,11 +131,11 @@ pub async fn run_batched(
     port_end: u32,
     timeout: Duration,
     batch: u32,
-) -> Vec<SocketAddr> {
+) -> Vec<u32> {
     // run the scans in batches
     let mut begin = port_start;
     let mut end = begin + batch;
-    let mut all_addrs = Vec::new();
+    let mut all_addrs: std::vec::Vec<u32> = Vec::new();
 
     while end <= port_end {
         let mut batch_addrs = execute(host.clone(), begin, end, timeout).await;
@@ -153,14 +150,16 @@ async fn execute(
     port_start: u32,
     port_end: u32,
     timeout: Duration,
-) -> Vec<SocketAddr> {
+) -> Vec<u32> {
     // runs a scan against a range of ports
     let mut ftrs = FuturesUnordered::new();
+    // TODO can I make this async?
     for port in port_start..port_end {
         ftrs.push(try_connect(host.clone(), port, timeout));
     }
 
-    let mut open_addrs: Vec<SocketAddr> = Vec::new();
+    let mut open_addrs: Vec<u32> = Vec::new();
+    // TODO can I make this async?
     while let Some(result) = ftrs.next().await {
         match result {
             Ok(addr) => open_addrs.push(addr),
@@ -170,7 +169,7 @@ async fn execute(
     open_addrs
 }
 
-async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<SocketAddr> {
+async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<u32> {
     let addr = host.to_string() + ":" + &port.to_string();
     match addr.parse() {
         Ok(sock_addr) => match connect(sock_addr, timeout).await {
@@ -178,8 +177,8 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<S
                 match stream_result.shutdown(Shutdown::Both) {
                     _ => {}
                 }
-                println!("Sock is open {}", sock_addr);
-                Ok(sock_addr)
+                println!("Open {}", port);
+                Ok(port)
             }
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
