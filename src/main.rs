@@ -1,6 +1,6 @@
 use async_std::io;
 use async_std::net::TcpStream;
-use clap::{App, Arg};
+use clap::{App, Arg, AppSettings};
 use colored::*;
 use std::process::Command;
 use std::time::Duration;
@@ -20,8 +20,10 @@ fn main() {
         .author("Bee https://github.com/brandonskerritt")
         .about("Fast Port Scanner built in Rust")
         .version("1.2.0")
+        .setting(AppSettings::TrailingVarArg)
+        
         // IP address is a required argument
-        .arg(Arg::with_name("i")
+        .arg(Arg::with_name("ip")
             .required(true)
             .index(1)
             .long("ip-address")
@@ -38,24 +40,34 @@ fn main() {
             .takes_value(true)
             .default_value("1500")
             .help("The timeout before a port is assumed to be close. In MS."))
-        .arg(Arg::with_name("n")
-            .short("n")
-            .long("nmap")
-            .help("The Nmap command you want to run. Starts the command with 'nmap', ends it with '-p $PORTS $IP'")
-            .takes_value(true)
-            .default_value("-A -Pn -sV -vvv"))
-        /*.arg(Arg::with_name("n")
-            .short("n")
-            .long("nmap-1000")
-            .takes_value(true)
-            .help("Use the nmap top 1k ports"))*/
+        .arg(
+            Arg::with_name("command")
+                .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'")
+                .takes_value(true)
+                .multiple(true),
+        )
         .get_matches();
 
     print_opening();
 
-    let ip = matches.value_of("i").unwrap_or("None");
-    let nmap_str = matches.value_of("n").unwrap_or("none");
-    println!("{}", nmap_str);
+    let ip = matches.value_of("ip").unwrap_or("None");
+    println!("{}", ip);
+    let mut nmap_str = matches.value_of("n").unwrap_or("None");
+    let command_matches= matches.values_of("command");
+    let command_run: String = match command_matches {
+        // The division was valid
+        Some(x) => {
+            matches.values_of("command").unwrap().collect::<Vec<_>>().join(" ")
+        }
+        None    => "-A -vvv".to_string()
+        // -A -vvv -sC -sV
+
+    };
+
+    println!("this is it {:?}", command_run);
+
+
+
     let batch_size: u32 = matches
                         .value_of("b")
                         .unwrap_or("None")
@@ -115,12 +127,16 @@ fn main() {
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
+    let string_format = format!("{} {} {} {}", command_run, "-p", &ports_str, ip);
+    let command_list = string_format.split_whitespace();
+    let vec = command_list.collect::<Vec<&str>>();
+    println!("{:?}", vec);
+    //println!("{}", command);
+    // nmap_command, "-p".to_string(), ports_str, ip.to_string()
 
     // Runs the nmap command and spawns it as a process.
-    let command_str = format!("{} {} {} {}", &nmap_str, "-p", &ports_str, ip);
-    println!("{}", command_str);
     Command::new("nmap")
-        .args(&[&command_str])
+        .args(&vec)
         .spawn()
         .expect("failed to execute process");
 }
@@ -195,6 +211,7 @@ async fn try_connect(host: String, port: u32, timeout: Duration) -> io::Result<u
         },
         Err(e) => {
             eprintln!("Unable to convert to socket address {:?}", e);
+            panic!("Unable to convert to socket address");
             Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
         }
     }
