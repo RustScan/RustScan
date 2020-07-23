@@ -97,6 +97,17 @@ Download the .deb file from the releases page:
 [https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
 Run the commpand `dpkg -i` on the file. Note: sometimes you can double click the file to achieve the same result.
 
+### 🥧 .deb file not working?
+The .deb file only works on AMD64 CPUs. If yours is different (such as a Raspberry Pi) or the .deb file doesn't work, it is easy to build the .deb file yourself.
+**Note**: It is easier to install Rust and install via Cargo, then it is to build the .deb file. But this is just in case!
+
+1. Install Rust You can do this with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` which I took from the Rust website https://www.rust-lang.org/tools/install
+2. `cargo install rustscan` if you want the easiest method possible. Otherwise, to build the .deb file `cargo install cargo-deb`
+3. Git clone this repo `git clone https://github.com/brandonskerritt/RustScan`
+4. cd RustScan (into the git cloned repo) `cd RustScan`
+5. Run `cargo deb`
+6. Your .deb file is now located in `target/releases/Debian/`
+
 ## 🍺 HomeBrew
 
 Tap the brew:
