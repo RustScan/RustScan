@@ -23,7 +23,8 @@
 # 🤔 What is this?
 1. Find ports quickly using Rustscan (**8 seconds at its fastest**).
 2. Automatically runs `nmap` on those ports.
-3. Profit???
+3. ???
+4. Profit!
 
 <table>
   <tr>
