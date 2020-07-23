@@ -111,6 +111,14 @@ Install it:
 brew install rustscan
 ```
 
+## 🔧 Building it yourself
+
+1. Git clone the repo.
+2. Install Rust. You can do this with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` which I took from the Rust website https://www.rust-lang.org/tools/install
+3. cd into the Git repo, and run `cargo build --release`
+4. The binary is located at `target/release/rustscan`
+5. Symlink to the binary or something. Whatever you want!
+
 # 🤸 Usage
 
 ```
