@@ -12,7 +12,7 @@ use async_std::prelude::*;
 use futures::stream::FuturesUnordered;
 use futures::executor::block_on;
 use rlimit::Resource;
-use rlimit::getrlimit;
+use rlimit::{setrlimit, getrlimit};
 /// Faster Nmap scanning with Rust
 fn main() {
     let matches = App::new("RustScan")
@@ -44,6 +44,11 @@ fn main() {
             .long("quiet")
             .takes_value(false)
             .help("Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file."))
+        .arg(Arg::with_name("u")
+            .short("u")
+            .long("ulimit")
+            .help("Automatically ups the ULIMIT with the value you provided.")
+            .takes_value(true))
         .arg(
             Arg::with_name("command")
                 .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands} -vvv -p $PORTS ")
@@ -54,6 +59,7 @@ fn main() {
 
     
     let ip = matches.value_of("ip").unwrap_or("None");
+    let ulimit_arg = matches.value_of("u").unwrap_or("None");
     let quiet = if matches.is_present("q") { true } else { false };
     let command_matches= matches.values_of("command");
     let command_run: String = match command_matches {
@@ -80,7 +86,7 @@ fn main() {
     // automatically re-adjust the batch size
     if x < batch_size.into() {
         if !quiet{
-            println!("{}", "WARNING: Your file description limit is low. Please considering upping this (how to is on the README). Automatically reducing Batch Size to match your limit.".red());
+            println!("{}", "WARNING: Your file description limit is low. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
             // TODO this is a joke please fix
             let ten: u64 = 10;
             batch_size = x - ten;
@@ -92,8 +98,16 @@ fn main() {
         if !quiet{
             // TODO this is a joke please fix
             let one: u64 = 1;
-            println!("Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size. Your limit is {}, try batch size {}.", x, x - one);
+            println!("Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.", x, x - one);
         }
+    }
+    // the user has asked to automatically up the ulimit
+    else if !(ulimit_arg == "None") {
+        let limit = ulimit_arg.parse::<u64>().unwrap();
+        if !quiet{
+            println!("Automatically upping ulimit to {}", ulimit_arg);
+        }
+        setrlimit(Resource::NOFILE, limit, limit);
     }
                             
     // gets timeout
