@@ -26,6 +26,16 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "smackhack",
+      "name": "smackhack",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/48143394?v=4",
+      "profile": "https://github.com/smackhack",
+      "contributions": [
+        "ideas",
+        "example"
+      ]
     }
   ],
   "contributorsPerLine": 7,
