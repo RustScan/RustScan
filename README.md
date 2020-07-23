@@ -167,12 +167,32 @@ The batch size determines how fast RustScan is. Set it to 65k, and it will scan 
 
 Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly I will be releasing a dockerised version with a much larger open file limit, so this will be possible.
 
+## ⚠️ WARNING
+
+This program, by default, scans 5000 ports at a time (5000 per second). 
+
+This may cause damage to a server, or may make it incredibly obvious you are scanning the server.
+
+There are 2 ways to deal with this;
+1. Decrease batch size
+`rustscan -b 10` will run 10 port scans for 1 second, and then another 10 for 1 second and so on.
+2. Increase timeout
+`rustscan -T 5000` will mean RustScan waits 5 seconds until it scans the next ports.
+
+You can also use both of these at the same time, to make it as slow or as fast as you want. A fun favourite is 65535 batch size with 1 second timeout. Theoretically, this scans all 65535 ports in 1 second.
+
+**Please** do not use this tool against sensitive servers. It is designed mainly for Capture the Flag events, not real world servers with sensitive data.
+
 ## 🚨 Thread Paniced at Main: Too Many Open Files
 This is the most common error found in RustScan.
 
-Basically, the open file limit is how many open sockets you can have at any given time.
+The open file limit is how many open sockets you can have at any given time.
 
 This limit changes from OS to OS.
+
+RustScan does not automatically create defaults (other than 5000) like Nmap does with their -T1, -T2 system.
+
+By figuring out for yourself the optimal batch size, you will know that RustScan is the most optimised port scanner for your system. 
 
 There are 2 things you can do:
 1. Decrease batch size
