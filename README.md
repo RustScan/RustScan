@@ -136,6 +136,31 @@ brew install rustscan
 rustscan -h
 ```
 
+```
+RustScan 1.2.0
+Bee https://github.com/brandonskerritt
+Fast Port Scanner built in Rust
+
+USAGE:
+    rustscan [OPTIONS] <ip> [command]...
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+    -T, --timeout <T>    The timeout before a port is assumed to be close. In MS. [default: 1500]
+    -b, --batch <b>      Increases speed of scanning. The batch size for port scanning. Depends on your open file limit
+                         of OS. If you do 65535 it will do every port at the same time. Although, your OS may not
+                         support this. [default: 4500]
+
+ARGS:
+    <ip>            The IP address to scan
+    <command>...    The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run
+                    EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands}
+                    -vvv -p $PORTS 
+```
+
 The format is `rustcan -b 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 batch size with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
 
 The batch size determines how fast RustScan is. Set it to 65k, and it will scan all 65k ports at the same time. This means at at 65k batch size, RustScan will take TIMEOUT long to scan all ports. Essentially, if timeout is 1000ms, **RustScan can scan in 1 second**. 
