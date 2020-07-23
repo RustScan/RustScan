@@ -192,7 +192,7 @@ They will give you an idea on the open file limit of your OS.
 
 If it says "250", run `rustscan -b 240` for a batch size of 240.
 
-Increasing the open file limit poses danger, but increases the time. Although, **opening more file sockets on the specified IP address may damage it**.
+Increasing the open file limit increases speed, but poses danger. Although, **opening more file sockets on the specified IP address may damage it**.
 
 To open more, set the ulimit to a higher number:
 
