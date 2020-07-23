@@ -16,6 +16,21 @@
         "code",
         "design"
       ]
+    },
+    {
+      "login": "SakiiR",
+      "name": "SakiiR",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/9950578?v=4",
+      "profile": "https://sakiir.ovh",
+      "contributions": [
+        "code",
+      "login": "luukverhoeven",
+      "name": "Luuk Verhoeven",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/995760?v=4",
+      "profile": "https://ldesignmedia.nl",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,

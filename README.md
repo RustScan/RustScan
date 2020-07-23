@@ -3,7 +3,6 @@
 <u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. 
 </p>
 <p align="center">
-<img alt="Crates.io" src="https://img.shields.io/crates/d/rust_scan">
 <img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
 <img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
 <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/brandonskerritt/rustscan">
@@ -14,10 +13,9 @@
 | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> HomeBrew </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Kali / Debian </p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
-| **Version 1.1.0** | Version 1.0.0 | Version 1.0.0 | Version 1.0.0 |
-| `cargo install rustscan` | `yay rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
+| Version 1.1.0 | Version 1.1.0 | Version 1.1.0 | Version 1.1.0 |
+| `cargo install rustscan` | `yay -S rustscan-bin` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
 
-**Note**: You must have Nmap installed.
 <hr>
 
 # 🤔 What is this?
@@ -96,7 +94,7 @@ If you face any issues at all, please leave a GitHub issue. I have only tested t
 ## 🖥️ Debian / Kali
 
 Download the .deb file from the releases page:
-[https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1](https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1)
+[https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
 Run the commpand `dpkg -i` on the file. Note: sometimes you can double click the file to achieve the same result.
 
 ## 🍺 HomeBrew
@@ -150,7 +148,7 @@ Ciphey is an automated decryption tool using artifical intelligence & natural la
 [Check it out here!](https://github.com/ciphey/ciphey)
 ## Contributors ✨
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -161,6 +159,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://skerritt.blog"><img src="https://avatars3.githubusercontent.com/u/10378052?v=4" width="100px;" alt=""/><br /><sub><b>Brandon</b></sub></a><br /><a href="#infra-brandonskerritt" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/brandonskerritt/RustScan/commits?author=brandonskerritt" title="Tests">⚠️</a> <a href="https://github.com/brandonskerritt/RustScan/commits?author=brandonskerritt" title="Code">💻</a> <a href="#design-brandonskerritt" title="Design">🎨</a></td>
+    <td align="center"><a href="https://sakiir.ovh"><img src="https://avatars1.githubusercontent.com/u/9950578?v=4" width="100px;" alt=""/><br /><sub><b>SakiiR</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/commits?author=SakiiR" title="Code">💻</a> <a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3ASakiiR" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://ldesignmedia.nl"><img src="https://avatars1.githubusercontent.com/u/995760?v=4" width="100px;" alt=""/><br /><sub><b>Luuk Verhoeven</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3Aluukverhoeven" title="Bug reports">🐛</a></td>
+
   </tr>
 </table>
 
