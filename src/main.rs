@@ -1,5 +1,3 @@
-#!/bin/sh
-//usr/bin/env rustc $0 -o a.out && ./a.out && rm ./a.out ; exit
 use async_std::io;
 use async_std::net::TcpStream;
 use clap::{App, Arg, AppSettings};
