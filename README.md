@@ -162,6 +162,8 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://skerritt.blog"><img src="https://avatars3.githubusercontent.com/u/10378052?v=4" width="100px;" alt=""/><br /><sub><b>Brandon</b></sub></a><br /><a href="#infra-brandonskerritt" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/brandonskerritt/RustScan/commits?author=brandonskerritt" title="Tests">⚠️</a> <a href="https://github.com/brandonskerritt/RustScan/commits?author=brandonskerritt" title="Code">💻</a> <a href="#design-brandonskerritt" title="Design">🎨</a></td>
     <td align="center"><a href="https://sakiir.ovh"><img src="https://avatars1.githubusercontent.com/u/9950578?v=4" width="100px;" alt=""/><br /><sub><b>SakiiR</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/commits?author=SakiiR" title="Code">💻</a> <a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3ASakiiR" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://ldesignmedia.nl"><img src="https://avatars1.githubusercontent.com/u/995760?v=4" width="100px;" alt=""/><br /><sub><b>Luuk Verhoeven</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3Aluukverhoeven" title="Bug reports">🐛</a></td>
+
   </tr>
 </table>
 
