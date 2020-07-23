@@ -95,7 +95,7 @@ If you face any issues at all, please leave a GitHub issue. I have only tested t
 ## 🖥️ Debian / Kali
 
 Download the .deb file from the releases page:
-[https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1](https://github.com/brandonskerritt/RustScan/releases/tag/1.0.1)
+[https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
 Run the commpand `dpkg -i` on the file. Note: sometimes you can double click the file to achieve the same result.
 
 ## 🍺 HomeBrew
