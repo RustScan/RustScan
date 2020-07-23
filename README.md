@@ -17,7 +17,7 @@
 | **Version 1.1.0** | Version 1.0.0 | Version 1.0.0 | Version 1.0.0 |
 | `cargo install rustscan` | `yay rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
 
-**Note**: Version 1.1 runs in 8 seconds with batch size 10,000, version 1 runs in ~26 seconds on 1k threads, or average 1 - 2 minutes. I am updating the other pakcages, but for maximum speed and latest support please use Cargo.
+**Note**: Version 1.1 runs in 8 seconds with batch size 10,000, version 1 runs in ~26 seconds on 1k threads, or average 1 - 2 minutes. I am updating the other package, but for maximum speed and latest support please use Cargo.
 <hr>
 
 # 🤔 What is this?
