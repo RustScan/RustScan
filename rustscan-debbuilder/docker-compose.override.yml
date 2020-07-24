@@ -1,0 +1,11 @@
+# Test builder. Rename to something else (like docker-compose.override.yml.bak)
+# to use the normal builder.
+version: '3'
+services:
+    rustscan-builder:
+        build:
+            context: ..
+            dockerfile: rustscan-debbuilder/testing/Dockerfile
+        image: rustscan-builder-dev
+        volumes:
+            - ./target:/sourcefiles/target

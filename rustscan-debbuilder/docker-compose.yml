@@ -1,0 +1,7 @@
+version: '3'
+services:
+    rustscan-builder:
+        build: ./dockerstuff
+        image: rustscan-builder
+        volumes:
+            - ./debs:/debs
