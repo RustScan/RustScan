@@ -20,7 +20,8 @@
 # 🤔 What is this?
 1. Find ports quickly using Rustscan (**8 seconds at its fastest**).
 2. Automatically runs `nmap` on those ports.
-3. Profit???
+3. ???
+4. Profit!
 
 <table>
   <tr>
@@ -139,12 +140,15 @@ rustscan -h
 RustScan 1.2.0
 Bee https://github.com/brandonskerritt
 Fast Port Scanner built in Rust
+WARNING Do not use this program against sensitive infrastructure. The specified server may not be able to handle this
+many socket connections at once.
 
 USAGE:
-    rustscan [OPTIONS] <ip> [command]...
+    rustscan [FLAGS] [OPTIONS] <ip> [command]...
 
 FLAGS:
     -h, --help       Prints help information
+    -q, --quiet      Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     -V, --version    Prints version information
 
 OPTIONS:
@@ -152,6 +156,7 @@ OPTIONS:
     -b, --batch <b>      Increases speed of scanning. The batch size for port scanning. Depends on your open file limit
                          of OS. If you do 65535 it will do every port at the same time. Although, your OS may not
                          support this. [default: 4500]
+    -u, --ulimit <u>     Automatically ups the ULIMIT with the value you provided.
 
 ARGS:
     <ip>            The IP address to scan
@@ -263,7 +268,7 @@ Ciphey is an automated decryption tool using artifical intelligence & natural la
 [Check it out here!](https://github.com/ciphey/ciphey)
 ## Contributors ✨
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -277,6 +282,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://sakiir.ovh"><img src="https://avatars1.githubusercontent.com/u/9950578?v=4" width="100px;" alt=""/><br /><sub><b>SakiiR</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/commits?author=SakiiR" title="Code">💻</a> <a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3ASakiiR" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/smackhack"><img src="https://avatars2.githubusercontent.com/u/48143394?v=4" width="100px;" alt=""/><br /><sub><b>smackhack</b></sub></a><br /><a href="#ideas-smackhack" title="Ideas, Planning, & Feedback">🤔</a> <a href="#example-smackhack" title="Examples">💡</a></td>
     <td align="center"><a href="http://bernardoamc.github.io/"><img src="https://avatars0.githubusercontent.com/u/428984?v=4" width="100px;" alt=""/><br /><sub><b>Bernardo Araujo</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/commits?author=bernardoamc" title="Code">💻</a> <a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3Abernardoamc" title="Bug reports">🐛</a></td>
+    <td align="center"><a href="https://github.com/Isona"><img src="https://avatars2.githubusercontent.com/u/11759523?v=4" width="100px;" alt=""/><br /><sub><b>Izzy Whistlecroft</b></sub></a><br /><a href="https://github.com/brandonskerritt/RustScan/issues?q=author%3AIsona" title="Bug reports">🐛</a></td>
   </tr>
 </table>
 
