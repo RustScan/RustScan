@@ -187,7 +187,7 @@ fn main() {
         exit(1);
     }
 
-    let string_format = format!("{} {} {} {} {}", command_run, "-vvv", "-p", &ports_str, ip);
+    let string_format = format!("{} {} {} {} {} {}", command_run, "-Pn", "-vvv", "-p", &ports_str, ip);
     let command_list = string_format.split_whitespace();
     let vec = command_list.collect::<Vec<&str>>();
 
