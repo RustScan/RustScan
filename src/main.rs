@@ -187,7 +187,7 @@ fn main() {
         exit(1);
     }
 
-    let string_format = format!("{} {} {} {} {}", command_run, "-Pn", "-vvv", "-p", &ports_str, ip);
+    let string_format = format!("{} {} {} {} {} {}", command_run, "-Pn", "-vvv", "-p", &ports_str, ip);
     if !quiet{
         println!("The Nmap command to be run is {}", string_format);
     }
