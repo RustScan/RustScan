@@ -142,7 +142,7 @@ fn main() {
 
 
     // 65535 + 1 because of 0 indexing
-    let test = run_batched(ip.to_string(), 1, 65536, Duration::from_millis(duration_timeout,),  batch_size.try_into().unwrap(), quiet);
+    let test = run_batched(ip, 1, 65536, Duration::from_millis(duration_timeout,),  batch_size.try_into().unwrap(), quiet);
     let reports_fullsult = block_on(test);
 
 
@@ -194,7 +194,7 @@ fn main() {
 }
 
 pub async fn run_batched(
-    host: String,
+    host: &str,
     port_start: u32,
     port_end: u32,
     timeout: Duration,
@@ -207,7 +207,7 @@ pub async fn run_batched(
     let mut all_addrs: std::vec::Vec<u32> = Vec::new();
 
     while end <= port_end {
-        let mut batch_addrs = execute(host.clone(), begin, end, timeout, quiet).await;
+        let mut batch_addrs = execute(host, begin, end, timeout, quiet).await;
         all_addrs.append(&mut batch_addrs);
         begin = end+1;
         end += batch;
@@ -215,7 +215,7 @@ pub async fn run_batched(
     all_addrs
 }
 async fn execute(
-    host: String,
+    host: &str,
     port_start: u32,
     port_end: u32,
     timeout: Duration,
@@ -225,7 +225,7 @@ async fn execute(
     let mut ftrs = FuturesUnordered::new();
     // TODO can I make this async?
     for port in port_start..port_end {
-        ftrs.push(try_connect(host.clone(), port, timeout, quiet));
+        ftrs.push(try_connect(host, port, timeout, quiet));
     }
 
     let mut open_addrs: Vec<u32> = Vec::new();
@@ -239,8 +239,8 @@ async fn execute(
     open_addrs
 }
 
-async fn try_connect(host: String, port: u32, timeout: Duration, quiet: bool) -> io::Result<u32> {
-    let addr = host.to_string() + ":" + &port.to_string();
+async fn try_connect(host: &str, port: u32, timeout: Duration, quiet: bool) -> io::Result<u32> {
+    let addr = format!("{}:{}", host , port);
     match addr.parse() {
         Ok(sock_addr) => match connect(sock_addr, timeout).await {
             Ok(stream_result) => {
