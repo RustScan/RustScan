@@ -139,12 +139,15 @@ rustscan -h
 RustScan 1.2.0
 Bee https://github.com/brandonskerritt
 Fast Port Scanner built in Rust
+WARNING Do not use this program against sensitive infrastructure. The specified server may not be able to handle this
+many socket connections at once.
 
 USAGE:
-    rustscan [OPTIONS] <ip> [command]...
+    rustscan [FLAGS] [OPTIONS] <ip> [command]...
 
 FLAGS:
     -h, --help       Prints help information
+    -q, --quiet      Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     -V, --version    Prints version information
 
 OPTIONS:
@@ -152,6 +155,7 @@ OPTIONS:
     -b, --batch <b>      Increases speed of scanning. The batch size for port scanning. Depends on your open file limit
                          of OS. If you do 65535 it will do every port at the same time. Although, your OS may not
                          support this. [default: 4500]
+    -u, --ulimit <u>     Automatically ups the ULIMIT with the value you provided.
 
 ARGS:
     <ip>            The IP address to scan
