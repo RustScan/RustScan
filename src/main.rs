@@ -64,7 +64,7 @@ fn main() {
     let command_matches= matches.values_of("command");
     let command_run: String = match command_matches {
         // We use the user supplied args
-        Some(x) => {
+        Some(_x) => {
             // TODO x is the same as below, use that instead
             matches.values_of("command").unwrap().collect::<Vec<_>>().join(" ")
         }
@@ -91,8 +91,15 @@ fn main() {
         if !quiet{
             println!("Automatically upping ulimit to {}", ulimit_arg);
         }
-        setrlimit(Resource::NOFILE, limit, limit);
+        let uresult = setrlimit(Resource::NOFILE, limit, limit);
+
+        match uresult {
+            Ok(_) => {}
+            Err(_) => {println!("ERROR.  Failed to set Ulimit.")}
+        }
     }
+
+    
 
     let (x, _) = getrlimit(Resource::NOFILE).unwrap(); 
 
@@ -257,7 +264,6 @@ async fn try_connect(host: String, port: u32, timeout: Duration, quiet: bool) ->
                 ErrorKind::Other => {
                     eprintln!("{:?}", e); // in case we get too many open files
                     panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-                    Err(e)
                 }
                 _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
             },
@@ -265,7 +271,6 @@ async fn try_connect(host: String, port: u32, timeout: Duration, quiet: bool) ->
         Err(e) => {
             eprintln!("Unable to convert to socket address {:?}", e);
             panic!("Unable to convert to socket address");
-            Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
         }
     }
 }
