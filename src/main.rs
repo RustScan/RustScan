@@ -188,6 +188,9 @@ fn main() {
     }
 
     let string_format = format!("{} {} {} {} {} {}", command_run, "-Pn", "-vvv", "-p", &ports_str, ip);
+    if !quiet{
+        println!("The Nmap command to be run is {}", string_format);
+    }
     let command_list = string_format.split_whitespace();
     let vec = command_list.collect::<Vec<&str>>();
 
