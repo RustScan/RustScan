@@ -6,7 +6,7 @@ use std::process::{exit, Command};
 use std::time::Duration;
 use std::{
     net::{SocketAddr, Shutdown},
-    io::ErrorKind,
+    io::ErrorKind, convert::TryInto,
 };
 use async_std::prelude::*;
 use futures::stream::FuturesUnordered;
@@ -79,22 +79,49 @@ fn main() {
                         .parse::<u64>()
                         .unwrap();
     
+    if !quiet {
+        print_opening();
+    }
+    
     // checks ulimit
+    
+    // change ulimit size
+    if !(ulimit_arg == "None") {
+        let limit = ulimit_arg.parse::<u64>().unwrap();
+        if !quiet{
+            println!("Automatically upping ulimit to {}", ulimit_arg);
+        }
+        setrlimit(Resource::NOFILE, limit, limit);
+    }
+
     let (x, _) = getrlimit(Resource::NOFILE).unwrap(); 
 
     // if maximum limit is lower than batch size
     // automatically re-adjust the batch size
     if x < batch_size.into() {
         if !quiet{
-            println!("{}", "WARNING: Your file description limit is low. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
+            println!("{}", "WARNING: Your file description limit is lower than selected batch size. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
             // TODO this is a joke please fix
-            let ten: u64 = 10;
-            batch_size = x - ten;
+
+            // if the OS supports high file limits like 8000
+            // but the user selected a batch size higher than this
+            // reduce to a lower number
+            // basically, ubuntu is 8000 
+            // but i can only get it to work on < 5k in testing
+            // 5k is default, so 3000 seems safe
+            if x > 8000{
+                batch_size = 3000
+            }
+            else {
+                let ten: u64 = 100;
+                batch_size = x - ten;
+            }
         }
     }
     // else if the ulimit is higher than batch size
     // tell the user they can increase batch size
-    else if x + 1 > batch_size.into(){
+    // if the user set ulimit arg they probably know what they are doing so don't print this
+    else if x + 2 > batch_size.into() && (ulimit_arg == "None"){
         if !quiet{
             // TODO this is a joke please fix
             let one: u64 = 1;
@@ -102,13 +129,7 @@ fn main() {
         }
     }
     // the user has asked to automatically up the ulimit
-    else if !(ulimit_arg == "None") {
-        let limit = ulimit_arg.parse::<u64>().unwrap();
-        if !quiet{
-            println!("Automatically upping ulimit to {}", ulimit_arg);
-        }
-        setrlimit(Resource::NOFILE, limit, limit);
-    }
+
                             
     // gets timeout
     let duration_timeout =
@@ -118,12 +139,10 @@ fn main() {
             .parse::<u64>()
             .unwrap();
 
-    if !quiet {
-        print_opening();
-    }
+
 
     // 65535 + 1 because of 0 indexing
-    let test = run_batched(ip.to_string(), 1, 65536, Duration::from_millis(duration_timeout,),  batch_size, quiet);
+    let test = run_batched(ip.to_string(), 1, 65536, Duration::from_millis(duration_timeout,),  batch_size.try_into().unwrap(), quiet);
     let reports_fullsult = block_on(test);
 
 
@@ -267,7 +286,7 @@ fn print_opening() {
     println!(
         "{} \n {} \n {}",
         s.green(),
-        "Automated Decryption Tool - https://github.com/ciphey/ciphey".red(),
+        "Automated Decryption Tool - https://github.com/ciphey/ciphey".green(),
         "Creator https://github.com/brandonskerritt".green()
     );
 }
