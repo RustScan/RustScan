@@ -245,7 +245,7 @@ RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, exec
 ## 🎯 Increasing speed / accuracy
 * Batch size
 
-This increases speed, by allowing us to process more at once. Something experimental I am working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-B 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
+This increases speed, by allowing us to process more at once. Something experimental I am working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-b 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
 
 For non-experimental speed increases, slowly increase the batch size until it no longer gets open ports, or it breaks.
 
