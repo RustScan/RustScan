@@ -46,6 +46,15 @@
         "code",
         "bug"
       ]
+    },
+    {
+      "login": "Isona",
+      "name": "Izzy Whistlecroft",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/11759523?v=4",
+      "profile": "https://github.com/Isona",
+      "contributions": [
+        "bug"
+      ]
     }
   ],
   "contributorsPerLine": 7,
