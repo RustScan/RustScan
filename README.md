@@ -91,6 +91,8 @@ The most universal way is to use `cargo`, Rust's built in package manager (think
 
 If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows. 
 
+Note: sometimes Rust doesn't add Cargo to the path. Please see [this issue](https://github.com/rust-lang/rustup/issues/2436) for how to fix that.
+
 ## 🖥️ Debian / Kali
 
 Download the .deb file from the releases page:
