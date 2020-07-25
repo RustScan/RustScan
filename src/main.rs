@@ -1,18 +1,15 @@
-use async_std::io;
-use async_std::net::TcpStream;
+mod scanner;
+use scanner::Scanner;
+
 use clap::{App, Arg, AppSettings};
 use colored::*;
-use std::process::{exit, Command};
 use std::time::Duration;
-use std::{
-    net::{SocketAddr, Shutdown},
-    io::ErrorKind, convert::TryInto,
-};
-use async_std::prelude::*;
-use futures::stream::FuturesUnordered;
+use std::process::{exit, Command};
+use std::convert::TryInto;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{setrlimit, getrlimit};
+
 /// Faster Nmap scanning with Rust
 fn main() {
     let matches = App::new("RustScan")
@@ -20,7 +17,7 @@ fn main() {
         .about("Fast Port Scanner built in Rust\nWARNING Do not use this program against sensitive infrastructure. The specified server may not be able to handle this many socket connections at once.")
         .version("1.2.0")
         .setting(AppSettings::TrailingVarArg)
-        
+
         // IP address is a required argument
         .arg(Arg::with_name("ip")
             .required(true)
@@ -57,7 +54,7 @@ fn main() {
         )
         .get_matches();
 
-    
+
     let ip = matches.value_of("ip").unwrap_or("None");
     let ulimit_arg = matches.value_of("u").unwrap_or("None");
     let quiet = if matches.is_present("q") { true } else { false };
@@ -78,13 +75,13 @@ fn main() {
                         .unwrap_or("None")
                         .parse::<u64>()
                         .unwrap();
-    
+
     if !quiet {
         print_opening();
     }
-    
+
     // checks ulimit
-    
+
     // change ulimit size
     if !(ulimit_arg == "None") {
         let limit = ulimit_arg.parse::<u64>().unwrap();
@@ -99,9 +96,9 @@ fn main() {
         }
     }
 
-    
 
-    let (x, _) = getrlimit(Resource::NOFILE).unwrap(); 
+
+    let (x, _) = getrlimit(Resource::NOFILE).unwrap();
 
     // if maximum limit is lower than batch size
     // automatically re-adjust the batch size
@@ -113,7 +110,7 @@ fn main() {
             // if the OS supports high file limits like 8000
             // but the user selected a batch size higher than this
             // reduce to a lower number
-            // basically, ubuntu is 8000 
+            // basically, ubuntu is 8000
             // but i can only get it to work on < 5k in testing
             // 5k is default, so 3000 seems safe
             if x > 8000{
@@ -137,7 +134,6 @@ fn main() {
     }
     // the user has asked to automatically up the ulimit
 
-                            
     // gets timeout
     let duration_timeout =
         matches
@@ -146,26 +142,17 @@ fn main() {
             .parse::<u64>()
             .unwrap();
 
-
-
     // 65535 + 1 because of 0 indexing
-    let test = run_batched(ip, 1, 65536, Duration::from_millis(duration_timeout,),  batch_size.try_into().unwrap(), quiet);
-    let reports_fullsult = block_on(test);
-
+    let scanner = Scanner::new(ip, 1, 65536, batch_size.try_into().unwrap(), Duration::from_millis(duration_timeout), quiet);
+    let scan_result = block_on(scanner.run());
 
     // prints ports and places them into nmap string
-    let mut nmap_str_ports: Vec<String> = Vec::new();
+    let nmap_str_ports: Vec<String> = scan_result.into_iter().map(|port| port.to_string()).collect();
 
-    // makes vector of open ports
-    for i in reports_fullsult.iter() {
-            // appends it to port
-            nmap_str_ports.push(i.to_string());
-    }
-
-    // if no ports are found, suggest running with less 
+    // if no ports are found, suggest running with less
     if nmap_str_ports.is_empty() {
         panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
-        \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system. 
+        \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system.
         \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(), batch_size, (batch_size / 2).to_string().green(), "'rustscan -b <batch_size> <ip address>'".green());
     }
 
@@ -176,7 +163,6 @@ fn main() {
             "Starting nmap.".blue(),
         );
     }
-
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
@@ -203,93 +189,12 @@ fn main() {
     child.wait().expect("failed to wait on nmap process");
 }
 
-pub async fn run_batched(
-    host: &str,
-    port_start: u32,
-    port_end: u32,
-    timeout: Duration,
-    batch: u32,
-    quiet: bool,
-) -> Vec<u32> {
-    // run the scans in batches
-    let mut begin = port_start;
-    let mut end = begin + batch;
-    let mut all_addrs: std::vec::Vec<u32> = Vec::new();
-
-    while end <= port_end {
-        let mut batch_addrs = execute(host, begin, end, timeout, quiet).await;
-        all_addrs.append(&mut batch_addrs);
-        begin = end+1;
-        end += batch;
-    }
-    all_addrs
-}
-async fn execute(
-    host: &str,
-    port_start: u32,
-    port_end: u32,
-    timeout: Duration,
-    quiet: bool,
-) -> Vec<u32> {
-    // runs a scan against a range of ports
-    let mut ftrs = FuturesUnordered::new();
-    // TODO can I make this async?
-    for port in port_start..port_end {
-        ftrs.push(try_connect(host, port, timeout, quiet));
-    }
-
-    let mut open_addrs: Vec<u32> = Vec::new();
-    // TODO can I make this async?
-    while let Some(result) = ftrs.next().await {
-        match result {
-            Ok(addr) => open_addrs.push(addr),
-            Err(_) => {}
-        }
-    }
-    open_addrs
-}
-
-async fn try_connect(host: &str, port: u32, timeout: Duration, quiet: bool) -> io::Result<u32> {
-    let addr = format!("{}:{}", host , port);
-    match addr.parse() {
-        Ok(sock_addr) => match connect(sock_addr, timeout).await {
-            Ok(stream_result) => {
-                match stream_result.shutdown(Shutdown::Both) {
-                    _ => {}
-                }
-                if !quiet {
-                    println!("Open {}", port.to_string().purple());
-                }
-                
-                Ok(port)
-            }
-            Err(e) => match e.kind() {
-                ErrorKind::Other => {
-                    eprintln!("{:?}", e); // in case we get too many open files
-                    panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-                }
-                _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
-            },
-        },
-        Err(e) => {
-            eprintln!("Unable to convert to socket address {:?}", e);
-            panic!("Unable to convert to socket address");
-        }
-    }
-}
-
-
-async fn connect(addr: SocketAddr, timeout: Duration) -> io::Result<TcpStream> {
-    let stream = io::timeout(timeout, async move { TcpStream::connect(addr).await }).await?;
-    Ok(stream)
-}
-
 fn print_opening() {
     let s = "
-     _____           _    _____                 
-    |  __ \\         | |  / ____|                
-    | |__) |   _ ___| |_| (___   ___ __ _ _ __  
-    |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\ 
+     _____           _    _____
+    |  __ \\         | |  / ____|
+    | |__) |   _ ___| |_| (___   ___ __ _ _ __
+    |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\
     | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
