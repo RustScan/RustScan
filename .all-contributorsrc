@@ -56,6 +56,16 @@
       "contributions": [
         "bug"
       ]
+    },
+    {
+      "login": "imlonghao",
+      "name": "imlonghao",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4951333?v=4",
+      "profile": "https://imlonghao.com",
+      "contributions": [
+        "bug",
+        "maintenance"
+      ]
     }
   ],
   "contributorsPerLine": 7,
