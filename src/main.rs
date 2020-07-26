@@ -199,9 +199,7 @@ fn print_opening() {
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
     println!(
-        "{} \n {} \n {}",
-        s.green(),
-        "Automated Decryption Tool - https://github.com/ciphey/ciphey".green(),
-        "Creator https://github.com/brandonskerritt".green()
+        "\n {}",
+        s
     );
 }
