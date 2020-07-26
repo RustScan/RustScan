@@ -262,7 +262,7 @@ To run your own nmap commands, end the RustScan command with `-- -A` where `--` 
 
 RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, execute the command `rustscan 127.0.0.1 -- -A`. 
 
-**Note**: due to how Nmap behaves, sometimes you cannot SIGINT ctrl+c to end the scan and it acts like it is running in the background, but printing to STD::OUT. There is nothing I can do about this, unless I create a TTY shell for the sole purpose of running Nmap. Sorry 😓 I'll try to fix in an upcoming release. If any Rust experts want to help, please do!
+If you want to run commands such as `--script (vuln and safe)`, you will need to enclose it in quotations like so `--script '"(vuln and safe) or default"'`.
 
 ## 🎯 Increasing speed / accuracy
 * Batch size

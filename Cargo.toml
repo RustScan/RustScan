@@ -19,7 +19,8 @@ clap = "2.33.0"
 async-std = "1.6.2"
 futures = "0.3"
 rlimit = "0.3.0"
+shell-words = "1.0.0"
 
 [package.metadata.deb]
 depends = "$auto, nmap"
- 
+
