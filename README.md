@@ -108,8 +108,12 @@ Note: sometimes Rust doesn't add Cargo to the path. Please see [this issue](http
 ## 🖥️ Debian / Kali
 
 Download the .deb file from the releases page:
+
 [https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
-Run the commpand `dpkg -i` on the file. Note: sometimes you can double click the file to achieve the same result.
+
+Run the commpand `dpkg -i` on the file. 
+
+Note: sometimes you can double click the file to achieve the same result.
 
 ### 🥧 .deb file not working?
 The .deb file only works on AMD64 CPUs. If yours is different (such as a Raspberry Pi) or the .deb file doesn't work, it is easy to build the .deb file yourself.
