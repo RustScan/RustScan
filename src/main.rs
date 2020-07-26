@@ -50,7 +50,7 @@ fn main() {
             .takes_value(true))
         .arg(
             Arg::with_name("command")
-                .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands} -vvv -p $PORTS ")
+                .help("The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'.To run EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands} -vvv -p $PORTS. For things like --script '(safe and vuln)' enclose it in quotations \"'(safe and vuln)'\"")
                 .takes_value(true)
                 .multiple(true),
         )
@@ -200,9 +200,7 @@ fn print_opening() {
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
     println!(
-        "{} \n {} \n {}",
+        "{}\n",
         s.green(),
-        "Automated Decryption Tool - https://github.com/ciphey/ciphey".green(),
-        "Creator https://github.com/brandonskerritt".green()
     );
 }
