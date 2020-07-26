@@ -1,13 +1,13 @@
 use async_std::io;
 use async_std::net::TcpStream;
+use async_std::prelude::*;
 use colored::*;
+use futures::stream::FuturesUnordered;
 use std::time::Duration;
 use std::{
-    net::{SocketAddr, Shutdown},
     io::ErrorKind,
+    net::{Shutdown, SocketAddr},
 };
-use async_std::prelude::*;
-use futures::stream::FuturesUnordered;
 
 pub struct Scanner {
     host: String,
@@ -19,14 +19,21 @@ pub struct Scanner {
 }
 
 impl Scanner {
-    pub fn new(host: &str, start: u64, end: u64, batch_size: u64, timeout: Duration, quiet: bool) -> Self {
+    pub fn new(
+        host: &str,
+        start: u64,
+        end: u64,
+        batch_size: u64,
+        timeout: Duration,
+        quiet: bool,
+    ) -> Self {
         Self {
             host: host.to_owned(),
             start,
             end,
             batch_size,
             timeout,
-            quiet
+            quiet,
         }
     }
 
@@ -61,7 +68,7 @@ impl Scanner {
     }
 
     async fn scan_port(&self, port: &u64) -> io::Result<u64> {
-        let addr = format!("{}:{}", self.host , port);
+        let addr = format!("{}:{}", self.host, port);
 
         match addr.parse() {
             Ok(sock_addr) => match self.connect(sock_addr).await {
@@ -90,9 +97,9 @@ impl Scanner {
         }
     }
 
-
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
-        let stream = io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
+        let stream =
+            io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
         Ok(stream)
     }
 }
