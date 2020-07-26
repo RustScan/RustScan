@@ -176,3 +176,19 @@ fn print_opening() {
     Faster nmap scanning with rust.";
     println!("{}\n", s.green());
 }
+
+#[cfg(test)]
+mod tests {
+    use super::Scanner;
+    use std::time::Duration;
+    use async_std::task::block_on;
+
+    #[test]
+    fn does_it_run() {
+        // Makes sure te program still runs and doesn't panic
+        let scanner = Scanner::new("127.0.0.1", 1, 65536, 1000, Duration::from_millis(10), true);
+        let scan_result = block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
+}
