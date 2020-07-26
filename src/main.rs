@@ -3,14 +3,14 @@ extern crate shell_words;
 mod scanner;
 use scanner::Scanner;
 
-use clap::{App, Arg, AppSettings};
+use clap::{App, AppSettings, Arg};
 use colored::*;
-use std::time::Duration;
-use std::process::{exit, Command};
-use std::convert::TryInto;
 use futures::executor::block_on;
 use rlimit::Resource;
-use rlimit::{setrlimit, getrlimit};
+use rlimit::{getrlimit, setrlimit};
+use std::convert::TryInto;
+use std::process::{exit, Command};
+use std::time::Duration;
 
 /// Faster Nmap scanning with Rust
 fn main() {
@@ -56,27 +56,29 @@ fn main() {
         )
         .get_matches();
 
-
     let ip = matches.value_of("ip").unwrap_or("None");
     let ulimit_arg = matches.value_of("u").unwrap_or("None");
     let quiet = if matches.is_present("q") { true } else { false };
-    let command_matches= matches.values_of("command");
+    let command_matches = matches.values_of("command");
     let command_run: String = match command_matches {
         // We use the user supplied args
         Some(_x) => {
             // TODO x is the same as below, use that instead
-            matches.values_of("command").unwrap().collect::<Vec<_>>().join(" ")
+            matches
+                .values_of("command")
+                .unwrap()
+                .collect::<Vec<_>>()
+                .join(" ")
         }
         // we default
-        None    => "-A -vvv".to_string()
-
+        None => "-A -vvv".to_string(),
     };
 
     let mut batch_size: u64 = matches
-                        .value_of("b")
-                        .unwrap_or("None")
-                        .parse::<u64>()
-                        .unwrap();
+        .value_of("b")
+        .unwrap_or("None")
+        .parse::<u64>()
+        .unwrap();
 
     if !quiet {
         print_opening();
@@ -87,25 +89,23 @@ fn main() {
     // change ulimit size
     if !(ulimit_arg == "None") {
         let limit = ulimit_arg.parse::<u64>().unwrap();
-        if !quiet{
+        if !quiet {
             println!("Automatically upping ulimit to {}", ulimit_arg);
         }
         let uresult = setrlimit(Resource::NOFILE, limit, limit);
 
         match uresult {
             Ok(_) => {}
-            Err(_) => {println!("ERROR.  Failed to set Ulimit.")}
+            Err(_) => println!("ERROR.  Failed to set Ulimit."),
         }
     }
-
-
 
     let (x, _) = getrlimit(Resource::NOFILE).unwrap();
 
     // if maximum limit is lower than batch size
     // automatically re-adjust the batch size
     if x < batch_size.into() {
-        if !quiet{
+        if !quiet {
             println!("{}", "WARNING: Your file description limit is lower than selected batch size. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
             // TODO this is a joke please fix
 
@@ -115,10 +115,9 @@ fn main() {
             // basically, ubuntu is 8000
             // but i can only get it to work on < 5k in testing
             // 5k is default, so 3000 seems safe
-            if x > 8000{
+            if x > 8000 {
                 batch_size = 3000
-            }
-            else {
+            } else {
                 let ten: u64 = 100;
                 batch_size = x - ten;
             }
@@ -127,8 +126,8 @@ fn main() {
     // else if the ulimit is higher than batch size
     // tell the user they can increase batch size
     // if the user set ulimit arg they probably know what they are doing so don't print this
-    else if x + 2 > batch_size.into() && (ulimit_arg == "None"){
-        if !quiet{
+    else if x + 2 > batch_size.into() && (ulimit_arg == "None") {
+        if !quiet {
             // TODO this is a joke please fix
             let one: u64 = 1;
             println!("Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.", x, x - one);
@@ -137,19 +136,28 @@ fn main() {
     // the user has asked to automatically up the ulimit
 
     // gets timeout
-    let duration_timeout =
-        matches
-            .value_of("T")
-            .unwrap_or("None")
-            .parse::<u64>()
-            .unwrap();
+    let duration_timeout = matches
+        .value_of("T")
+        .unwrap_or("None")
+        .parse::<u64>()
+        .unwrap();
 
     // 65535 + 1 because of 0 indexing
-    let scanner = Scanner::new(ip, 1, 65536, batch_size.try_into().unwrap(), Duration::from_millis(duration_timeout), quiet);
+    let scanner = Scanner::new(
+        ip,
+        1,
+        65536,
+        batch_size.try_into().unwrap(),
+        Duration::from_millis(duration_timeout),
+        quiet,
+    );
     let scan_result = block_on(scanner.run());
 
     // prints ports and places them into nmap string
-    let nmap_str_ports: Vec<String> = scan_result.into_iter().map(|port| port.to_string()).collect();
+    let nmap_str_ports: Vec<String> = scan_result
+        .into_iter()
+        .map(|port| port.to_string())
+        .collect();
 
     // if no ports are found, suggest running with less
     if nmap_str_ports.is_empty() {
@@ -159,23 +167,23 @@ fn main() {
     }
 
     // Tells the user we are now switching to Nmap
-    if !quiet{
-        println!(
-            "{}",
-            "Starting nmap.".blue(),
-        );
+    if !quiet {
+        println!("{}", "Starting nmap.".blue(),);
     }
 
     // nmap port style is 80,443. Comma seperated with no spaces.
     let ports_str = nmap_str_ports.join(",");
 
     // if quiet mode is on, return ports and exit
-    if quiet{
+    if quiet {
         println!("{:?}", ports_str);
         exit(1);
     }
 
-    let nmap_args = format!("{} {} {} {} {} {}", &command_run, "-Pn", "-vvv", "-p", &ports_str, ip);
+    let nmap_args = format!(
+        "{} {} {} {} {} {}",
+        &command_run, "-Pn", "-vvv", "-p", &ports_str, ip
+    );
     if !quiet {
         println!("The Nmap command to be run is {}", &nmap_args);
     }
@@ -199,8 +207,5 @@ fn print_opening() {
     | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
-    println!(
-        "{}\n",
-        s.green(),
-    );
+    println!("{}\n", s.green(),);
 }
