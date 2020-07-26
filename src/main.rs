@@ -118,7 +118,10 @@ fn main() {
     let scan_result = block_on(scanner.run());
 
     // prints ports and places them into nmap string
-    let nmap_str_ports: Vec<String> = scan_result.into_iter().map(|port| port.to_string()).collect();
+    let nmap_str_ports: Vec<String> = scan_result
+        .into_iter()
+        .map(|port| port.to_string())
+        .collect();
 
     // if no ports are found, suggest running with less
     if nmap_str_ports.is_empty() {
