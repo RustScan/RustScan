@@ -1,11 +1,23 @@
 <p align="center">
-<img src="pictures/rustscan.png"><br>
-<u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with Rustscan, automatically pipe them into Nmap. 
+➡️ 
+<a href="https://discord.gg/r38pna">Discord</a> |
+ <a href="https://github.com/RustScan/RustScan#-full-installation-guide">Installation Guide</a> |
+ <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
+ ⬅️
+<br>
+<img src="pictures/rustscan.png">
+</p>
+<p align="center">
+<u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap. 
 </p>
 <p align="center">
 <img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
 <img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
 <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/brandonskerritt/rustscan">
+<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads">
+<img alt="Crates.io" src="https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads">
+<img alt="Discord" src="https://img.shields.io/discord/736614461313515576">
+<img alt="Actions" src="https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg">
 </p>
 <hr>
 
