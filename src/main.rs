@@ -4,11 +4,11 @@ mod scanner;
 use scanner::Scanner;
 
 use colored::*;
-use std::time::Duration;
-use std::process::{exit, Command};
 use futures::executor::block_on;
 use rlimit::Resource;
-use rlimit::{setrlimit, getrlimit};
+use rlimit::{getrlimit, setrlimit};
+use std::process::{exit, Command};
+use std::time::Duration;
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
@@ -28,11 +28,11 @@ struct Opts {
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
     /// support this.
-    #[structopt(short, long,  default_value = "4500")]
+    #[structopt(short, long, default_value = "4500")]
     batch_size: u64,
 
     /// The timeout in milliseconds before a port is assumed to be closed.
-    #[structopt(short, long,  default_value = "1500")]
+    #[structopt(short, long, default_value = "1500")]
     timeout: u64,
 
     /// Automatically ups the ULIMIT with the value you provided.
@@ -54,25 +54,25 @@ fn main() {
     let user_nmap_options = if opts.command.is_empty() {
         "-A -vvv".to_string()
     } else {
-       opts.command.join(" ")
+        opts.command.join(" ")
     };
 
     if !opts.quiet {
-       print_opening();
+        print_opening();
     }
 
     // Updates ulimit when the argument is set
     if opts.ulimit.is_some() {
-       let limit = opts.ulimit.unwrap();
+        let limit = opts.ulimit.unwrap();
 
-       if !opts.quiet {
-           println!("Automatically upping ulimit to {}", limit);
-       }
+        if !opts.quiet {
+            println!("Automatically upping ulimit to {}", limit);
+        }
 
-       match setrlimit(Resource::NOFILE, limit, limit) {
-           Ok(_) => {},
-           Err(_) => println!("ERROR.  Failed to set Ulimit.")
-       }
+        match setrlimit(Resource::NOFILE, limit, limit) {
+            Ok(_) => {}
+            Err(_) => println!("ERROR.  Failed to set Ulimit."),
+        }
     }
 
     let (x, _) = getrlimit(Resource::NOFILE).unwrap();
@@ -92,17 +92,16 @@ fn main() {
         // basically, ubuntu is 8000
         // but i can only get it to work on < 5k in testing
         // 5k is default, so 3000 seems safe
-        if x > 8000{
+        if x > 8000 {
             opts.batch_size = 3000
-        }
-        else {
+        } else {
             opts.batch_size = x - 100u64;
         }
     }
     // else if the ulimit is higher than batch size
     // tell the user they can increase batch size
     // if the user set ulimit arg they probably know what they are doing so don't print this
-    else if x + 2 > opts.batch_size && (opts.ulimit.is_none()){
+    else if x + 2 > opts.batch_size && (opts.ulimit.is_none()) {
         if !opts.quiet {
             println!(
                 "Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.",
@@ -114,7 +113,14 @@ fn main() {
     // the user has asked to automatically up the ulimit
 
     // 65535 + 1 because of 0 indexing
-    let scanner = Scanner::new(&opts.ip, 1, 65536, opts.batch_size, Duration::from_millis(opts.timeout), opts.quiet);
+    let scanner = Scanner::new(
+        &opts.ip,
+        1,
+        65536,
+        opts.batch_size,
+        Duration::from_millis(opts.timeout),
+        opts.quiet,
+    );
     let scan_result = block_on(scanner.run());
 
     // prints ports and places them into nmap string
@@ -135,10 +141,7 @@ fn main() {
 
     // Tells the user we are now switching to Nmap
     if !opts.quiet {
-        println!(
-            "{}",
-            "Starting nmap.".blue(),
-        );
+        println!("{}", "Starting nmap.".blue(),);
     }
 
     // nmap port style is 80,443. Comma seperated with no spaces.
@@ -150,7 +153,10 @@ fn main() {
         exit(1);
     }
 
-    let nmap_args = format!("{} {} {} {} {} {}", &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip);
+    let nmap_args = format!(
+        "{} {} {} {} {} {}",
+        &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
+    );
     if !opts.quiet {
         println!("The Nmap command to be run is {}", &nmap_args);
     }
@@ -180,8 +186,8 @@ fn print_opening() {
 #[cfg(test)]
 mod tests {
     use super::Scanner;
-    use std::time::Duration;
     use async_std::task::block_on;
+    use std::time::Duration;
 
     #[test]
     fn does_it_run() {
