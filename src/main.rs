@@ -149,7 +149,7 @@ fn main() {
 
     // if quiet mode is on, return ports and exit
     if opts.quiet {
-        println!("{:?}", ports_str);
+        println!("{}", ports_str);
         exit(1);
     }
 
