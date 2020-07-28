@@ -6,7 +6,7 @@ use futures::stream::FuturesUnordered;
 use std::time::Duration;
 use std::{
     io::ErrorKind,
-    net::{Shutdown, SocketAddr, IpAddr, Ipv6Addr},
+    net::{Shutdown, SocketAddr, IpAddr, Ipv6Addr, Ipv4Addr},
 };
 
 pub struct Scanner {
@@ -70,12 +70,12 @@ impl Scanner {
         open_ports
     }
 
-    async fn scan_port(&self, port: u16) -> io::Result<u64> {
-        let addr = SocketAddr::new(self.host, port);
-        match addr{
-            SocketAddr::V4(_) => {}
-            SocketAddr::V6(_) => {}
-        }
+    async fn scan_port(&self, port: u16) -> SocketAddr {
+        let addr = SocketAddr::new(self.host, 80);
+
+
+        return addr;
+        
     }
 
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
