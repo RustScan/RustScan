@@ -39,7 +39,9 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<u64>,
 
+    /// IPv6 mode.
     #[structopt(short, long)]
+    ipv6: bool,
 
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.

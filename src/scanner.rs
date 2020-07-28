@@ -6,7 +6,7 @@ use futures::stream::FuturesUnordered;
 use std::time::Duration;
 use std::{
     io::ErrorKind,
-    net::{Shutdown, SocketAddr, IpAddr},
+    net::{Shutdown, SocketAddr, IpAddr, Ipv6Addr},
 };
 
 pub struct Scanner {
@@ -16,6 +16,7 @@ pub struct Scanner {
     batch_size: u64,
     timeout: Duration,
     quiet: bool,
+    ipv6: bool,
 }
 
 impl Scanner {
@@ -26,6 +27,7 @@ impl Scanner {
         batch_size: u64,
         timeout: Duration,
         quiet: bool,
+        ipv6: bool,
     ) -> Self {
         Self {
             host: host.to_owned(),
@@ -34,6 +36,7 @@ impl Scanner {
             batch_size,
             timeout,
             quiet,
+            ipv6,
         }
     }
 
@@ -67,34 +70,11 @@ impl Scanner {
         open_ports
     }
 
-    async fn scan_port(&self, port: &u64) -> io::Result<u64> {
-        let addr = 
-        let addr = format!("{}:{}", self.host, port);
-
-        match addr.parse() {
-            Ok(sock_addr) => match self.connect(sock_addr).await {
-                Ok(stream_result) => {
-                    match stream_result.shutdown(Shutdown::Both) {
-                        _ => {}
-                    }
-                    if !self.quiet {
-                        println!("Open {}", port.to_string().purple());
-                    }
-
-                    Ok(*port)
-                }
-                Err(e) => match e.kind() {
-                    ErrorKind::Other => {
-                        eprintln!("{:?}", e); // in case we get too many open files
-                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-                    }
-                    _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
-                },
-            },
-            Err(e) => {
-                eprintln!("Unable to convert to socket address {:?}", e);
-                panic!("Unable to convert to socket address");
-            }
+    async fn scan_port(&self, port: u16) -> io::Result<u64> {
+        let addr = SocketAddr::new(self.host, port);
+        match addr{
+            SocketAddr::V4(_) => {}
+            SocketAddr::V6(_) => {}
         }
     }
 
