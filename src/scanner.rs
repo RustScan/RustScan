@@ -72,11 +72,30 @@ impl Scanner {
 
     async fn scan_port(&self, port: u16) -> SocketAddr {
         let addr = SocketAddr::new(self.host, 80);
+        match addr{
+            Ok(addr) => {
+                match self.connect(addr).await {
+                    Ok(stream_result) => {
+                        // match stream_result.shutdown(Shutdown::Both)
+                        match stream_result.shutdown(Shutdown::Both) {
+                            _ => {}
+                        }
+                        if !self.quiet {
+                            println!("Open {}", port.to_string().purple());
+                        }
+                        Ok(*port)
+                    },
+                    Err(error) => {
+                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                    },
+                    Err(error) => {panic!("Invalid socket address")}
+                }
+            },
+            Err(error) => {panic!("Unable to convert to socket address")};
+        }
 
-
-        return addr;
-        
-    }
+        }
+    
 
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
         let stream =
@@ -84,6 +103,7 @@ impl Scanner {
         Ok(stream)
     }
 }
+
 
 #[cfg(test)]
 mod tests {
