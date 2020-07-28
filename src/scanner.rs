@@ -6,11 +6,11 @@ use futures::stream::FuturesUnordered;
 use std::time::Duration;
 use std::{
     io::ErrorKind,
-    net::{Shutdown, SocketAddr},
+    net::{Shutdown, SocketAddr, IpAddr},
 };
 
 pub struct Scanner {
-    host: String,
+    host: IpAddr,
     start: u64,
     end: u64,
     batch_size: u64,
@@ -20,7 +20,7 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(
-        host: &str,
+        host: IpAddr,
         start: u64,
         end: u64,
         batch_size: u64,
@@ -68,6 +68,7 @@ impl Scanner {
     }
 
     async fn scan_port(&self, port: &u64) -> io::Result<u64> {
+        let addr = 
         let addr = format!("{}:{}", self.host, port);
 
         match addr.parse() {

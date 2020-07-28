@@ -39,6 +39,8 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<u64>,
 
+    #[structopt(short, long)]
+
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
