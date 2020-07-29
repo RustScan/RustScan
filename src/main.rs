@@ -202,4 +202,11 @@ mod tests {
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
+    fn does_it_run_ivp6() {
+        // Makes sure te program still runs and doesn't panic
+        let scanner = Scanner::new("::1", 1, 65536, 1000, Duration::from_millis(10), true);
+        let scan_result = block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
 }
