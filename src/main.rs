@@ -175,6 +175,7 @@ fn main() {
     child.wait().expect("failed to wait on nmap process");
 }
 
+/// Prints the opening title of RustScan
 fn print_opening() {
     let s = "
      _____           _    _____
