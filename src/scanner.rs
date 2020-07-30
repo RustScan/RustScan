@@ -11,8 +11,8 @@ use std::{
 
 pub struct Scanner {
     host: IpAddr,
-    start: u64,
-    end: u64,
+    start: u16,
+    end: u16,
     batch_size: u64,
     timeout: Duration,
     quiet: bool,
@@ -22,8 +22,8 @@ pub struct Scanner {
 impl Scanner {
     pub fn new(
         host: IpAddr,
-        start: u64,
-        end: u64,
+        start: u16,
+        end: u16,
         batch_size: u64,
         timeout: Duration,
         quiet: bool,
@@ -40,31 +40,29 @@ impl Scanner {
         }
     }
 
-    pub async fn run(&self) -> Vec<u64> {
-        let ports: Vec<u64> = (self.start..self.end).collect();
-        let mut open_ports: std::vec::Vec<u64> = Vec::new();
+    pub async fn run(&self) -> Vec<u16> {
+        let ports: Vec<u16> = (self.start..self.end).collect();
+        let mut open_ports: std::vec::Vec<u16> = Vec::new();
 
         for range in ports.chunks(self.batch_size as usize) {
-            let mut ports = self.scan_range(range).await;
+            let mut ports: = self.scan_range(range).await;
             open_ports.append(&mut ports);
         }
 
         open_ports
     }
 
-    async fn scan_range(&self, range: &[u64]) -> Vec<u64> {
+    async fn scan_range(&self, range: &[u16]) -> Vec<u16> {
         let mut ftrs = FuturesUnordered::new();
 
         for port in range {
-            ftrs.push(self.scan_port(port));
+            ftrs.push(self.scan_port(*port));
         }
 
-        let mut open_ports: Vec<u64> = Vec::new();
+        let mut open_ports: Vec<u16> = Vec::new();
         while let Some(result) = ftrs.next().await {
-            match result {
-                Ok(port) => open_ports.push(port),
-                _ => {}
-            }
+            open_ports.push(result.into())
+            
         }
 
         open_ports

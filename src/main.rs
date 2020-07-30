@@ -136,7 +136,7 @@ fn main() {
     // if no ports are found, suggest running with less
     if nmap_str_ports.is_empty() {
         panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
-        \n*I used {} threads, consider lowering to {} with {} or a comfortable number lfor your system.
+        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number lfor your system.
         \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(),
         opts.batch_size,
         (opts.batch_size / 2).to_string().green(),
