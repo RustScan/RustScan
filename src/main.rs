@@ -8,8 +8,12 @@ use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::process::{exit, Command};
-use std::{net::{IpAddr, Ipv6Addr}, time::Duration};
+use std::{net::{IpAddr, Ipv6Addr}, time::Duration, convert::TryInto};
 use structopt::StructOpt;
+
+#[macro_use] extern crate log;
+
+
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
@@ -53,7 +57,10 @@ struct Opts {
 
 /// Faster Nmap scanning with Rust
 fn main() {
+    env_logger::init();
+    info!("Starting up");
     let mut opts = Opts::from_args();
+    info!("Mains() `opts` arguments are {:?}", opts);
 
     let user_nmap_options = if opts.command.is_empty() {
         "-A -vvv".to_string()
@@ -68,6 +75,7 @@ fn main() {
     // Updates ulimit when the argument is set
     if opts.ulimit.is_some() {
         let limit = opts.ulimit.unwrap();
+        info!("Automatically upping ulimit");
 
         if !opts.quiet {
             println!("Automatically upping ulimit to {}", limit);
@@ -99,13 +107,13 @@ fn main() {
         if x > 8000 {
             opts.batch_size = 3000
         } else {
-            opts.batch_size = x - 100u64;
+            opts.batch_size = x - 100u64
         }
     }
     // else if the ulimit is higher than batch size
     // tell the user they can increase batch size
     // if the user set ulimit arg they probably know what they are doing so don't print this
-    else if x + 2 > opts.batch_size && (opts.ulimit.is_none()) {
+    else if x + 2 > opts.batch_size.into() && (opts.ulimit.is_none()) {
         if !opts.quiet {
             println!(
                 "Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.",
@@ -114,6 +122,7 @@ fn main() {
             );
         }
     }
+    println!("{}", opts.batch_size);
 
     let addr = match opts.ip.parse::<IpAddr>(){
         Ok(res) => {res}
@@ -125,8 +134,8 @@ fn main() {
         addr,
         1,
         65535,
-        opts.batch_size,
-        Duration::from_millis(opts.timeout),
+        opts.batch_size.into(),
+        Duration::from_millis(opts.timeout.into()),
         opts.quiet,
         opts.ipv6,
     );
@@ -182,6 +191,7 @@ fn main() {
 
 /// Prints the opening title of RustScan
 fn print_opening() {
+    info!("Printing opening");
     let s = "
      _____           _    _____
     |  __ \\         | |  / ____|
