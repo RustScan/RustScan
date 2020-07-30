@@ -40,6 +40,7 @@ impl Scanner {
         }
     }
 
+    /// Runs scan_range with chunk sizes
     pub async fn run(&self) -> Vec<u16> {
         let ports: Vec<u16> = (self.start..self.end).collect();
         let mut open_ports: std::vec::Vec<u16> = Vec::new();
@@ -52,9 +53,11 @@ impl Scanner {
         open_ports
     }
 
+    /// Given a range of ports, scan them all.
+    /// Returns a vector of open ports.
     async fn scan_range(&self, range: &[u16]) -> Vec<u16> {
         let mut ftrs = FuturesUnordered::new();
-
+            
         for port in range {
             ftrs.push(self.scan_port(*port));
         }
@@ -68,6 +71,9 @@ impl Scanner {
         open_ports
     }
 
+    /// Given a port, scan it.
+    /// Turns the address into a SocketAddr
+    /// Deals with the <result> type
     async fn scan_port(&self, port: u16) -> u16 {
         let addr = SocketAddr::new(self.host, 80);
         match self.connect(addr).await {
@@ -94,7 +100,7 @@ impl Scanner {
 
         
     
-
+    /// Performs the connection to the socket
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
         let stream =
             io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
