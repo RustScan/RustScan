@@ -45,7 +45,7 @@ impl Scanner {
         let mut open_ports: std::vec::Vec<u16> = Vec::new();
 
         for range in ports.chunks(self.batch_size as usize) {
-            let mut ports: = self.scan_range(range).await;
+            let mut ports = self.scan_range(range).await;
             open_ports.append(&mut ports);
         }
 
