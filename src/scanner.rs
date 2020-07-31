@@ -73,7 +73,11 @@ impl Scanner {
 
         let mut open_ports: Vec<u16> = Vec::new();
         while let Some(result) = ftrs.next().await {
-            open_ports.push(result.into())
+            match result{
+                Ok(port) => open_ports.push(port),
+                _ => {}
+            }
+            
             
         }
 
@@ -83,14 +87,13 @@ impl Scanner {
     /// Given a port, scan it.
     /// Turns the address into a SocketAddr
     /// Deals with the <result> type
-    async fn scan_port(&self, port: u16) -> u16 {
+    async fn scan_port(&self, port: u16) -> io::Result<u16> {
         let addr = SocketAddr::new(self.host, 80);
-        info!("Scanning port");
         match self.connect(addr).await {
-            Ok(stream_result) => {
+            Ok(x) => {
                 // match stream_result.shutdown(Shutdown::Both)
                 println!("shutting down stream");
-                match stream_result.shutdown(Shutdown::Both) {
+                match x.shutdown(Shutdown::Both) {
                     _ => {}
                 }
                 if !self.quiet {
@@ -99,11 +102,15 @@ impl Scanner {
                 // if connection successful
                 // shut down stream
                 // return port
-                port
-            },
-            Err(error) => {
-                panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-            }}                
+                Ok(port)
+            }
+            Err(e) => match e.kind(){
+                ErrorKind::Other => {
+                    panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                }
+                _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
+            }
+            }                
             }
         
 
@@ -113,6 +120,7 @@ impl Scanner {
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
         let stream =
             io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
+        println!("okay!");
         Ok(stream)
     }
 }
