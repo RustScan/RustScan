@@ -8,12 +8,11 @@ use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::process::{exit, Command};
-use std::{net::{IpAddr}, time::Duration};
+use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
-#[macro_use] extern crate log;
-
-
+#[macro_use]
+extern crate log;
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
@@ -76,9 +75,8 @@ fn main() {
     }
 
     // Updates ulimit when the argument is set
-    
 
-        // Automatically ups the ulimit
+    // Automatically ups the ulimit
     if opts.ulimit.is_some() {
         let limit = opts.ulimit.unwrap();
         info!("Automatically upping ulimit");
@@ -127,13 +125,9 @@ fn main() {
         }
     }
 
-
-
-
-
-    let addr = match opts.ip.parse::<IpAddr>(){
-        Ok(res) => {res}
-        Err(_) => {panic!("Could not parse IP Address")}
+    let addr = match opts.ip.parse::<IpAddr>() {
+        Ok(res) => res,
+        Err(_) => panic!("Could not parse IP Address"),
     };
 
     // 65535 + 1 because of 0 indexing
@@ -177,13 +171,16 @@ fn main() {
         exit(1);
     }
 
-    let nmap_args = if !opts.ipv6 {format!(
-        "{} {} {} {} {} {}",
-        &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
-    )} else {
+    let nmap_args = if !opts.ipv6 {
+        format!(
+            "{} {} {} {} {} {}",
+            &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
+        )
+    } else {
         format!(
             "{} {} {} {} {} {} {}",
-            &user_nmap_options, "-vvv", "-Pn", "-6", "-p", &ports_str, opts.ip)
+            &user_nmap_options, "-vvv", "-Pn", "-6", "-p", &ports_str, opts.ip
+        )
     };
 
     if !opts.quiet {
@@ -223,21 +220,20 @@ mod tests {
     #[test]
     fn does_it_run() {
         // Makes sure te program still runs and doesn't panic
-        let addr = match "127.0.0.1".parse::<IpAddr>(){
-            Ok(res) => {res}
-            Err(_) => {panic!("Could not parse IP Address")}
+        let addr = match "127.0.0.1".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 
-        65535, 1000, Duration::from_millis(10), true);
+        let scanner = Scanner::new(addr, 1, 65535, 1000, Duration::from_millis(10), true);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
     fn does_it_run_ivp6() {
         // Makes sure te program still runs and doesn't panic
-        let addr = match "::1".parse::<IpAddr>(){
-            Ok(res) => {res}
-            Err(_) => {panic!("Could not parse IP Address")}
+        let addr = match "::1".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 65535, 1000, Duration::from_millis(10), true);
         let scan_result = block_on(scanner.run());
