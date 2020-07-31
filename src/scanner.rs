@@ -88,9 +88,9 @@ impl Scanner {
     /// If no  errors occur, it returns the port number in Result to signify the port is open.
     /// This function mainly deals with the logic of Results handling.
     /// # Example
-    /// 
+    ///
     ///     self.scan_port(10:u16)
-    /// 
+    ///
     /// Note: `self` must contain `self.host`.
     async fn scan_port(&self, port: u16) -> io::Result<u16> {
         let addr = SocketAddr::new(self.host, port);
@@ -121,7 +121,7 @@ impl Scanner {
 
     /// Performs the connection to the socket with timeout
     /// # Example
-    /// 
+    ///
     ///     let port: u16 = 80
     ///     // Host is an IpAddr type
     ///     let host = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
