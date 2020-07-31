@@ -6,7 +6,7 @@ use futures::stream::FuturesUnordered;
 use std::time::Duration;
 use std::{
     io::ErrorKind,
-    net::{Shutdown, SocketAddr, IpAddr, Ipv6Addr, Ipv4Addr},
+    net::{Shutdown, SocketAddr, IpAddr},
 };
 
 /// The class for the scanner
@@ -23,7 +23,6 @@ pub struct Scanner {
     batch_size: u64,
     timeout: Duration,
     quiet: bool,
-    ipv6: bool,
 }
 
 impl Scanner {
@@ -34,7 +33,6 @@ impl Scanner {
         batch_size: u64,
         timeout: Duration,
         quiet: bool,
-        ipv6: bool,
     ) -> Self {
         Self {
             host: host.to_owned(),
@@ -43,7 +41,6 @@ impl Scanner {
             batch_size,
             timeout,
             quiet,
-            ipv6,
         }
     }
 
@@ -53,10 +50,13 @@ impl Scanner {
     pub async fn run(&self) -> Vec<u16> {
         let ports: Vec<u16> = (self.start..self.end).collect();
         let mut open_ports: std::vec::Vec<u16> = Vec::new();
+        // TODO change this to port size 
+        // to fix bug when we introduce custom port ranges
 
         for range in ports.chunks(self.batch_size as usize) {
             let mut ports = self.scan_range(range).await;
             open_ports.append(&mut ports);
+            
         }
 
         open_ports
@@ -65,8 +65,8 @@ impl Scanner {
     /// Given a range of ports, scan them all.
     /// Returns a vector of open ports.
     async fn scan_range(&self, range: &[u16]) -> Vec<u16> {
+        
         let mut ftrs = FuturesUnordered::new();
-            
         for port in range {
             ftrs.push(self.scan_port(*port));
         }

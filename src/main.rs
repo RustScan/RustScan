@@ -8,7 +8,7 @@ use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::process::{exit, Command};
-use std::{net::{IpAddr, Ipv6Addr}, time::Duration, convert::TryInto};
+use std::{net::{IpAddr}, time::Duration};
 use structopt::StructOpt;
 
 #[macro_use] extern crate log;
@@ -76,6 +76,9 @@ fn main() {
     }
 
     // Updates ulimit when the argument is set
+    
+
+        // Automatically ups the ulimit
     if opts.ulimit.is_some() {
         let limit = opts.ulimit.unwrap();
         info!("Automatically upping ulimit");
@@ -90,74 +93,6 @@ fn main() {
         }
     }
 
-
-
-    let addr = match opts.ip.parse::<IpAddrr>(){
-        Ok(res) => {res}
-        Err(_) => {panic!("Could not parse IP Address")}
-    };
-
-    // 65535 + 1 because of 0 indexing
-    let scanner = Scanner::new(
-        addr,
-        1,
-        65535,
-        opts.batch_size.into(),
-        Duration::from_millis(opts.timeout.into()),
-        opts.quiet,
-        opts.ipv6,
-    );
-    let scan_result = block_on(scanner.run());
-
-    // prints ports and places them into nmap string
-    let nmap_str_ports: Vec<String> = scan_result
-        .into_iter()
-        .map(|port| port.to_string())
-        .collect();
-
-    // if no ports are found, suggest running with less
-    if nmap_str_ports.is_empty() {
-        panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
-        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(),
-        opts.batch_size,
-        (opts.batch_size / 2).to_string().green(),
-        "'rustscan -b <batch_size> <ip address>'".green());
-    }
-
-    // Tells the user we are now switching to Nmap
-    if !opts.quiet {
-        println!("{}", "Starting nmap.".blue(),);
-    }
-
-    // nmap port style is 80,443. Comma seperated with no spaces.
-    let ports_str = nmap_str_ports.join(",");
-
-    // if quiet mode is on, return ports and exit
-    if opts.quiet {
-        println!("{}", ports_str);
-        exit(1);
-    }
-
-    let nmap_args = format!(
-        "{} {} {} {} {} {}",
-        &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
-    );
-    if !opts.quiet {
-        println!("The Nmap command to be run is {}", &nmap_args);
-    }
-    let nmap_args = shell_words::split(&nmap_args).expect("failed to parse nmap arguments");
-
-    // Runs the nmap command and spawns it as a process.
-    let mut child = Command::new("nmap")
-        .args(&nmap_args)
-        .spawn()
-        .expect("failed to execute nmap process");
-
-    child.wait().expect("failed to wait on nmap process");
-}
-
-fn ulimit_handling() {
     let (x, _) = getrlimit(Resource::NOFILE).unwrap();
 
     // if maximum limit is lower than batch size
@@ -191,6 +126,78 @@ fn ulimit_handling() {
             );
         }
     }
+
+
+
+
+
+    let addr = match opts.ip.parse::<IpAddr>(){
+        Ok(res) => {res}
+        Err(_) => {panic!("Could not parse IP Address")}
+    };
+
+    // 65535 + 1 because of 0 indexing
+    let scanner = Scanner::new(
+        addr,
+        1,
+        65535,
+        opts.batch_size.into(),
+        Duration::from_millis(opts.timeout.into()),
+        opts.quiet,
+    );
+    let scan_result = block_on(scanner.run());
+
+    // prints ports and places them into nmap string
+    let nmap_str_ports: Vec<String> = scan_result
+        .into_iter()
+        .map(|port| port.to_string())
+        .collect();
+
+    // if no ports are found, suggest running with less
+    if nmap_str_ports.is_empty() {
+        panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
+        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(),
+        opts.batch_size,
+        (opts.batch_size / 2).to_string().green(),
+        "'rustscan -b <batch_size> <ip address>'".green());
+    }
+
+    // Tells the user we are now switching to Nmap
+    if !opts.quiet {
+        println!("{}", "Starting nmap.".blue(),);
+    }
+
+    // nmap port style is 80,443. Comma seperated with no spaces.
+    let ports_str = nmap_str_ports.join(",");
+
+    // if quiet mode is on, return ports and exit
+    if opts.quiet {
+        println!("{}", ports_str);
+        exit(1);
+    }
+
+    let nmap_args = if !opts.ipv6 {format!(
+        "{} {} {} {} {} {}",
+        &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
+    )} else {
+        format!(
+            "{} {} {} {} {} {} {}",
+            &user_nmap_options, "-vvv", "-Pn", "-6", "-p", &ports_str, opts.ip)
+    };
+
+    if !opts.quiet {
+        println!("The Nmap command to be run is {}", &nmap_args);
+    }
+    let nmap_args = shell_words::split(&nmap_args).expect("failed to parse nmap arguments");
+
+    // Runs the nmap command and spawns it as a process.
+    let mut child = Command::new("nmap")
+        .args(&nmap_args)
+        .spawn()
+        .expect("failed to execute nmap process");
+
+    child.wait().expect("failed to wait on nmap process");
 }
 
 /// Prints the opening title of RustScan
@@ -211,20 +218,28 @@ fn print_opening() {
 mod tests {
     use super::Scanner;
     use async_std::task::block_on;
-    use std::time::Duration;
+    use std::{net::IpAddr, time::Duration};
 
     #[test]
     fn does_it_run() {
         // Makes sure te program still runs and doesn't panic
-        let scanner = Scanner::new("127.0.0.1", 1, 
-        65536, 1000, Duration::from_millis(10), true, false);
+        let addr = match "127.0.0.1".parse::<IpAddr>(){
+            Ok(res) => {res}
+            Err(_) => {panic!("Could not parse IP Address")}
+        };
+        let scanner = Scanner::new(addr, 1, 
+        65535, 1000, Duration::from_millis(10), true, false);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
     fn does_it_run_ivp6() {
         // Makes sure te program still runs and doesn't panic
-        let scanner = Scanner::new("::1", 1, 65536, 1000, Duration::from_millis(10), true, true);
+        let addr = match "::1".parse::<IpAddr>(){
+            Ok(res) => {res}
+            Err(_) => {panic!("Could not parse IP Address")}
+        };
+        let scanner = Scanner::new(addr, 1, 65535, 1000, Duration::from_millis(10), true, true);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);

@@ -23,9 +23,6 @@ shell-words = "1.0.0"
 log = "0.4.0"
 env_logger = "0.7.1"
 
-[dev-dependencies]
-env_logger = "0.7.1"
-
 [package.metadata.deb]
 depends = "$auto, nmap"
 
