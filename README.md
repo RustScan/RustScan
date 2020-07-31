@@ -62,6 +62,7 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 * Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
 * Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
 * Let's you choose what Nmap commands to run, or uses the default.
+* IPv6 Support
 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
