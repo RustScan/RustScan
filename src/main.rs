@@ -56,8 +56,11 @@ struct Opts {
 }
 
 /// Faster Nmap scanning with Rust
+/// If you're looking for the actual scanning, check out the module Scanner.
 fn main() {
+    // logger
     env_logger::init();
+
     info!("Starting up");
     let mut opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
@@ -87,43 +90,9 @@ fn main() {
         }
     }
 
-    let (x, _) = getrlimit(Resource::NOFILE).unwrap();
 
-    // if maximum limit is lower than batch size
-    // automatically re-adjust the batch size
-    if x < opts.batch_size {
-        if !opts.quiet {
-            println!("{}", "WARNING: Your file description limit is lower than selected batch size. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
-        }
 
-        // TODO this is a joke please fix
-
-        // if the OS supports high file limits like 8000
-        // but the user selected a batch size higher than this
-        // reduce to a lower number
-        // basically, ubuntu is 8000
-        // but i can only get it to work on < 5k in testing
-        // 5k is default, so 3000 seems safe
-        if x > 8000 {
-            opts.batch_size = 3000
-        } else {
-            opts.batch_size = x - 100u64
-        }
-    }
-    // else if the ulimit is higher than batch size
-    // tell the user they can increase batch size
-    // if the user set ulimit arg they probably know what they are doing so don't print this
-    else if x + 2 > opts.batch_size.into() && (opts.ulimit.is_none()) {
-        if !opts.quiet {
-            println!(
-                "Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.",
-                x,
-                x - 1u64
-            );
-        }
-    }
-
-    let addr = match opts.ip.parse::<IpAddr>(){
+    let addr = match opts.ip.parse::<IpAddrr>(){
         Ok(res) => {res}
         Err(_) => {panic!("Could not parse IP Address")}
     };
@@ -186,6 +155,42 @@ fn main() {
         .expect("failed to execute nmap process");
 
     child.wait().expect("failed to wait on nmap process");
+}
+
+fn ulimit_handling() {
+    let (x, _) = getrlimit(Resource::NOFILE).unwrap();
+
+    // if maximum limit is lower than batch size
+    // automatically re-adjust the batch size
+    if x < opts.batch_size {
+        if !opts.quiet {
+            println!("{}", "WARNING: Your file description limit is lower than selected batch size. Please considering upping this (how to is on the README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing Batch Size to match your limit, this process isn't harmful but reduces speed.".red());
+        }
+
+        // if the OS supports high file limits like 8000
+        // but the user selected a batch size higher than this
+        // reduce to a lower number
+        // basically, ubuntu is 8000
+        // but i can only get it to work on < 5k in testing
+        // 5k is default, so 3000 seems safe
+        if x > 8000 {
+            opts.batch_size = 3000
+        } else {
+            opts.batch_size = x - 100u64
+        }
+    }
+    // else if the ulimit is higher than batch size
+    // tell the user they can increase batch size
+    // if the user set ulimit arg they probably know what they are doing so don't print this
+    else if x + 2 > opts.batch_size.into() && (opts.ulimit.is_none()) {
+        if !opts.quiet {
+            println!(
+                "Your file description limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.",
+                x,
+                x - 1u64
+            );
+        }
+    }
 }
 
 /// Prints the opening title of RustScan
