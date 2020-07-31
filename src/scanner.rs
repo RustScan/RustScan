@@ -88,11 +88,12 @@ impl Scanner {
     /// Turns the address into a SocketAddr
     /// Deals with the <result> type
     async fn scan_port(&self, port: u16) -> io::Result<u16> {
-        let addr = SocketAddr::new(self.host, 80);
+        let addr = SocketAddr::new(self.host, port);
+        // println!("{:?}", addr);
         match self.connect(addr).await {
             Ok(x) => {
                 // match stream_result.shutdown(Shutdown::Both)
-                println!("shutting down stream");
+                info!("Shutting down stream");
                 match x.shutdown(Shutdown::Both) {
                     _ => {}
                 }
@@ -120,7 +121,7 @@ impl Scanner {
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
         let stream =
             io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
-        println!("okay!");
+        info!("Returning okay from connect");
         Ok(stream)
     }
 }
