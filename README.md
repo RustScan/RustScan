@@ -1,6 +1,6 @@
 <p align="center">
 ➡️ 
-<a href="https://discord.gg/r38pna">Discord</a> |
+<a href="https://discord.gg/rAnvBbg">Discord</a> |
  <a href="https://github.com/RustScan/RustScan#-full-installation-guide">Installation Guide</a> |
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
  ⬅️
