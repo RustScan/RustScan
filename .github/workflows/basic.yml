@@ -46,3 +46,12 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  links:
+        name: markdown-link-check
+        runs-on: ubuntu-latest
+        steps:
+        - uses: actions/checkout@master
+        - uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+                use-quiet-mode: 'yes'
