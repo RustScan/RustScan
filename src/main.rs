@@ -82,9 +82,9 @@ fn main() {
         exit(1);
     }
 
-    let ip = match opts.ip{
-        Some(ip) => {ip}
-        None => {panic!("Error. No IP address was supplied.")}
+    let ip = match opts.ip {
+        Some(ip) => ip,
+        None => panic!("Error. No IP address was supplied."),
     };
 
     if !opts.quiet {
