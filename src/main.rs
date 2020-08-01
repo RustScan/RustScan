@@ -22,7 +22,9 @@ extern crate log;
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
 /// - Discord https://discord.gg/rAnvBbg
+/// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
+    // TODO default_value is a hack to make it an optional argument
     /// The IP address to scan
     #[structopt(parse(try_from_str))]
     ip: IpAddr,
@@ -68,14 +70,17 @@ fn main() {
     info!("Mains() `opts` arguments are {:?}", opts);
 
     let config = dirs::config_dir();
-    // TODO make this path config_dir + "/config.toml"
+
+    let mut config_path = match config {
+        Some(x) => x,
+        None => panic!("Couldn't find config dir"),
+    };
+    config_path.push("config.toml");
+
     if opts.appdirs {
         // prints config file location and exits
-        println!(
-            "The config file is expected to be in the folder {:?}",
-            config
-        );
-        exit(1)
+        println!("The config file is expected to be at {:?}", config_path);
+        exit(1);
     }
 
     if !opts.quiet {
@@ -84,6 +89,8 @@ fn main() {
 
     // Updates ulimit when the argument is set
 
+    // TODO move the ulimit function to a new function
+    // I tried to do this, but I wasn't sure on how to pass opts around
     // Automatically ups the ulimit
     if opts.ulimit.is_some() {
         let limit = opts.ulimit.unwrap();
