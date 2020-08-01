@@ -11,6 +11,8 @@ use std::process::{exit, Command};
 use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
+extern crate dirs;
+
 #[macro_use]
 extern crate log;
 
@@ -19,6 +21,7 @@ extern crate log;
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
+/// - Discord https://discord.gg/rAnvBbg
 struct Opts {
     /// The IP address to scan
     #[structopt(parse(try_from_str))]
@@ -43,6 +46,10 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<u64>,
 
+    // Appdirs location. Use this to print out where the config file should go.
+    #[structopt(short, long)]
+    appdirs: bool,
+
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
@@ -57,9 +64,19 @@ fn main() {
     // logger
     env_logger::init();
 
-    info!("Starting up");
     let mut opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
+
+    let config = dirs::config_dir();
+    // TODO make this path config_dir + "/config.toml"
+    if opts.appdirs {
+        // prints config file location and exits
+        println!(
+            "The config file is expected to be in the folder {:?}",
+            config
+        );
+        exit(1)
+    }
 
     if !opts.quiet {
         print_opening();
