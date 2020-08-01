@@ -19,7 +19,7 @@ pub struct Scanner {
     host: IpAddr,
     start: u16,
     end: u16,
-    batch_size: u64,
+    batch_size: u32,
     timeout: Duration,
     quiet: bool,
 }
@@ -29,7 +29,7 @@ impl Scanner {
         host: IpAddr,
         start: u16,
         end: u16,
-        batch_size: u64,
+        batch_size: u32,
         timeout: Duration,
         quiet: bool,
     ) -> Self {
