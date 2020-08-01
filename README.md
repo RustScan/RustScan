@@ -1,6 +1,6 @@
 <p align="center">
 ➡️ 
-<a href="https://discord.gg/rAnvBbg">Discord</a> |
+<a href="https://discord.gg/GFrQsGy">Discord</a> |
  <a href="https://github.com/RustScan/RustScan#-full-installation-guide">Installation Guide</a> |
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
  ⬅️
@@ -79,21 +79,18 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
 
+## ‼️ Important Links
 
-## 🙋 FAQ
-> I think this would be a great port scanner on its own without Nmap!
+| Installation Guide | Documentation | Discord |
+| ------------------ | ------------- | ------- |
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
 
-No. If you want a fast port scanner, use Masscan.
-> I have this great idea for a script to get information on ports / hosts
+## 🙋 Table of Contents
+* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
+* 🦜 [Discord](https://discord.gg/GFrQsGy)
+* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
+* 🎪 [Contributing](https://github.com/RustScan/RustScan#-contributing)
 
-Great. Contribute it to Nmap! :D
-> Not everyone has nmap installed....
-
-If you're a pentester, then yes, you have Nmap installed. 
-
-> I want to contribute!
-
-Great! I'd love some help with this. Read the [contributing.md file](contributing.md) file for more information!
 
 # 📖 Full Installation Guide
 **You need Nmap**. If you have Kali Linux or Parrot OS installed, you already have Nmap. If not, [follow the nmap install guide](https://nmap.org/download.html).
@@ -278,13 +275,45 @@ To increase accuracy, the easiest way is to increase the timeout. The default is
 
 Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
-# 🎪 Contributing
+# 🎪 Community
+
+Howdy Space Cow-Person 🤠🌌
+
+RustScan is always looking for contributors. Whether that's spelling mistakes or major changes, your help is **wanted** and welcomed here.
+
+Before contributing, read our [code of conduct](https://github.com/RustScan/RustScan/blob/master/CODE_OF_CONDUCT.md).
+
+TL;DR if you abuse members of our community you will be **perma-banned** 🤗
+
+RustScan has 2 major labels for GitHub issues you should look at:
+* Good First issue
+These are issues for newcomers to open source! 
+[https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+* Help wanted
+These are issues that aren't really for newcomers, but we could still do wiht help!
+[https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
+
+If you want to, solve the issue or comment on the issue for help.
+
+The flow for contributing to open source software is:
+* Fork the repo
+* Make changes
+* Pull request to the repo
+
+And then comment on the issue that you've done.
+
+RustScan also has some `// TODO`'s in the codebase, which are meant more for the core team but we wouldn't say no to help with these issues.
+
+If you have any feature suggestions or bugs, leave a GitHub issue. We welcome any and all support :D
+
+We communicate over Discord. [Click here](https://discord.gg/GFrQsGy) to join our Discord community!
+
+## Rewarding you
+I cannot pay you :-( But, I can place your GitHub profile on the README under `#Contributors` as a thank you! :)
+
+
 Please read the [contributing.md file](contributing.md)
 
-# 💻 Other Hacking Projects By This Author
-## 🧮 Ciphey
-Ciphey is an automated decryption tool using artifical intelligence & natural language processing.
-[Check it out here!](https://github.com/ciphey/ciphey)
 ## Contributors ✨
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
 [![All Contributors](https://img.shields.io/badge/all_contributors-6-orange.svg?style=flat-square)](#contributors-)
