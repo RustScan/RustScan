@@ -228,7 +228,7 @@ mod tests {
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
-    fn does_it_run_ivp6() {
+    fn does_it_run_ipv6() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "::1".parse::<IpAddr>() {
             Ok(res) => res,
