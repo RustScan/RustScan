@@ -21,7 +21,8 @@ extern crate log;
 /// specified server may not be able to handle this many socket connections at once.
 struct Opts {
     /// The IP address to scan
-    ip: String,
+    #[structopt(parse(try_from_str))]
+    ip: IpAddr,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -42,10 +43,6 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<u64>,
 
-    /// IPv6 mode.
-    #[structopt(short, long)]
-    ipv6: bool,
-
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
@@ -63,12 +60,6 @@ fn main() {
     info!("Starting up");
     let mut opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
-
-    let user_nmap_options = if opts.command.is_empty() {
-        "-A -vvv".to_string()
-    } else {
-        opts.command.join(" ")
-    };
 
     if !opts.quiet {
         print_opening();
@@ -125,14 +116,9 @@ fn main() {
         }
     }
 
-    let addr = match opts.ip.parse::<IpAddr>() {
-        Ok(res) => res,
-        Err(_) => panic!("Could not parse IP Address"),
-    };
-
     // 65535 + 1 because of 0 indexing
     let scanner = Scanner::new(
-        addr,
+        opts.ip,
         1,
         65535,
         opts.batch_size.into(),
@@ -171,22 +157,14 @@ fn main() {
         exit(1);
     }
 
-    let nmap_args = if !opts.ipv6 {
-        format!(
-            "{} {} {} {} {} {}",
-            &user_nmap_options, "-vvv", "-Pn", "-p", &ports_str, opts.ip
-        )
-    } else {
-        format!(
-            "{} {} {} {} {} {} {}",
-            &user_nmap_options, "-vvv", "-Pn", "-6", "-p", &ports_str, opts.ip
-        )
-    };
+    let addr = opts.ip.to_string();
+    let user_nmap_args =
+        shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
+    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, opts.ip.is_ipv6());
 
     if !opts.quiet {
-        println!("The Nmap command to be run is {}", &nmap_args);
+        println!("The Nmap command to be run is {}", &nmap_args.join(" "));
     }
-    let nmap_args = shell_words::split(&nmap_args).expect("failed to parse nmap arguments");
 
     // Runs the nmap command and spawns it as a process.
     let mut child = Command::new("nmap")
@@ -209,6 +187,27 @@ fn print_opening() {
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
     println!("{}\n", s.green());
+}
+
+fn build_nmap_arguments<'a>(
+    addr: &'a str,
+    ports: &'a str,
+    user_args: &'a Vec<String>,
+    is_ipv6: bool,
+) -> Vec<&'a str> {
+    let mut arguments: Vec<&str> = user_args.iter().map(AsRef::as_ref).collect();
+    arguments.push("-A");
+    arguments.push("-vvv");
+
+    if is_ipv6 {
+        arguments.push("-6");
+    }
+
+    arguments.push("-p");
+    arguments.push(ports);
+    arguments.push(addr);
+
+    arguments
 }
 
 #[cfg(test)]

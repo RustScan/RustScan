@@ -15,7 +15,6 @@ use std::{
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// Quiet is whether or not RustScan should print things, or wait until the end to print only open ports.
-/// ipv6 is whether or not this scan is an ipv6 scan.
 pub struct Scanner {
     host: IpAddr,
     start: u16,
@@ -128,8 +127,8 @@ impl Scanner {
     ///     let addr = SocketAddr::new(host, port)
     ///     self.connect(addr)
     ///     // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
-    ///     // Timesout after self.timeouts seconds
-    ///    
+    ///     // Timeout occurs after self.timeout seconds
+    ///
     async fn connect(&self, addr: SocketAddr) -> io::Result<TcpStream> {
         let stream =
             io::timeout(self.timeout, async move { TcpStream::connect(addr).await }).await?;
