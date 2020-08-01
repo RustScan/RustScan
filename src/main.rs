@@ -79,6 +79,7 @@ fn main() {
         Some(x) => x,
         None => panic!("Couldn't find config dir."),
     };
+    config_path.push("rustscan");
     config_path.push("config.toml");
 
     if opts.appdirs {
