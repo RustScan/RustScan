@@ -149,6 +149,13 @@ brew install rustscan
 4. The binary is located at `target/release/rustscan`
 5. Symlink to the binary or something. Whatever you want!
 
+## Community Distributions
+Here are all of RustScan's distributions, along with some community ones.
+
+* [OpenSuse](https://software.opensuse.org/package/rustscan?search_term=rustscan)
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
+
 # 🤸 Usage
 
 ```

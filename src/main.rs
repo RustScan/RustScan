@@ -24,10 +24,9 @@ extern crate log;
 /// - Discord https://discord.gg/rAnvBbg
 /// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
-    // TODO default_value is a hack to make it an optional argument
     /// The IP address to scan
     #[structopt(parse(try_from_str))]
-    ip: IpAddr,
+    ip: Option<IpAddr>,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -73,7 +72,7 @@ fn main() {
 
     let mut config_path = match config {
         Some(x) => x,
-        None => panic!("Couldn't find config dir"),
+        None => panic!("Couldn't find config dir."),
     };
     config_path.push("config.toml");
 
@@ -82,6 +81,11 @@ fn main() {
         println!("The config file is expected to be at {:?}", config_path);
         exit(1);
     }
+
+    let ip = match opts.ip{
+        Some(ip) => {ip}
+        None => {panic!("Error. No IP address was supplied.")}
+    };
 
     if !opts.quiet {
         print_opening();
@@ -142,7 +146,7 @@ fn main() {
 
     // 65535 + 1 because of 0 indexing
     let scanner = Scanner::new(
-        opts.ip,
+        ip,
         1,
         65535,
         opts.batch_size.into(),
@@ -181,10 +185,10 @@ fn main() {
         exit(1);
     }
 
-    let addr = opts.ip.to_string();
+    let addr = ip.to_string();
     let user_nmap_args =
         shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, opts.ip.is_ipv6());
+    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
     if !opts.quiet {
         println!("The Nmap command to be run is {}", &nmap_args.join(" "));
