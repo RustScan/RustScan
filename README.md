@@ -70,6 +70,12 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 | ------------------ | ------------- | ------- |
 | 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
 
+## 🙋 Table of Contents
+* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
+* 🦜 [Discord](https://discord.gg/GFrQsGy)
+* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
+* 🎪 [Contributing](https://github.com/RustScan/RustScan#-contributing)
+
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
@@ -84,13 +90,6 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 | Fast                                                                                       | ✅        | ❌    | ✅       |
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
-
-## 🙋 Table of Contents
-* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
-* 🦜 [Discord](https://discord.gg/GFrQsGy)
-* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
-* 🎪 [Contributing](https://github.com/RustScan/RustScan#-contributing)
-
 
 # 📖 Full Installation Guide
 **You need Nmap**. If you have Kali Linux or Parrot OS installed, you already have Nmap. If not, [follow the nmap install guide](https://nmap.org/download.html).
