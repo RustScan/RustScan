@@ -1,2 +1,12 @@
-language: rust 
+language: rust
+before_install:
+- rustup component add rustfmt
 
+rust:
+  - stable
+  - beta
+  - nightly
+jobs:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
