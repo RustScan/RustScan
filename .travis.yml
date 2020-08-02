@@ -3,10 +3,14 @@ language: rust
 os:
   - linux
   - osx
+  # - windows
 
 arch:
   - amd64
   - arm64
+
+services:
+  - docker  
 
 before_install:
 - rustup component add rustfmt
@@ -27,10 +31,19 @@ script:
 - cargo test
 - cargo fmt -- --check
 
-  #after_success:
-  #- wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
-  #- chmod +x send.sh
-  #- ./send.sh success $WEBHOOK_URL
+# Add in the github release details here
+# deploy:
+#   provider: releases
+#   api_key: "GITHUB OAUTH TOKEN"
+#   file: "FILE TO UPLOAD"
+#   skip_cleanup: true
+#   on:
+#     tags: true
+
+after_success:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh success $WEBHOOK_URL
 after_failure:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
   - chmod +x send.sh
