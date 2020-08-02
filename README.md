@@ -64,6 +64,12 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 * Let's you choose what Nmap commands to run, or uses the default.
 * IPv6 Support
 
+## ‼️ Important Links
+
+| Installation Guide | Documentation | Discord |
+| ------------------ | ------------- | ------- |
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
+
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
@@ -78,12 +84,6 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 | Fast                                                                                       | ✅        | ❌    | ✅       |
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
-
-## ‼️ Important Links
-
-| Installation Guide | Documentation | Discord |
-| ------------------ | ------------- | ------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
 
 ## 🙋 Table of Contents
 * 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
