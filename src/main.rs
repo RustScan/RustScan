@@ -300,7 +300,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 5000, 150, Duration::from_millis(500), true);
+        let scanner = Scanner::new(addr, 1, 1000, 150, Duration::from_millis(500), true);
         let scan_result = block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -310,7 +310,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 1, 500, Duration::from_millis(5), true);
+        let scanner = Scanner::new(addr, 1, 1, 150, Duration::from_millis(5), true);
         let scan_result = block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -320,7 +320,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 10, 1, 500, Duration::from_millis(5), true);
+        let scanner = Scanner::new(addr, 10, 1, 150, Duration::from_millis(5), true);
         let scan_result = block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -330,7 +330,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 400, 445, 500, Duration::from_millis(1500), true);
+        let scanner = Scanner::new(addr, 400, 445, 150, Duration::from_millis(1500), true);
         let scan_result = block_on(scanner.run());
         assert_eq!(true, scan_result.contains(&443));
     }
