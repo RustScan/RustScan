@@ -3,7 +3,7 @@ language: rust
 os:
   - linux
   - osx
-  - windows
+  # - windows
 
 arch:
   - amd64
@@ -32,13 +32,13 @@ script:
 - cargo fmt -- --check
 
 # Add in the github release details here
-deploy:
-  provider: releases
-  api_key: "GITHUB OAUTH TOKEN"
-  file: "FILE TO UPLOAD"
-  skip_cleanup: true
-  on:
-    tags: true
+# deploy:
+#   provider: releases
+#   api_key: "GITHUB OAUTH TOKEN"
+#   file: "FILE TO UPLOAD"
+#   skip_cleanup: true
+#   on:
+#     tags: true
 
 after_success:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
