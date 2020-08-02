@@ -30,7 +30,7 @@ extern crate log;
 struct Opts {
     /// The IP address to scan
     #[structopt(parse(try_from_str))]
-    ip: Option<IpAddr>,
+    ip: IpAddr,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -51,10 +51,6 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<rlimit::rlim>,
 
-    // Appdirs location. Use this to print out where the config file should go.
-    #[structopt(short, long)]
-    appdirs: bool,
-
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
@@ -73,26 +69,6 @@ fn main() {
     let opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
 
-    let config = dirs::config_dir();
-
-    let mut config_path = match config {
-        Some(x) => x,
-        None => panic!("Couldn't find config dir."),
-    };
-    config_path.push("rustscan");
-    config_path.push("config.toml");
-
-    if opts.appdirs {
-        // prints config file location and exits
-        println!("The config file is expected to be at {:?}", config_path);
-        exit(1);
-    }
-
-    let ip = match opts.ip {
-        Some(ip) => ip,
-        None => panic!("Error. No IP address was supplied."),
-    };
-
     if !opts.quiet {
         print_opening();
     }
@@ -102,7 +78,7 @@ fn main() {
 
     // 65535 + 1 because of 0 indexing
     let scanner = Scanner::new(
-        ip,
+        opts.ip,
         1,
         65535,
         batch_size,
@@ -141,10 +117,10 @@ fn main() {
         exit(1);
     }
 
-    let addr = ip.to_string();
+    let addr = opts.ip.to_string();
     let user_nmap_args =
         shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, opts.ip.is_ipv6());
 
     if !opts.quiet {
         println!("The Nmap command to be run is {}", &nmap_args.join(" "));
@@ -171,6 +147,21 @@ fn print_opening() {
     |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
     Faster nmap scanning with rust.";
     println!("{}\n", s.green());
+
+    let config_path = match dirs::config_dir() {
+        Some(mut path) => {
+            path.push("rustscan");
+            path.push("config.toml");
+            path
+        }
+        None => panic!("Couldn't find config dir."),
+    };
+
+    println!(
+        "{} {:?}\n",
+        "The config file is expected to be at".yellow(),
+        config_path
+    );
 }
 
 fn build_nmap_arguments<'a>(
@@ -241,7 +232,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
         if !opts.quiet {
             println!(
-                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.",
+                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.\n",
                 ulimit,
                 ulimit - 1
             );
