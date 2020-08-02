@@ -225,14 +225,17 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT && ulimit > AVERAGE_BATCH_SIZE {
-            // if ulimt is more than the default && the average size on Ubuntu
-            // the user has a weird OS with an incredibly small ulimit
-            // so we half it to prevent any weird errors propping up because of it.
+        if ulimit < AVERAGE_BATCH_SIZE {
+            // ulimit is smaller than aveage batch size
+            // user must have very small ulimit
+            // decrease batch size to half of ulimit
+            info!("Halving batch_size because ulimit is smaller than average batch size");
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
+            info!("Batcg size is now average batch size");
             batch_size = AVERAGE_BATCH_SIZE
         } else {
+            info!("batch size is ulimit - 100");
             batch_size = ulimit - 100
         }
     }
