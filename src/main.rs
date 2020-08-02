@@ -25,7 +25,7 @@ extern crate log;
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
-/// - Discord https://discord.gg/rAnvBbg
+/// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
     /// The IP address to scan
