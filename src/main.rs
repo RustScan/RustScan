@@ -11,6 +11,7 @@ use std::process::{exit, Command};
 use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
+extern crate dirs;
 // Average value for Ubuntu
 const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
 // Safest batch size based on experimentation
@@ -24,10 +25,12 @@ extern crate log;
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
+/// - Discord https://discord.gg/GFrQsGy
+/// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
     /// The IP address to scan
     #[structopt(parse(try_from_str))]
-    ip: IpAddr,
+    ip: Option<IpAddr>,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -48,6 +51,10 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<rlimit::rlim>,
 
+    // Appdirs location. Use this to print out where the config file should go.
+    #[structopt(short, long)]
+    appdirs: bool,
+
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
@@ -66,6 +73,26 @@ fn main() {
     let opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
 
+    let config = dirs::config_dir();
+
+    let mut config_path = match config {
+        Some(x) => x,
+        None => panic!("Couldn't find config dir."),
+    };
+    config_path.push("rustscan");
+    config_path.push("config.toml");
+
+    if opts.appdirs {
+        // prints config file location and exits
+        println!("The config file is expected to be at {:?}", config_path);
+        exit(1);
+    }
+
+    let ip = match opts.ip {
+        Some(ip) => ip,
+        None => panic!("Error. No IP address was supplied."),
+    };
+
     if !opts.quiet {
         print_opening();
     }
@@ -75,7 +102,7 @@ fn main() {
 
     // 65535 + 1 because of 0 indexing
     let scanner = Scanner::new(
-        opts.ip,
+        ip,
         1,
         65535,
         batch_size,
@@ -114,10 +141,10 @@ fn main() {
         exit(1);
     }
 
-    let addr = opts.ip.to_string();
+    let addr = ip.to_string();
     let user_nmap_args =
         shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, opts.ip.is_ipv6());
+    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
     if !opts.quiet {
         println!("The Nmap command to be run is {}", &nmap_args.join(" "));
