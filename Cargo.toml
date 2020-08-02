@@ -22,6 +22,7 @@ rlimit = "0.3.0"
 shell-words = "1.0.0"
 log = "0.4.0"
 env_logger = "0.7.1"
+dirs = "3.0.1"
 
 [package.metadata.deb]
 depends = "$auto, nmap"
