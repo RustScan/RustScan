@@ -2,6 +2,7 @@ language: rust
 before_install:
 - rustup component add rustfmt
 
+# cargo test
 rust:
   - stable
   - beta
@@ -10,3 +11,9 @@ jobs:
   allow_failures:
     - rust: nightly
   fast_finish: true
+
+# Cargo fmt
+script:
+- cargo build
+- cargo test
+- cargo fmt -- --check
