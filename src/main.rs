@@ -295,12 +295,12 @@ mod tests {
     //     assert_eq!(true, scan_result.contains(&5678));
     // }
     #[test]
-    fn does_it_run_triple_0() {
+    fn does_it_run_quad_0() {
         let addr = match "0.0.0.0".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 5000, 250, Duration::from_millis(5), true);
+        let scanner = Scanner::new(addr, 1, 5000, 150, Duration::from_millis(500), true);
         let scan_result = block_on(scanner.run());
         assert_eq!(1, 1);
     }
