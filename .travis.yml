@@ -3,6 +3,11 @@ language: rust
 os:
   - linux
   - osx
+
+arch:
+  - amd64
+  - arm64
+
 before_install:
 - rustup component add rustfmt
 
