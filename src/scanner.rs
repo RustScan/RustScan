@@ -136,12 +136,3 @@ impl Scanner {
         Ok(stream)
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn does_it_run() {
-        // TODO run functions here
-        assert_eq!(1, 1);
-    }
-}

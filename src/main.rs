@@ -269,6 +269,7 @@ mod tests {
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
+    #[test]
     fn does_it_run_ipv6() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "::1".parse::<IpAddr>() {
@@ -280,15 +281,57 @@ mod tests {
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
+    #[test]
     fn does_it_run_cmnatic() {
         // Makes sure te program still runs and doesn't panic
+        // this IP was donated to us for use by Cmnatic
         let addr = match "51.140.231.146".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 6000, 500, Duration::from_millis(1000), true);
+        let scanner = Scanner::new(addr, 5000, 6000, 500, Duration::from_millis(1000), true);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(true, scan_result.contains(&5678));
+    }
+    #[test]
+    fn does_it_run_triple_0() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 1, 65535, 10_000, Duration::from_millis(5), true);
+        let scan_result = block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn zero_ports() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 1, 1, 10_000, Duration::from_millis(5), true);
+        let scan_result = block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn backwards_ports() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 10, 1, 10_000, Duration::from_millis(5), true);
+        let scan_result = block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn google_test() {
+        let addr = match "8.8.8.8".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 10, 1, 10_000, Duration::from_millis(1500), true);
+        let scan_result = block_on(scanner.run());
+        assert_eq!(1, 1);
     }
 }
