@@ -9,8 +9,8 @@ arch:
   - amd64
   - arm64
 
-  services:
-    - docker  
+services:
+  - docker  
 
 before_install:
 - rustup component add rustfmt
