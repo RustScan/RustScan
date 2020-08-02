@@ -225,7 +225,12 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
+        if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT && ulimit > AVERAGE_BATCH_SIZE {
+            // if ulimt is more than the default && the average size on Ubuntu
+            // the user has a weird OS with an incredibly small ulimit
+            // so we half it to prevent any weird errors propping up because of it.
+            batch_size = ulimit / 2
+        } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             batch_size = AVERAGE_BATCH_SIZE
         } else {
             batch_size = ulimit - 100
@@ -259,7 +264,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 65535, 1000, Duration::from_millis(10), true);
+        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(10), true);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -270,7 +275,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 65535, 1000, Duration::from_millis(10), true);
+        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(10), true);
         let scan_result = block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);

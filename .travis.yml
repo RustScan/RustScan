@@ -1,0 +1,37 @@
+language: rust
+
+os:
+  - linux
+  - osx
+
+arch:
+  - amd64
+  - arm64
+
+before_install:
+- rustup component add rustfmt
+
+# cargo test
+rust:
+  - stable
+  - beta
+  - nightly
+jobs:
+  allow_failures:
+    - rust: nightly
+  fast_finish: true
+
+# Cargo fmt
+script:
+- cargo build
+- cargo test
+- cargo fmt -- --check
+
+  #after_success:
+  #- wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  #- chmod +x send.sh
+  #- ./send.sh success $WEBHOOK_URL
+after_failure:
+  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+  - chmod +x send.sh
+  - ./send.sh failure $WEBHOOK_URL
