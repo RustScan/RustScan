@@ -3,7 +3,6 @@ language: rust
 os:
   - linux
   - osx
-  # - windows
 
 arch:
   - amd64
@@ -12,6 +11,9 @@ arch:
 services:
   - docker  
 
+# Save up the cargo build cache
+cache: cargo  
+
 before_install:
 - rustup component add rustfmt
 
@@ -19,26 +21,24 @@ before_install:
 rust:
   - stable
   - beta
-  - nightly
 jobs:
-  allow_failures:
-    - rust: nightly
   fast_finish: true
 
-# Cargo fmt
-script:
-- cargo build
-- cargo test
-- cargo fmt -- --check
+# Build Test Fmt
+script: ./scripts/build.sh
+
+# Running deb build scripts
+script: ./rustscan-debbuilder/run.sh
 
 # Add in the github release details here
-# deploy:
-#   provider: releases
-#   api_key: "GITHUB OAUTH TOKEN"
-#   file: "FILE TO UPLOAD"
-#   skip_cleanup: true
-#   on:
-#     tags: true
+deploy:
+  provider: releases
+  api_key: $GH_0AUTH_TOKEN
+  file: target/debug/rustscan
+  file: debs/*.deb
+  skip_cleanup: true
+  on:
+    tags: true
 
 after_success:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh

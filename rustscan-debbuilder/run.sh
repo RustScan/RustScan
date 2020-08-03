@@ -1,5 +1,5 @@
 #!/bin/bash
-docker build -t rustscan-builder . || exit
+docker build -t rustscan-builder ./rustscan-debbuilder || exit
 
 # This creates a volume which binds your currentdirectory/debs to 
 # the location where the deb files get spat out in the container.
