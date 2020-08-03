@@ -31,6 +31,11 @@ script:
 - cargo test
 - cargo fmt -- --check
 
+# automatic deployment to cargo on release
+deploy:
+        provider: cargo
+        token: $crates 
+
 # Add in the github release details here
 # deploy:
 #   provider: releases
