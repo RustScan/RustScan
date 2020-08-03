@@ -222,13 +222,12 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
             // user must have very small ulimit
             // decrease batch size to half of ulimit
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            println!("{}", "WARNING. Your open file description limit is smaller than expected. You can increas the ulimit with the '-u' flag like '-u 5000' to get default size. Or, use the Docker image. If you do not increase ulimit your RustScan speeds will be much slower in comparison to a normal ulimit.".red());
+            println!("{}", "WARNING. Your open file description limit is smaller than expected. You can increase the ulimit with the '-u' flag like '-u 5000' to get default size. Or, use the Docker image. If you do not increase ulimit your RustScan speeds will be much slower in comparison to a normal ulimit.".red());
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
-            info!("Batcg size is now average batch size");
+            info!("Batch size is now average batch size");
             batch_size = AVERAGE_BATCH_SIZE
         } else {
-            info!("batch size is ulimit - 100");
             batch_size = ulimit - 100
         }
     }
@@ -264,7 +263,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
-        block_on(scanner.run());
+        block_on(scanner.run());increasincreas
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
