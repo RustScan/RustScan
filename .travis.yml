@@ -19,10 +19,10 @@ before_install:
 rust:
   - stable
   - beta
-  - nightly
 jobs:
   allow_failures:
     - rust: nightly
+    - os: osx
   fast_finish: true
 
 # Cargo fmt
