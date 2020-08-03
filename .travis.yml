@@ -20,8 +20,6 @@ rust:
   - stable
   - beta
 jobs:
-  allow_failures:
-    - os: osx
   fast_finish: true
 
 # Cargo fmt
