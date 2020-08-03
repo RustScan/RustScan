@@ -262,7 +262,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
@@ -274,7 +274,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
@@ -285,7 +285,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 1000, 100, Duration::from_millis(500), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         assert_eq!(1, 1);
     }
     #[test]
@@ -295,7 +295,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 1, 100, Duration::from_millis(50), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         assert_eq!(1, 1);
     }
     #[test]
@@ -305,7 +305,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 10, 1, 100, Duration::from_millis(50), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         assert_eq!(1, 1);
     }
     #[test]
@@ -315,7 +315,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 400, 445, 100, Duration::from_millis(1500), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         assert_eq!(1, 1);
     }
     #[test]
@@ -326,7 +326,7 @@ mod tests {
         };
         // mac should have this automatically scaled down
         let scanner = Scanner::new(addr, 400, 600, 10_000, Duration::from_millis(1500), true);
-        let scan_result = block_on(scanner.run());
+        block_on(scanner.run());
         assert_eq!(1, 1);
     }
 }
