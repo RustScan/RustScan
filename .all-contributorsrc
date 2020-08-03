@@ -66,6 +66,15 @@
         "bug",
         "maintenance"
       ]
+    },
+    {
+      "login": "royharoush",
+      "name": "royharoush",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/8113056?v=4",
+      "profile": "https://github.com/royharoush",
+      "contributions": [
+        "ideas"
+      ]
     }
   ],
   "contributorsPerLine": 7,
@@ -73,5 +82,6 @@
   "projectOwner": "brandonskerritt",
   "repoType": "github",
   "repoHost": "https://github.com",
-  "skipCi": true
+  "skipCi": true,
+  "commitConvention": "none"
 }
