@@ -32,22 +32,12 @@ script:
 - cargo fmt -- --check
 
 # automatic deployment to cargo on release
-deploy:
-        # only deploy on master branch
-        on:
-                branch: master
-        provider: cargo
-        token: $crates 
-
-
-# Add in the github release details here
 # deploy:
-#   provider: releases
-#   api_key: "GITHUB OAUTH TOKEN"
-#   file: "FILE TO UPLOAD"
-#   skip_cleanup: true
-#   on:
-#     tags: true
+        # only deploy on master branch
+        # on:
+                # branch: master
+        # provider: cargo
+        # token: $crates 
 
 after_failure:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
