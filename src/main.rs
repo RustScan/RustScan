@@ -252,9 +252,9 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::Scanner;
+    use crate::{adjust_ulimit_size, build_nmap_arguments, infer_batch_size, print_opening, Opts};
     use async_std::task::block_on;
-    use std::{net::IpAddr, time::Duration, str::FromStr};
-    use crate::{Opts, infer_batch_size, adjust_ulimit_size, print_opening, build_nmap_arguments};
+    use std::{net::IpAddr, str::FromStr, time::Duration};
 
     #[test]
     fn does_it_run() {
@@ -375,7 +375,7 @@ mod tests {
         assert!(batch_size == 4900);
     }
     #[test]
-    fn test_adjust_ulimit_size() { 
+    fn test_adjust_ulimit_size() {
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: true,
@@ -389,7 +389,7 @@ mod tests {
         assert!(batch_size == 2000);
     }
     #[test]
-    fn test_print_opening_panic(){
+    fn test_print_opening_panic() {
         // print opening should not paniic
         print_opening();
         assert!(1 == 1);
