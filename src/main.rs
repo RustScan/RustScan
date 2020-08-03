@@ -61,6 +61,7 @@ struct Opts {
 
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner.
+#[cfg(not(tarpaulin_include))]
 fn main() {
     // logger
     env_logger::init();
