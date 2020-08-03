@@ -66,11 +66,21 @@
         "bug",
         "maintenance"
       ]
+    },
+    {
+      "login": "royharoush",
+      "name": "royharoush",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/8113056?v=4",
+      "profile": "https://github.com/royharoush",
+      "contributions": [
+        "ideas",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "RustScan",
-  "projectOwner": "brandonskerritt",
+  "projectOwner": "RustScan",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true
