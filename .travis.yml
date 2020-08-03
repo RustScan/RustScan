@@ -39,6 +39,37 @@ deploy:
         provider: cargo
         token: $crates 
 
+
+# CodeCov
+env: # required for allow_failures
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: NAME='cargo-travis'
+  include:
+    - env: NAME='cargo-travis'
+      sudo: required # travis-ci/travis-ci#9061
+      before_script:
+        - cargo install cargo-update || echo "cargo-update already installed"
+        - cargo install cargo-travis || echo "cargo-travis already installed"
+        - cargo install-update -a
+      script:
+        - |
+          cargo build    --verbose &&
+          cargo coverage --verbose &&
+          bash <(curl -s https://codecov.io/bash) -s target/kcov
+        - |
+          cargo doc --verbose &&
+          cargo doc-upload
+      addons: # required for kcov
+        apt:
+          packages:
+            - libcurl4-openssl-dev
+            - libelf-dev
+            - libdw-dev
+            - binutils-dev
+            - cmake
+
 # Add in the github release details here
 # deploy:
 #   provider: releases
