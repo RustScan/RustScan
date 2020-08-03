@@ -256,7 +256,7 @@ mod tests {
     use std::{net::IpAddr, str::FromStr, time::Duration};
 
     #[test]
-    fn does_it_run() {
+    fn scanner_runs() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "127.0.0.1".parse::<IpAddr>() {
             Ok(res) => res,
@@ -268,7 +268,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn does_it_run_ipv6() {
+    fn ipv6_scanner_runs() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "::1".parse::<IpAddr>() {
             Ok(res) => res,
@@ -280,7 +280,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn does_it_run_quad_0() {
+    fn quad_zero_scanner_runs() {
         let addr = match "0.0.0.0".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
@@ -290,7 +290,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn zero_ports() {
+    fn zero_ports_no_return_no_panic() {
         let addr = match "0.0.0.0".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
@@ -300,7 +300,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn backwards_ports() {
+    fn backwards_ports_scanner_runs() {
         let addr = match "0.0.0.0".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
@@ -310,7 +310,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn google_test() {
+    fn google_dns_runs() {
         let addr = match "8.8.8.8".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
@@ -320,7 +320,8 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn test_mac_ulimit() {
+    fn infer_ulimit_lowering_no_panic() {
+        // this test is because of a bug where Mac OS didn't automatically lower ulimit
         let addr = match "8.8.8.8".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
@@ -331,7 +332,7 @@ mod tests {
         assert_eq!(1, 1);
     }
     #[test]
-    fn test_adjust_ulimit_large() {
+    fn batch_size_lowered() {
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: true,
@@ -346,7 +347,7 @@ mod tests {
     }
 
     #[test]
-    fn test_adjust_ulimit_average_size() {
+    fn batch_size_lowered_average_size() {
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: true,
@@ -360,7 +361,9 @@ mod tests {
         assert!(batch_size == 3000);
     }
     #[test]
-    fn test_adjust_ulimit_equal() {
+    fn batch_size_equals_ulimit_lowered() {
+        // because ulimit and batch size are same size, batch size is lowered
+        // to ULIMIT - 100
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: true,
@@ -374,7 +377,8 @@ mod tests {
         assert!(batch_size == 4900);
     }
     #[test]
-    fn test_adjust_ulimit_size() {
+    fn batch_size_adjusted_2000() {
+        // ulimit == batch_size
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: true,
@@ -388,13 +392,13 @@ mod tests {
         assert!(batch_size == 2000);
     }
     #[test]
-    fn test_print_opening_panic() {
+    fn test_print_opening_no_panic() {
         // print opening should not paniic
         print_opening();
         assert!(1 == 1);
     }
     #[test]
-    fn test_adjust_ulimit_no_optsl() {
+    fn test_high_ulimit_no_quiet_mode() {
         let opts = Opts {
             ip: IpAddr::from_str("127.0.0.1").unwrap(),
             quiet: false,
