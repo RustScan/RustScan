@@ -59,9 +59,9 @@ struct Opts {
     command: Vec<String>,
 }
 
-/// Faster Nmap scanning with Rust
-/// If you're looking for the actual scanning, check out the module Scanner.
 #[cfg(not(tarpaulin_include))]
+/// Faster Nmap scanning with Rust
+/// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
     // logger
     env_logger::init();
@@ -164,7 +164,7 @@ fn print_opening() {
         config_path
     );
 }
-
+#[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(
     addr: &'a str,
     ports: &'a str,
@@ -217,12 +217,15 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT && ulimit > AVERAGE_BATCH_SIZE {
-            // if ulimt is more than the default && the average size on Ubuntu
-            // the user has a weird OS with an incredibly small ulimit
-            // so we half it to prevent any weird errors propping up because of it.
+        if ulimit < AVERAGE_BATCH_SIZE {
+            // ulimit is smaller than aveage batch size
+            // user must have very small ulimit
+            // decrease batch size to half of ulimit
+            info!("Halving batch_size because ulimit is smaller than average batch size");
+            println!("{}", "WARNING. Your open file description limit is smaller than expected. You can increase the ulimit with the '-u' flag like '-u 5000' to get default size. Or, use the Docker image. If you do not increase ulimit your RustScan speeds will be much slower in comparison to a normal ulimit.".red());
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
+            info!("Batch size is now average batch size");
             batch_size = AVERAGE_BATCH_SIZE
         } else {
             batch_size = ulimit - 100
@@ -240,36 +243,172 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         }
     }
 
+    println!("The batch size is {}", batch_size);
+
     batch_size as u32
 }
 
 #[cfg(test)]
 mod tests {
     use super::Scanner;
+    use crate::{adjust_ulimit_size, build_nmap_arguments, infer_batch_size, print_opening, Opts};
     use async_std::task::block_on;
-    use std::{net::IpAddr, time::Duration};
+    use std::{net::IpAddr, str::FromStr, time::Duration};
 
     #[test]
-    fn does_it_run() {
+    fn scanner_runs() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "127.0.0.1".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(10), true);
-        let scan_result = block_on(scanner.run());
+        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
+        block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
-    fn does_it_run_ipv6() {
+    #[test]
+    fn ipv6_scanner_runs() {
         // Makes sure te program still runs and doesn't panic
         let addr = match "::1".parse::<IpAddr>() {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(10), true);
-        let scan_result = block_on(scanner.run());
+        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), false);
+        block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
+    }
+    #[test]
+    fn quad_zero_scanner_runs() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 1, 1000, 100, Duration::from_millis(500), true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn zero_ports_no_return_no_panic() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 1, 1, 100, Duration::from_millis(50), true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn backwards_ports_scanner_runs() {
+        let addr = match "0.0.0.0".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 10, 1, 100, Duration::from_millis(50), true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn google_dns_runs() {
+        let addr = match "8.8.8.8".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        let scanner = Scanner::new(addr, 400, 445, 100, Duration::from_millis(1500), true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn infer_ulimit_lowering_no_panic() {
+        // this test is because of a bug where Mac OS didn't automatically lower ulimit
+        let addr = match "8.8.8.8".parse::<IpAddr>() {
+            Ok(res) => res,
+            Err(_) => panic!("Could not parse IP Address"),
+        };
+        // mac should have this automatically scaled down
+        let scanner = Scanner::new(addr, 400, 600, 10_000, Duration::from_millis(1500), true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn batch_size_lowered() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 120);
+
+        assert!(batch_size < 50_000);
+    }
+
+    #[test]
+    fn batch_size_lowered_average_size() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 9000);
+
+        assert!(batch_size == 3000);
+    }
+    #[test]
+    fn batch_size_equals_ulimit_lowered() {
+        // because ulimit and batch size are same size, batch size is lowered
+        // to ULIMIT - 100
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 5000);
+
+        assert!(batch_size == 4900);
+    }
+    #[test]
+    fn batch_size_adjusted_2000() {
+        // ulimit == batch_size
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = adjust_ulimit_size(&opts);
+
+        assert!(batch_size == 2000);
+    }
+    #[test]
+    fn test_print_opening_no_panic() {
+        // print opening should not paniic
+        print_opening();
+        assert!(1 == 1);
+    }
+    #[test]
+    fn test_high_ulimit_no_quiet_mode() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: false,
+            batch_size: 10,
+            timeout: 1000,
+            ulimit: None,
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 1000000);
+
+        assert!(1 == 1);
     }
 }

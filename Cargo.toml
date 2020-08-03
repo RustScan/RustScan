@@ -26,4 +26,5 @@ dirs = "3.0.1"
 
 [package.metadata.deb]
 depends = "$auto, nmap"
-
+authors = ["Bee <brandon@skerritt.blog>"]
+section = "rust"
