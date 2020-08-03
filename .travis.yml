@@ -33,6 +33,9 @@ script:
 
 # automatic deployment to cargo on release
 deploy:
+        # only deploy on master branch
+        on:
+                branch: master
         provider: cargo
         token: $crates 
 
