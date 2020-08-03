@@ -59,8 +59,9 @@ struct Opts {
     command: Vec<String>,
 }
 
+#[cfg(not(tarpaulin_include))]
 /// Faster Nmap scanning with Rust
-/// If you're looking for the actual scanning, check out the module Scanner.
+/// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
     // logger
     env_logger::init();
@@ -163,7 +164,7 @@ fn print_opening() {
         config_path
     );
 }
-
+#[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(
     addr: &'a str,
     ports: &'a str,
@@ -252,7 +253,8 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
 mod tests {
     use super::Scanner;
     use async_std::task::block_on;
-    use std::{net::IpAddr, time::Duration};
+    use std::{net::IpAddr, time::Duration, str::FromStr};
+    use crate::{Opts, infer_batch_size, adjust_ulimit_size, print_opening, build_nmap_arguments};
 
     #[test]
     fn does_it_run() {
@@ -273,7 +275,7 @@ mod tests {
             Ok(res) => res,
             Err(_) => panic!("Could not parse IP Address"),
         };
-        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
+        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), false);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -328,5 +330,82 @@ mod tests {
         let scanner = Scanner::new(addr, 400, 600, 10_000, Duration::from_millis(1500), true);
         block_on(scanner.run());
         assert_eq!(1, 1);
+    }
+    #[test]
+    fn test_adjust_ulimit_large() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 120);
+
+        assert!(batch_size < 50_000);
+    }
+
+    #[test]
+    fn test_adjust_ulimit_average_size() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 9000);
+
+        assert!(batch_size == 3000);
+    }
+    #[test]
+    fn test_adjust_ulimit_equal() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 5000);
+
+        assert!(batch_size == 4900);
+    }
+    #[test]
+    fn test_adjust_ulimit_size() { 
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: true,
+            batch_size: 50_000,
+            timeout: 1000,
+            ulimit: Some(2000),
+            command: Vec::new(),
+        };
+        let batch_size = adjust_ulimit_size(&opts);
+
+        assert!(batch_size == 2000);
+    }
+    #[test]
+    fn test_print_opening_panic(){
+        // print opening should not paniic
+        print_opening();
+        assert!(1 == 1);
+    }
+    #[test]
+    fn test_adjust_ulimit_no_optsl() {
+        let opts = Opts {
+            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            quiet: false,
+            batch_size: 10,
+            timeout: 1000,
+            ulimit: None,
+            command: Vec::new(),
+        };
+        let batch_size = infer_batch_size(&opts, 1000000);
+
+        assert!(1 == 1);
     }
 }

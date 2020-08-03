@@ -15,6 +15,7 @@ use std::{
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// Quiet is whether or not RustScan should print things, or wait until the end to print only open ports.
+#[cfg(not(tarpaulin_include))]
 pub struct Scanner {
     host: IpAddr,
     start: u16,
