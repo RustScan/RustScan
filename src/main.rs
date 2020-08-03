@@ -263,7 +263,7 @@ mod tests {
             Err(_) => panic!("Could not parse IP Address"),
         };
         let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
-        block_on(scanner.run());increasincreas
+        block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
     }
