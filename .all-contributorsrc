@@ -66,11 +66,20 @@
         "bug",
         "maintenance"
       ]
+    },
+    {
+      "login": "Atul9",
+      "name": "Atul Bhosale",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/3390330?v=4",
+      "profile": "https://github.com/Atul9",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
   "projectName": "RustScan",
-  "projectOwner": "brandonskerritt",
+  "projectOwner": "RustScan",
   "repoType": "github",
   "repoHost": "https://github.com",
   "skipCi": true
