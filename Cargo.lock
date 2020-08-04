@@ -182,9 +182,9 @@ dependencies = [
 
 [[package]]
 name = "concurrent-queue"
-version = "1.2.0"
+version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e296417c8154304ac70aceda41f05318f986f7c0c767bcb0a2366fbb890e78e1"
+checksum = "39ff9c66992ebea984b9446b2a45b300947216c17544ec9d7f045afe24333cd0"
 dependencies = [
  "cache-padded",
 ]
@@ -617,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
-version = "1.5.2"
+version = "1.6.0"
 dependencies = [
  "async-std",
  "colored",
@@ -713,9 +713,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.37"
+version = "1.0.38"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "239f255b9e3429350f188c27b807fc9920a15eb9145230ff1a7d054c08fec319"
+checksum = "e69abc24912995b3038597a7a593be5053eb0fb44f3cc5beec0deb421790c1f4"
 dependencies = [
  "proc-macro2",
  "quote",
