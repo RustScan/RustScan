@@ -7,7 +7,7 @@ use colored::*;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
-use std::process::{exit, Command};
+use std::process::Command;
 use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
@@ -99,14 +99,18 @@ fn main() {
 
         // if no ports are found, suggest running with less
         if nmap_str_ports.is_empty() {
-            println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
-            \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-            \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
-            "ERROR".red(),
-            ip,
-            opts.batch_size,
-            (opts.batch_size / 2).to_string().green(),
-            "'rustscan -b <batch_size> <ip address>'".green());
+            if opts.quiet {
+                println!("{}", "No ports found.".red());
+            } else {
+                println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+                \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+                \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
+                "ERROR".red(),
+                ip,
+                opts.batch_size,
+                (opts.batch_size / 2).to_string().green(),
+                "'rustscan -b <batch_size> <ip address>'".green());
+            }
 
             continue;
         }
@@ -121,8 +125,8 @@ fn main() {
 
         // if quiet mode is on, return ports and exit
         if opts.quiet {
-            println!("{}", ports_str);
-            exit(1);
+            println!("Ports: {:?}", ports_str);
+            continue;
         }
 
         let addr = ip.to_string();
@@ -251,7 +255,9 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         }
     }
 
-    println!("The batch size is {}", batch_size);
+    if !opts.quiet {
+        println!("The batch size is {}", batch_size);
+    }
 
     batch_size as u32
 }
