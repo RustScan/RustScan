@@ -74,7 +74,7 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 * 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
 * 🦜 [Discord](https://discord.gg/GFrQsGy)
 * 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
-* 🎪 [Contributing](https://github.com/RustScan/RustScan#-contributing)
+* 🎪 [Community](https://github.com/RustScan/RustScan#-contributing)
 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
@@ -281,7 +281,7 @@ To increase accuracy, the easiest way is to increase the timeout. The default is
 
 Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
-# 🎪 Contributing
+# 🎪 Community
 
 Howdy Space Cow-Person 🤠🌌
 
