@@ -122,9 +122,7 @@ Docker is the recommended way of installing RustScan. This is because:
 
 To install Docker, [follow their guide](https://docs.docker.com/engine/install/).
 
-Once Docker is installed, run this command against the IP you want to target.
-
-If you do not currently have an IP, run it against local-host like so:
+**Once Docker is installed, run this command against the IP you want to target.**
 
 ```
 docker run -it --rm --name rustscan cmnatic/rustscan:debian-buster rustscan 127.0.0.1
