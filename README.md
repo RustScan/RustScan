@@ -24,7 +24,7 @@
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/docker.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/rust.png" /></p>
-| `docker run -it --rm --name rustscan cmnatic/rustscan:debian-buster rustscan IP_ADDRESS` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
+| `docker pull cmnatic/rustscan:debian-buster` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
 
 <hr>
 
@@ -71,6 +71,7 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 
 ## 🙋 Table of Contents
 * 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
+* 🐋 [Docker Usage](https://github.com/RustScan/RustScan#docker-whale)
 * 🦜 [Discord](https://discord.gg/GFrQsGy)
 * 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
 * 🎪 [Community](https://github.com/RustScan/RustScan#-community)
