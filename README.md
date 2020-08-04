@@ -21,11 +21,10 @@
 </p>
 <hr>
 
-
-| <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> HomeBrew </a></p> | <p align="center"><a href="https://crates.io/crates/rust_scan"> Kali / Debian </p> |
+| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
 | ---- | ---- | ---- | --- |
-| <p align="center"><img src="pictures/rust.png" /></p>  | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/apple.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> |
-| `cargo install rustscan` | `yay -S rustscan` | `brew tap brandonskerritt/rustscan && brew install rustscan` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) |
+| <p align="center"><img src="pictures/docker.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/rust.png" /></p>
+| `docker run -it cmnatic/rustscan:debian-buster rustscan <ip>` | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
 
 <hr>
 
@@ -64,6 +63,18 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 * Let's you choose what Nmap commands to run, or uses the default.
 * IPv6 Support
 
+## ‼️ Important Links
+
+| Installation Guide | Documentation | Discord |
+| ------------------ | ------------- | ------- |
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
+
+## 🙋 Table of Contents
+* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
+* 🦜 [Discord](https://discord.gg/GFrQsGy)
+* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
+* 🎪 [Community](https://github.com/RustScan/RustScan#-community)
+
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
@@ -78,19 +89,6 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 | Fast                                                                                       | ✅        | ❌    | ✅       |
 | Actually useful                                                                            | ❌        | ✅    | ❌       |
 | Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
-
-## ‼️ Important Links
-
-| Installation Guide | Documentation | Discord |
-| ------------------ | ------------- | ------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
-
-## 🙋 Table of Contents
-* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
-* 🦜 [Discord](https://discord.gg/GFrQsGy)
-* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
-* 🎪 [Contributing](https://github.com/RustScan/RustScan#-contributing)
-
 
 # 📖 Full Installation Guide
 **You need Nmap**. If you have Kali Linux or Parrot OS installed, you already have Nmap. If not, [follow the nmap install guide](https://nmap.org/download.html).
