@@ -1,6 +1,6 @@
 [package]
 name = "rustscan"
-version = "1.4.1"
+version = "1.5.0"
 authors = ["Bee <brandon@skerritt.blog>"]
 edition = "2018"
 description = "Faster Nmap Scanning with Rust"

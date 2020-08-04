@@ -617,7 +617,7 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
-version = "1.4.1"
+version = "1.5.0"
 dependencies = [
  "async-std",
  "colored",
@@ -713,9 +713,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.36"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4cdb98bcb1f9d81d07b536179c269ea15999b5d14ea958196413869445bb5250"
+checksum = "239f255b9e3429350f188c27b807fc9920a15eb9145230ff1a7d054c08fec319"
 dependencies = [
  "proc-macro2",
  "quote",
