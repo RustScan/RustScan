@@ -281,7 +281,7 @@ To increase accuracy, the easiest way is to increase the timeout. The default is
 
 Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
-# 🎪 Community
+# 🎪 Contributing
 
 Howdy Space Cow-Person 🤠🌌
 
