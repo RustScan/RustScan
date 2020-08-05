@@ -7,7 +7,7 @@ use colored::*;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
-use std::process::{exit, Command};
+use std::process::Command;
 use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
@@ -28,9 +28,9 @@ extern crate log;
 /// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
-    /// The IP address to scan
-    #[structopt(parse(try_from_str))]
-    ip: IpAddr,
+    /// A list of comma separated IP addresses to be scanned.
+    #[structopt(use_delimiter = true, parse(try_from_str), required = true)]
+    ips: Vec<IpAddr>,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -56,6 +56,7 @@ struct Opts {
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
     /// This command adds -Pn -vvv -p $PORTS automatically to nmap.
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
+    #[structopt(last = true)]
     command: Vec<String>,
 }
 
@@ -63,7 +64,6 @@ struct Opts {
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
-    // logger
     env_logger::init();
 
     info!("Starting up");
@@ -77,63 +77,75 @@ fn main() {
     let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
     let batch_size: u32 = infer_batch_size(&opts, ulimit);
 
-    // 65535 + 1 because of 0 indexing
-    let scanner = Scanner::new(
-        opts.ip,
-        1,
-        65535,
-        batch_size,
-        Duration::from_millis(opts.timeout.into()),
-        opts.quiet,
-    );
-    let scan_result = block_on(scanner.run());
+    for ip in opts.ips {
+        println!("{} {}\n", "\nScanning ports from".green(), ip);
 
-    // prints ports and places them into nmap string
-    let nmap_str_ports: Vec<String> = scan_result
-        .into_iter()
-        .map(|port| port.to_string())
-        .collect();
+        let scanner = Scanner::new(
+            ip,
+            1,
+            65535,
+            batch_size,
+            Duration::from_millis(opts.timeout.into()),
+            opts.quiet,
+        );
 
-    // if no ports are found, suggest running with less
-    if nmap_str_ports.is_empty() {
-        panic!("{} Looks like I didn't find any open ports. This is usually caused by a high batch size.
-        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.", "ERROR".red(),
-        opts.batch_size,
-        (opts.batch_size / 2).to_string().green(),
-        "'rustscan -b <batch_size> <ip address>'".green());
+        let scan_result = block_on(scanner.run());
+
+        // prints ports and places them into nmap string
+        let nmap_str_ports: Vec<String> = scan_result
+            .into_iter()
+            .map(|port| port.to_string())
+            .collect();
+
+        // if no ports are found, suggest running with less
+        if nmap_str_ports.is_empty() {
+            if opts.quiet {
+                println!("{}", "No ports found.".red());
+            } else {
+                println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+                \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+                \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
+                "ERROR".red(),
+                ip,
+                opts.batch_size,
+                (opts.batch_size / 2).to_string().green(),
+                "'rustscan -b <batch_size> <ip address>'".green());
+            }
+
+            continue;
+        }
+
+        // Tells the user we are now switching to Nmap
+        if !opts.quiet {
+            println!("\n{}", "Starting nmap.".blue(),);
+        }
+
+        // nmap port style is 80,443. Comma seperated with no spaces.
+        let ports_str = nmap_str_ports.join(",");
+
+        // if quiet mode is on, return ports and exit
+        if opts.quiet {
+            println!("Ports: {:?}", ports_str);
+            continue;
+        }
+
+        let addr = ip.to_string();
+        let user_nmap_args =
+            shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
+        let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+
+        if !opts.quiet {
+            println!("The Nmap command to be run is {}", &nmap_args.join(" "));
+        }
+
+        // Runs the nmap command and spawns it as a process.
+        let mut child = Command::new("nmap")
+            .args(&nmap_args)
+            .spawn()
+            .expect("failed to execute nmap process");
+
+        child.wait().expect("failed to wait on nmap process");
     }
-
-    // Tells the user we are now switching to Nmap
-    if !opts.quiet {
-        println!("{}", "Starting nmap.".blue(),);
-    }
-
-    // nmap port style is 80,443. Comma seperated with no spaces.
-    let ports_str = nmap_str_ports.join(",");
-
-    // if quiet mode is on, return ports and exit
-    if opts.quiet {
-        println!("{}", ports_str);
-        exit(1);
-    }
-
-    let addr = opts.ip.to_string();
-    let user_nmap_args =
-        shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-    let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, opts.ip.is_ipv6());
-
-    if !opts.quiet {
-        println!("The Nmap command to be run is {}", &nmap_args.join(" "));
-    }
-
-    // Runs the nmap command and spawns it as a process.
-    let mut child = Command::new("nmap")
-        .args(&nmap_args)
-        .spawn()
-        .expect("failed to execute nmap process");
-
-    child.wait().expect("failed to wait on nmap process");
 }
 
 /// Prints the opening title of RustScan
@@ -243,7 +255,9 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
         }
     }
 
-    println!("The batch size is {}", batch_size);
+    if !opts.quiet {
+        println!("The batch size is {}", batch_size);
+    }
 
     batch_size as u32
 }
@@ -251,7 +265,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::Scanner;
-    use crate::{adjust_ulimit_size, build_nmap_arguments, infer_batch_size, print_opening, Opts};
+    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts};
     use async_std::task::block_on;
     use std::{net::IpAddr, str::FromStr, time::Duration};
 
@@ -334,7 +348,7 @@ mod tests {
     #[test]
     fn batch_size_lowered() {
         let opts = Opts {
-            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1000,
@@ -349,7 +363,7 @@ mod tests {
     #[test]
     fn batch_size_lowered_average_size() {
         let opts = Opts {
-            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1000,
@@ -365,7 +379,7 @@ mod tests {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
         let opts = Opts {
-            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1000,
@@ -380,7 +394,7 @@ mod tests {
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let opts = Opts {
-            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1000,
@@ -400,14 +414,15 @@ mod tests {
     #[test]
     fn test_high_ulimit_no_quiet_mode() {
         let opts = Opts {
-            ip: IpAddr::from_str("127.0.0.1").unwrap(),
+            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: false,
             batch_size: 10,
             timeout: 1000,
             ulimit: None,
             command: Vec::new(),
         };
-        let batch_size = infer_batch_size(&opts, 1000000);
+
+        infer_batch_size(&opts, 1000000);
 
         assert!(1 == 1);
     }
