@@ -340,6 +340,22 @@ To increase accuracy, the easiest way is to increase the timeout. The default is
 
 Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
+## 🤖 Config File
+
+RustScan uses a Config file to make things easier for you. And to also improve itself.
+The config file is used as the basis of the _adaptive learning_ mechanisms. This means that RustScan _learns_ from your scans and improves itself over time. (Don't worry, no bloated AI framework here 😉)
+
+The config file should be placed in APPDIRS. To find this folder, run RustScan and look out for RustScan saying "couldn't find config at <location>". That location is where your config file should be.
+
+Once you have this location, copy and paste this:
+
+```toml
+
+# The top ports
+[top_ports]
+80, 60, 443
+```
+
 # 🎪 Community
 
 Howdy Space Cow-Person 🤠🌌

@@ -5,6 +5,7 @@ git pull --force
 
 #amd64
 cargo deb
+yes | dpkg -i *.deb
 
 #arm64
 rustup target add arm-unknown-linux-gnueabihf
