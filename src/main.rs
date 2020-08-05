@@ -248,17 +248,13 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
         if !opts.quiet {
             println!(
-                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {}, try batch size {}.\n",
+                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {},Your batch size is {}, try batch size {}.\n",
                 ulimit,
+                batch_size,
                 ulimit - 1
             );
         }
     }
-
-    if !opts.quiet {
-        println!("The batch size is {}", batch_size);
-    }
-
     batch_size as u32
 }
 
