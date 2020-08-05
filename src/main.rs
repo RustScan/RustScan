@@ -3,6 +3,9 @@ extern crate shell_words;
 mod scanner;
 use scanner::Scanner;
 
+mod range_iterator;
+use range_iterator::RangeIterator;
+
 use colored::*;
 use futures::executor::block_on;
 use rlimit::Resource;
@@ -64,88 +67,97 @@ struct Opts {
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
-    env_logger::init();
+    let mut vec: Vec<u32> = Vec::new();
+    let range: u32 = 65000;
+    let range_iterator = RangeIterator::new(1, range);
 
-    info!("Starting up");
-    let opts = Opts::from_args();
-    info!("Mains() `opts` arguments are {:?}", opts);
-
-    if !opts.quiet {
-        print_opening();
+    for item in range_iterator {
+        vec.push(item);
     }
 
-    let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
-    let batch_size: u32 = infer_batch_size(&opts, ulimit);
+    assert_eq!((range - 1) as usize, vec.len());
+    // env_logger::init();
 
-    for ip in opts.ips {
-        println!("{} {}\n", "\nScanning ports from".green(), ip);
+    // info!("Starting up");
+    // let opts = Opts::from_args();
+    // info!("Mains() `opts` arguments are {:?}", opts);
 
-        let scanner = Scanner::new(
-            ip,
-            1,
-            65535,
-            batch_size,
-            Duration::from_millis(opts.timeout.into()),
-            opts.quiet,
-        );
+    // if !opts.quiet {
+    //     print_opening();
+    // }
 
-        let scan_result = block_on(scanner.run());
+    // let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
+    // let batch_size: u32 = infer_batch_size(&opts, ulimit);
 
-        // prints ports and places them into nmap string
-        let nmap_str_ports: Vec<String> = scan_result
-            .into_iter()
-            .map(|port| port.to_string())
-            .collect();
+    // for ip in opts.ips {
+    //     println!("{} {}\n", "\nScanning ports from".green(), ip);
 
-        // if no ports are found, suggest running with less
-        if nmap_str_ports.is_empty() {
-            if opts.quiet {
-                println!("{}", "No ports found.".red());
-            } else {
-                println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
-                \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-                \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
-                "ERROR".red(),
-                ip,
-                opts.batch_size,
-                (opts.batch_size / 2).to_string().green(),
-                "'rustscan -b <batch_size> <ip address>'".green());
-            }
+    //     let scanner = Scanner::new(
+    //         ip,
+    //         1,
+    //         65535,
+    //         batch_size,
+    //         Duration::from_millis(opts.timeout.into()),
+    //         opts.quiet,
+    //     );
 
-            continue;
-        }
+    //     let scan_result = block_on(scanner.run());
 
-        // Tells the user we are now switching to Nmap
-        if !opts.quiet {
-            println!("\n{}", "Starting nmap.".blue(),);
-        }
+    //     // prints ports and places them into nmap string
+    //     let nmap_str_ports: Vec<String> = scan_result
+    //         .into_iter()
+    //         .map(|port| port.to_string())
+    //         .collect();
 
-        // nmap port style is 80,443. Comma seperated with no spaces.
-        let ports_str = nmap_str_ports.join(",");
+    //     // if no ports are found, suggest running with less
+    //     if nmap_str_ports.is_empty() {
+    //         if opts.quiet {
+    //             println!("{}", "No ports found.".red());
+    //         } else {
+    //             println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+    //             \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+    //             \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
+    //             "ERROR".red(),
+    //             ip,
+    //             opts.batch_size,
+    //             (opts.batch_size / 2).to_string().green(),
+    //             "'rustscan -b <batch_size> <ip address>'".green());
+    //         }
 
-        // if quiet mode is on, return ports and exit
-        if opts.quiet {
-            println!("Ports: {:?}", ports_str);
-            continue;
-        }
+    //         continue;
+    //     }
 
-        let addr = ip.to_string();
-        let user_nmap_args =
-            shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-        let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+    //     // Tells the user we are now switching to Nmap
+    //     if !opts.quiet {
+    //         println!("\n{}", "Starting nmap.".blue(),);
+    //     }
 
-        if !opts.quiet {
-            println!("The Nmap command to be run is {}", &nmap_args.join(" "));
-        }
+    //     // nmap port style is 80,443. Comma seperated with no spaces.
+    //     let ports_str = nmap_str_ports.join(",");
 
-        // Runs the nmap command and spawns it as a process.
-        let mut child = Command::new("nmap")
-            .args(&nmap_args)
-            .spawn()
-            .expect("failed to execute nmap process");
+    //     // if quiet mode is on, return ports and exit
+    //     if opts.quiet {
+    //         println!("Ports: {:?}", ports_str);
+    //         continue;
+    //     }
 
-        child.wait().expect("failed to wait on nmap process");
-    }
+    //     let addr = ip.to_string();
+    //     let user_nmap_args =
+    //         shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
+    //     let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+
+    //     if !opts.quiet {
+    //         println!("The Nmap command to be run is {}", &nmap_args.join(" "));
+    //     }
+
+    //     // Runs the nmap command and spawns it as a process.
+    //     let mut child = Command::new("nmap")
+    //         .args(&nmap_args)
+    //         .spawn()
+    //         .expect("failed to execute nmap process");
+
+    //     child.wait().expect("failed to wait on nmap process");
+    // }
 }
 
 /// Prints the opening title of RustScan
