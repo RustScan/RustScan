@@ -254,11 +254,6 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
             );
         }
     }
-
-    if !opts.quiet {
-        println!("The batch size is {}", batch_size);
-    }
-
     batch_size as u32
 }
 
