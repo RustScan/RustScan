@@ -16,4 +16,7 @@ RUN ulimit -n 100000 && \
     && \
     rm -rf /var/cache/apk/*
 COPY --from=builder /usr/local/cargo/bin/rustscan /usr/local/bin/rustscan
+RUN addgroup -S rustscan && \
+    adduser -S -G rustscan rustscan
+USER rustscan
 ENTRYPOINT ["/usr/local/bin/rustscan"]
