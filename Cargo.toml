@@ -25,6 +25,8 @@ env_logger = "0.7.1"
 dirs = "3.0.1"
 gcd = "2.0.1"
 rand = "0.7.3"
+colorful = "0.2.1"
+ansi_term = "0.12.1"
 
 [package.metadata.deb]
 depends = "$auto, nmap"
