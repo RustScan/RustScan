@@ -44,6 +44,10 @@ struct Opts {
     #[structopt(short, long)]
     quiet: bool,
 
+    //Accessible mode. Turns off features which negatively affect screen readers.
+    #[structopt(short, long)]
+    accessible: bool,
+
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
@@ -78,7 +82,7 @@ fn main() {
     let opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
 
-    if !opts.quiet {
+    if !opts.quiet && !accessible{
         print_opening();
     }
 
@@ -235,9 +239,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
         warning!(
-            "File limit is lower than default batch size.
-         Consider upping with --ulimt. 
-         May cause harm to sensitive servers",
+            "File limit is lower than default batch size. Consider upping with --ulimt. May cause harm to sensitive servers",
             opts.quiet
         );
 
