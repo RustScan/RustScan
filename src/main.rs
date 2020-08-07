@@ -5,6 +5,9 @@ mod tui;
 mod scanner;
 use scanner::Scanner;
 
+mod port_strategy;
+use port_strategy::PortStrategy;
+
 use colorful::Color;
 use colorful::Colorful;
 use futures::executor::block_on;
@@ -13,7 +16,7 @@ use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
 use std::process::Command;
 use std::{net::IpAddr, time::Duration};
-use structopt::StructOpt;
+use structopt::{clap::arg_enum, StructOpt};
 
 extern crate colorful;
 extern crate dirs;
@@ -27,6 +30,14 @@ const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
 
 #[macro_use]
 extern crate log;
+
+arg_enum! {
+    #[derive(Debug, StructOpt)]
+    pub enum ScanOrder {
+        Serial,
+        Random,
+    }
+}
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
@@ -59,6 +70,12 @@ struct Opts {
     #[structopt(short, long)]
     ulimit: Option<rlimit::rlim>,
 
+    /// The order of scanning to be performed. The "serial" option will
+    /// scan ports in ascending order while the "random" option will scan
+    /// ports randomly.
+    #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
+    scan_order: ScanOrder,
+
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
@@ -87,11 +104,10 @@ fn main() {
 
     let scanner = Scanner::new(
         &opts.ips,
-        LOWEST_PORT_NUMBER,
-        TOP_PORT_NUMBER,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
         opts.quiet,
+        PortStrategy::pick(LOWEST_PORT_NUMBER, TOP_PORT_NUMBER, opts.scan_order),
     );
 
     let scan_result = block_on(scanner.run());
@@ -272,7 +288,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts};
+    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts, ScanOrder};
     use std::{net::IpAddr, str::FromStr};
 
     #[test]
@@ -284,6 +300,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -299,6 +316,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -315,6 +333,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -330,6 +349,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -350,6 +370,7 @@ mod tests {
             timeout: 1_000,
             ulimit: None,
             command: Vec::new(),
+            scan_order: ScanOrder::Serial,
         };
 
         infer_batch_size(&opts, 1_000_000);
