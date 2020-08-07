@@ -171,11 +171,13 @@ fn print_opening() {
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
 `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-Faster Nmap scanning with Rust.
-Discord: https://discord.gg/GFrQsGy
-GitHub: https://github.com/RustScan/RustScan
-🌍HACK THE PLANET🌍"#;
-    println!("{}\n", s.gradient(Color::Green));
+Faster Nmap scanning with Rust."#;
+    println!("{}", s.gradient(Color::Green));
+    let info = r#"________________________________________
+: https://discord.gg/GFrQsGy           :
+: https://github.com/RustScan/RustScan :
+: --------------------------------------"#;
+    println!("{}\n", info.gradient(Color::Red));
 
     let config_path = match dirs::config_dir() {
         Some(mut path) => {
@@ -187,7 +189,7 @@ GitHub: https://github.com/RustScan/RustScan
     };
 
     detail!(format!(
-        "{} {:?}\n",
+        "{} {:?}",
         "The config file is expected to be at", config_path
     ));
 }
@@ -266,7 +268,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
         if !opts.quiet {
             detail!(format!(
-                "File limit higher than batch size. Can gain speed by increasing batch size '-b {}'.",
+                "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
                 ulimit - 100
             ));
         }
