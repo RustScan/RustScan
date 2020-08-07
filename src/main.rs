@@ -130,17 +130,14 @@ fn main() {
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        if !opts.quiet {
-            println!("\n");
-            detail!("Starting Nmap");
-        }
+        detail!("Starting Nmap", opts.quiet);
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
         if opts.quiet {
-            detail!(format!("Ports: {:?}", ports_str));
+            println!("{}", ports_str);
             continue;
         }
 
@@ -222,12 +219,10 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
-                if !opts.quiet {
-                    detail!(format!(
-                        "Automatically increasing ulimit value to {}.",
-                        limit
-                    ));
-                }
+                detail!(format!(
+                    "Automatically increasing ulimit value to {}.",
+                    limit
+                ), opts.quiet);
             }
             Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
         }
@@ -243,9 +238,9 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
-        if !opts.quiet {
-            warning!("File limit is lower than default batch size. Consider upping with --ulimt. May cause harm to sensitive servers");
-        }
+        warning!("File limit is lower than default batch size.
+         Consider upping with --ulimt. 
+         May cause harm to sensitive servers", opts.quiet);
 
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
@@ -267,12 +262,10 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        if !opts.quiet {
             detail!(format!(
                 "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
                 ulimit - 100
-            ));
-        }
+            ), opts.quiet);
     }
 
     batch_size as u16
