@@ -172,12 +172,12 @@ fn print_opening() {
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
 `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
 Faster Nmap scanning with Rust."#;
-    println!("{}", s.gradient(Color::Green));
+    println!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
 : https://discord.gg/GFrQsGy           :
 : https://github.com/RustScan/RustScan :
-: --------------------------------------"#;
-    println!("{}\n", info.gradient(Color::Red));
+ --------------------------------------"#;
+    println!("{}\n", info.gradient(Color::Red).bold());
 
     let config_path = match dirs::config_dir() {
         Some(mut path) => {
