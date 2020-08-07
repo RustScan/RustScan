@@ -33,3 +33,18 @@ macro_rules! output {
         println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
     };
 }
+
+#[macro_export]
+macro_rules! funny_opening {
+    // prints a funny quote / opening
+    () => {
+        use rand::seq::SliceRandom;
+        let quotes = vec!["Nmap? More like slowmap.🐢", "🌍HACK THE PLANET🌍", "Real hackers hack time ⌛", "Please contribute more quotes to our GitHub https://github.com/rustscan/rustscan", 
+        "😵 https://admin.tryhackme.com"];
+        let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
+        
+        println!("{}\n", random_quote);
+        // println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+    };
+}
+

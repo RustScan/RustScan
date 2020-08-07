@@ -177,7 +177,8 @@ Faster Nmap scanning with Rust."#;
 : https://discord.gg/GFrQsGy           :
 : https://github.com/RustScan/RustScan :
  --------------------------------------"#;
-    println!("{}\n", info.gradient(Color::Red).bold());
+    println!("{}", info.gradient(Color::Yellow).bold());
+    funny_opening!();
 
     let config_path = match dirs::config_dir() {
         Some(mut path) => {
