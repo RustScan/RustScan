@@ -82,7 +82,7 @@ fn main() {
     let opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
 
-    if !opts.quiet && !accessible{
+    if !opts.quiet && !opts.accessible{
         print_opening();
     }
 
