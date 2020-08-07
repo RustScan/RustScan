@@ -111,20 +111,17 @@ fn main() {
 
         // If we got here it means the IP was not found within the HashMap, this
         // means the scan couldn't find any open ports for it.
-        if opts.quiet {
-            let x = format!("{} {:?}", "No ports found for", ip);
-            detail!(x);
-        } else {
-            let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
-            \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-            \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
-            "ERROR",
-            ip,
-            opts.batch_size,
-            (opts.batch_size / 2).to_string(),
-            "'rustscan -b <batch_size> <ip address>'");
-            warning!(x);
-        }
+
+        let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
+        "ERROR",
+        ip,
+        opts.batch_size,
+        (opts.batch_size / 2).to_string(),
+        "'rustscan -b <batch_size> <ip address>'");
+        warning!(x, opts.quiet);
+
     }
 
     for (ip, ports) in ports_per_ip.iter_mut() {
