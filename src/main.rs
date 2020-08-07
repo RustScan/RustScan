@@ -121,7 +121,6 @@ fn main() {
         (opts.batch_size / 2).to_string(),
         "'rustscan -b <batch_size> <ip address>'");
         warning!(x, opts.quiet);
-
     }
 
     for (ip, ports) in ports_per_ip.iter_mut() {
