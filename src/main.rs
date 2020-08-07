@@ -219,10 +219,10 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
-                detail!(format!(
-                    "Automatically increasing ulimit value to {}.",
-                    limit
-                ), opts.quiet);
+                detail!(
+                    format!("Automatically increasing ulimit value to {}.", limit),
+                    opts.quiet
+                );
             }
             Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
         }
@@ -238,9 +238,12 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
-        warning!("File limit is lower than default batch size.
+        warning!(
+            "File limit is lower than default batch size.
          Consider upping with --ulimt. 
-         May cause harm to sensitive servers", opts.quiet);
+         May cause harm to sensitive servers",
+            opts.quiet
+        );
 
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
@@ -262,7 +265,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-            detail!(format!(
+        detail!(format!(
                 "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
                 ulimit - 100
             ), opts.quiet);
