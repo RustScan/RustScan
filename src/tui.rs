@@ -7,7 +7,7 @@
 macro_rules! warning {
     ($name:expr) => {
         use ansi_term::Colour::Red;
-        if $name.len() > 200{
+        if $name.len() > 200 {
             panic!("Your warning is too long.")
         }
         println!("{} {}", Red.bold().paint("[!]"), $name);
@@ -18,7 +18,7 @@ macro_rules! warning {
 macro_rules! detail {
     ($name:expr) => {
         use ansi_term::Colour::Blue;
-        if $name.len() > 200{
+        if $name.len() > 200 {
             panic!("Your detail is too long.")
         }
         println!("{} {}", Blue.bold().paint("[~]"), $name);
