@@ -7,7 +7,10 @@
 macro_rules! warning {
     ($name:expr) => {
         use ansi_term::Colour::Red;
-        println!("{} {}", Red.paint("[!]"), $name);
+        if $name.len() > 200{
+            panic!("Your warning is too long.")
+        }
+        println!("{} {}", Red.bold().paint("[!]"), $name);
     };
 }
 
@@ -15,14 +18,18 @@ macro_rules! warning {
 macro_rules! detail {
     ($name:expr) => {
         use ansi_term::Colour::Blue;
-        println!("{} {}", Blue.paint("[!]"), $name);
+        if $name.len() > 200{
+            panic!("Your detail is too long.")
+        }
+        println!("{} {}", Blue.bold().paint("[~]"), $name);
     };
 }
 
 #[macro_export]
 macro_rules! output {
     ($name:expr) => {
-        use ansi_term::Colour::Green;
-        println!("{} {}", Green.paint("[!]"), $name);
+        use ansi_term::Colour::RGB;
+
+        println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
     };
 }

@@ -132,7 +132,7 @@ fn main() {
 
         if !opts.quiet {
             println!("\n");
-            detail!("Starting Nmap\n");
+            detail!("Starting Nmap");
         }
 
         // nmap port style is 80,443. Comma separated with no spaces.
@@ -140,7 +140,7 @@ fn main() {
 
         // if quiet mode is on nmap should not be spawned
         if opts.quiet {
-            output!(format!("Ports: {:?}", ports_str));
+            detail!(format!("Ports: {:?}", ports_str));
             continue;
         }
 
@@ -150,7 +150,7 @@ fn main() {
         let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
         output!(format!(
-            "The Nmap command to be run is {}",
+            "The Nmap command to be run is nmap {}\n",
             &nmap_args.join(" ")
         ));
 
