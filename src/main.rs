@@ -286,6 +286,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -301,6 +302,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -317,6 +319,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -332,6 +335,7 @@ mod tests {
             timeout: 1_000,
             ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -352,6 +356,7 @@ mod tests {
             timeout: 1_000,
             ulimit: None,
             command: Vec::new(),
+            accessible: true,
         };
 
         infer_batch_size(&opts, 1_000_000);
