@@ -1,9 +1,12 @@
 extern crate shell_words;
 
+mod tui;
+
 mod scanner;
 use scanner::Scanner;
 
-use colored::*;
+use colorful::Color;
+use colorful::Colorful;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
@@ -12,6 +15,7 @@ use std::process::Command;
 use std::{net::IpAddr, time::Duration};
 use structopt::StructOpt;
 
+extern crate colorful;
 extern crate dirs;
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -108,16 +112,18 @@ fn main() {
         // If we got here it means the IP was not found within the HashMap, this
         // means the scan couldn't find any open ports for it.
         if opts.quiet {
-            println!("{} {:?}", "No ports found for".red(), ip);
+            let x = format!("{} {:?}", "No ports found for", ip);
+            detail!(x);
         } else {
-            println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+            let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
             \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
             \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
-            "ERROR".red(),
+            "ERROR",
             ip,
             opts.batch_size,
-            (opts.batch_size / 2).to_string().green(),
-            "'rustscan -b <batch_size> <ip address>'".green());
+            (opts.batch_size / 2).to_string(),
+            "'rustscan -b <batch_size> <ip address>'");
+            warning!(x);
         }
     }
 
@@ -125,7 +131,8 @@ fn main() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
         if !opts.quiet {
-            println!("\n{}", "Starting nmap.".blue(),);
+            println!("\n");
+            detail!("Starting Nmap");
         }
 
         // nmap port style is 80,443. Comma separated with no spaces.
@@ -133,7 +140,7 @@ fn main() {
 
         // if quiet mode is on nmap should not be spawned
         if opts.quiet {
-            println!("Ports: {:?}", ports_str);
+            detail!(format!("Ports: {:?}", ports_str));
             continue;
         }
 
@@ -142,7 +149,10 @@ fn main() {
             shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
         let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
-        println!("The Nmap command to be run is {}", &nmap_args.join(" "));
+        output!(format!(
+            "The Nmap command to be run is nmap {}\n",
+            &nmap_args.join(" ")
+        ));
 
         // Runs the nmap command and spawns it as a process.
         let mut child = Command::new("nmap")
@@ -157,15 +167,17 @@ fn main() {
 /// Prints the opening title of RustScan
 fn print_opening() {
     info!("Printing opening");
-    let s = "
-     _____           _    _____
-    |  __ \\         | |  / ____|
-    | |__) |   _ ___| |_| (___   ___ __ _ _ __
-    |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\
-    | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
-    |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
-    Faster nmap scanning with rust.";
-    println!("{}\n", s.green());
+    let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
+| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
+| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
+`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
+Faster Nmap scanning with Rust."#;
+    println!("{}", s.gradient(Color::Green).bold());
+    let info = r#"________________________________________
+: https://discord.gg/GFrQsGy           :
+: https://github.com/RustScan/RustScan :
+ --------------------------------------"#;
+    println!("{}\n", info.gradient(Color::Red).bold());
 
     let config_path = match dirs::config_dir() {
         Some(mut path) => {
@@ -176,11 +188,10 @@ fn print_opening() {
         None => panic!("Couldn't find config dir."),
     };
 
-    println!(
-        "{} {:?}\n",
-        "The config file is expected to be at".yellow(),
-        config_path
-    );
+    detail!(format!(
+        "{} {:?}",
+        "The config file is expected to be at", config_path
+    ));
 }
 #[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(
@@ -211,10 +222,13 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
                 if !opts.quiet {
-                    println!("\nAutomatically increasing ulimit value to {}.\n", limit);
+                    detail!(format!(
+                        "Automatically increasing ulimit value to {}.",
+                        limit
+                    ));
                 }
             }
-            Err(_) => println!("{}", "ERROR. Failed to set ulimit value.".red()),
+            Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
         }
     }
 
@@ -229,7 +243,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
         if !opts.quiet {
-            println!("{}", "WARNING: Your file description limit is lower than the provided batch size. Please considering upping this (instructions in our README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing the batch Size to match your system's limit, this process isn't harmful but reduces speed.".red());
+            warning!("File limit is lower than default batch size. Consider upping with --ulimt. May cause harm to sensitive servers");
         }
 
         // When the OS supports high file limits like 8000, but the user
@@ -239,8 +253,8 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
+            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimt with '--ulimt 5000'. ");
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            println!("{}", "WARNING. Your open file description limit is smaller than expected. You can increase the ulimit with the '-u' flag like '-u 5000' to get default size. Or, use the Docker image. If you do not increase ulimit your RustScan speeds will be much slower in comparison to a normal ulimit.".red());
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
@@ -253,12 +267,10 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
         if !opts.quiet {
-            println!(
-                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers.\nYour limit is {} and your batch size is {}, try a batch size of {}.\n",
-                ulimit,
-                batch_size,
-                ulimit - 1
-            );
+            detail!(format!(
+                "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
+                ulimit - 100
+            ));
         }
     }
 
