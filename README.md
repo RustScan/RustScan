@@ -281,7 +281,7 @@ In this case, I would say it is safe to increase the open file limit. As most Li
 Although, if this breaks anything, please don't blame me. 
 
 **Windows Subsystem for Linux**
-Windows Subsystem for Linux does not support ulimt (see issue #39). 
+Windows Subsystem for Linux does not support ulimit (see issue #39). 
 
 The best way is to use it on a host computer, in Docker, or in a VM that isn't WSL. 
 
