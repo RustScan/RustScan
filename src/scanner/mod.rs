@@ -1,5 +1,4 @@
-mod range_iterator;
-use range_iterator::RangeIterator;
+use super::PortStrategy;
 
 use async_std::io;
 use async_std::net::TcpStream;
@@ -21,28 +20,25 @@ use std::{
 #[cfg(not(tarpaulin_include))]
 pub struct Scanner {
     hosts: Vec<IpAddr>,
-    start: u16,
-    end: u16,
     batch_size: u16,
     timeout: Duration,
     quiet: bool,
+    port_strategy: PortStrategy,
 }
 
 impl Scanner {
     pub fn new(
         hosts: &[IpAddr],
-        start: u16,
-        end: u16,
         batch_size: u16,
         timeout: Duration,
         quiet: bool,
+        port_strategy: PortStrategy,
     ) -> Self {
         Self {
-            start,
-            end,
             batch_size,
             timeout,
             quiet,
+            port_strategy,
             hosts: hosts.iter().map(|host| host.to_owned()).collect(),
         }
     }
@@ -51,27 +47,13 @@ impl Scanner {
     /// If you want to run RustScan normally, this is the entry point used
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
-        let range_iterator = RangeIterator::new(self.start.into(), self.end.into());
-        let mut sockets: Vec<SocketAddr> = Vec::new();
+        let ports: Vec<u16> = self.port_strategy.order();
+        let batch_per_host: usize = self.batch_size as usize / self.hosts.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
 
-        for port in range_iterator {
-            for host in &self.hosts {
-                sockets.push(SocketAddr::new(*host, port));
-            }
-
-            if sockets.len() >= self.batch_size.into() {
-                let mut results = self.scan_range(&sockets).await;
-                open_sockets.append(&mut results);
-                sockets = Vec::new();
-            }
-        }
-
-        // This will happen if we have a number of sockets remaining
-        // that is lower than the batch size.
-        if !sockets.is_empty() {
-            let mut results = self.scan_range(&sockets).await;
-            open_sockets.append(&mut results);
+        for batch in ports.chunks(batch_per_host) {
+            let mut sockets = self.scan_ports(batch).await;
+            open_sockets.append(&mut sockets);
         }
 
         open_sockets
@@ -79,10 +61,12 @@ impl Scanner {
 
     /// Given a slice of sockets, scan them all.
     /// Returns a vector of open sockets.
-    async fn scan_range(&self, sockets: &[SocketAddr]) -> Vec<SocketAddr> {
+    async fn scan_ports(&self, ports: &[u16]) -> Vec<SocketAddr> {
         let mut ftrs = FuturesUnordered::new();
-        for socket in sockets {
-            ftrs.push(self.scan_socket(socket));
+        for port in ports {
+            for host in &self.hosts {
+                ftrs.push(self.scan_socket(SocketAddr::new(*host, *port)));
+            }
         }
 
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
@@ -108,8 +92,8 @@ impl Scanner {
     ///     self.scan_port(10:u16)
     ///
     /// Note: `self` must contain `self.host`.
-    async fn scan_socket(&self, socket: &SocketAddr) -> io::Result<SocketAddr> {
-        match self.connect(*socket).await {
+    async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
+        match self.connect(socket).await {
             Ok(x) => {
                 // match stream_result.shutdown(Shutdown::Both)
                 info!("Shutting down stream");
@@ -120,7 +104,7 @@ impl Scanner {
                     println!("Open {}", socket.to_string().purple());
                 }
 
-                Ok(*socket)
+                Ok(socket)
             }
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
@@ -155,6 +139,7 @@ impl Scanner {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ScanOrder;
     use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
@@ -162,7 +147,8 @@ mod tests {
     fn scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
-        let scanner = Scanner::new(&addrs, 1, 1_000, 10, Duration::from_millis(100), true);
+        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -171,7 +157,8 @@ mod tests {
     fn ipv6_scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
-        let scanner = Scanner::new(&addrs, 1, 1_000, 10, Duration::from_millis(100), false);
+        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -179,14 +166,16 @@ mod tests {
     #[test]
     fn quad_zero_scanner_runs() {
         let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
-        let scanner = Scanner::new(&addrs, 1, 1_000, 10, Duration::from_millis(500), true);
+        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
     #[test]
     fn google_dns_runs() {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
-        let scanner = Scanner::new(&addrs, 400, 445, 10, Duration::from_millis(1_500), true);
+        let strategy = PortStrategy::pick(400, 445, ScanOrder::Random);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -196,7 +185,8 @@ mod tests {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
 
         // mac should have this automatically scaled down
-        let scanner = Scanner::new(&addrs, 400, 600, 10_000, Duration::from_millis(1500), true);
+        let strategy = PortStrategy::pick(400, 600, ScanOrder::Random);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
