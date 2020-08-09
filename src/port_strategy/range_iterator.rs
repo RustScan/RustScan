@@ -2,9 +2,10 @@ use gcd::Gcd;
 use rand::Rng;
 
 pub struct RangeIterator {
+    active: bool,
     normalized_end: u32,
-    normalized_first_pick: Option<u32>,
-    normalized_pick: Option<u32>,
+    normalized_first_pick: u32,
+    normalized_pick: u32,
     actual_start: u32,
     step: u32,
 }
@@ -23,11 +24,17 @@ impl RangeIterator {
         let normalized_end = end - start;
         let step = pick_random_coprime(normalized_end);
 
+        // Randomly choose a number within the range to be the first
+        // and assign it as a pick.
+        let mut rng = rand::thread_rng();
+        let normalized_first_pick = rng.gen_range(0, normalized_end);
+
         Self {
+            active: true,
             normalized_end,
             step,
-            normalized_first_pick: None,
-            normalized_pick: None,
+            normalized_first_pick,
+            normalized_pick: normalized_first_pick,
             actual_start: start,
         }
     }
@@ -39,28 +46,21 @@ impl Iterator for RangeIterator {
     // The next step is always bound by the formula: N+1 = (N + STEP) % TOP_OF_THE_RANGE
     // It will only stop once we generate a number equal to the first generated number.
     fn next(&mut self) -> Option<Self::Item> {
-        // Randomly choose a number within the range to be the first
-        // and assign it as a pick.
-        if self.normalized_first_pick.is_none() {
-            let mut rng = rand::thread_rng();
-            let normalized_first_pick = rng.gen_range(0, self.normalized_end);
-
-            self.normalized_first_pick = Some(normalized_first_pick);
-            self.normalized_pick = Some(normalized_first_pick);
-            return Some((self.actual_start + normalized_first_pick) as u16);
+        if !self.active {
+            return None;
         }
 
-        let current_pick = self.normalized_pick.unwrap();
+        let current_pick = self.normalized_pick;
         let next_pick = (current_pick + self.step) % self.normalized_end;
 
         // If the next pick is equal to the first pick this means that
         // we have iterated through the entire range.
-        if next_pick == self.normalized_first_pick.unwrap() {
-            return None;
+        if next_pick == self.normalized_first_pick {
+            self.active = false;
         }
 
-        self.normalized_pick = Some(next_pick);
-        Some((self.actual_start + next_pick) as u16)
+        self.normalized_pick = next_pick;
+        Some((self.actual_start + current_pick) as u16)
     }
 }
 
