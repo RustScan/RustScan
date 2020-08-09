@@ -67,7 +67,7 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 
 | Installation Guide | Documentation | Discord |
 | ------------------ | ------------- | ------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://github.com/RustScan/RustScan/issues/89) | 🦜 [Discord](https://discord.gg/GFrQsGy)
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](https://discord.gg/GFrQsGy)
 
 ## 🙋 Table of Contents
 * 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
