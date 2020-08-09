@@ -1,5 +1,5 @@
 <p align="center">
-➡️ 
+➡️
 <a href="https://discord.gg/GFrQsGy">Discord</a> |
  <a href="https://github.com/RustScan/RustScan#-full-installation-guide">Installation Guide</a> |
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
@@ -8,7 +8,7 @@
 <img src="pictures/rustscan.png">
 </p>
 <p align="center">
-<u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap. 
+<u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap.
 </p>
 <p align="center">
 <img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
@@ -98,7 +98,7 @@ The easiest way to install RustScan is to use one of the packages provided for y
 
 The most universal way is to use `cargo`, Rust's built in package manager (think Pip but for Rust). [Follow this guide to installing Rust & Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
-If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows. 
+If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows.
 
 Note: sometimes Rust doesn't add Cargo to the path. Please see [this issue](https://github.com/rust-lang/rustup/issues/2436) for how to fix that.
 
@@ -108,7 +108,7 @@ Download the .deb file from the releases page:
 
 [https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
 
-Run the commpand `dpkg -i` on the file. 
+Run the commpand `dpkg -i` on the file.
 
 Note: sometimes you can double click the file to achieve the same result.
 
@@ -130,7 +130,7 @@ docker run -it --rm --name rustscan cmnatic/rustscan:debian-buster rustscan 127.
 
 Note: this will scan the Docker's localhost, not your own.
 
-This will download the Docker image. 
+This will download the Docker image.
 
 Once done, you will no longer need to re-download the image (except when RustScan updates) and can use RustScan like a normal application.
 
@@ -186,43 +186,47 @@ rustscan -h
 ```
 
 ```
-RustScan 1.2.0
-Bee https://github.com/brandonskerritt
-Fast Port Scanner built in Rust
-WARNING Do not use this program against sensitive infrastructure. The specified server may not be able to handle this
-many socket connections at once.
+rustscan 1.7.1
+Fast Port Scanner built in Rust. WARNING Do not use this program against sensitive infrastructure since the specified
+server may not be able to handle this many socket connections at once. - Discord https://discord.gg/GFrQsGy - GitHub
+https://github.com/RustScan/RustScan
 
 USAGE:
-    rustscan [FLAGS] [OPTIONS] <ip> [command]...
+    rustscan [FLAGS] [OPTIONS] <ips>... [-- <command>...]
 
 FLAGS:
-    -h, --help       Prints help information
-    -q, --quiet      Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
-    -V, --version    Prints version information
+    -a, --accessible
+    -h, --help          Prints help information
+    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+    -V, --version       Prints version information
 
 OPTIONS:
-    -T, --timeout <T>    The timeout before a port is assumed to be close. In MS. [default: 1500]
-    -b, --batch <b>      Increases speed of scanning. The batch size for port scanning. Depends on your open file limit
-                         of OS. If you do 65535 it will do every port at the same time. Although, your OS may not
-                         support this. [default: 4500]
-    -u, --ulimit <u>     Automatically ups the ULIMIT with the value you provided.
+    -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
+                                     Depends on the open file limit of your OS.  If you do 65535 it will do every port
+                                     at the same time. Although, your OS may not support this [default: 4500]
+        --scan-order <scan-order>    The order of scanning to be performed. The "serial" option will scan ports in
+                                     ascending order while the "random" option will scan ports randomly [default:
+                                     serial]  [possible values: Serial, Random]
+    -t, --timeout <timeout>          The timeout in milliseconds before a port is assumed to be closed [default: 1500]
+    -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
 
 ARGS:
-    <ip>            The IP address to scan
-    <command>...    The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. To run
-                    EXAMPLE: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This argument auto runs nmap {your commands}
-                    -vvv -p $PORTS 
+    <ips>...        A list of comma separated IP addresses to be scanned
+    <command>...    The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
+                    'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                    nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
+                    vuln)'\"")
 ```
 
 The format is `rustscan -b 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 batch size with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
 
-The batch size determines how fast RustScan is. Set it to 65k, and it will scan all 65k ports at the same time. This means at at 65k batch size, RustScan will take TIMEOUT long to scan all ports. Essentially, if timeout is 1000ms, **RustScan can scan in 1 second**. 
+The batch size determines how fast RustScan is. Set it to 65k, and it will scan all 65k ports at the same time. This means at at 65k batch size, RustScan will take TIMEOUT long to scan all ports. Essentially, if timeout is 1000ms, **RustScan can scan in 1 second**.
 
 Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly I will be releasing a dockerised version with a much larger open file limit, so this will be possible.
 
 ## ⚠️ WARNING
 
-This program, by default, scans 5000 ports at a time (5000 per second). 
+This program, by default, scans 5000 ports at a time (5000 per second).
 
 This may cause damage to a server, or may make it incredibly obvious you are scanning the server.
 
@@ -245,7 +249,7 @@ This limit changes from OS to OS.
 
 RustScan does not automatically create defaults (other than 5000) like Nmap does with their -T1, -T2 system.
 
-By figuring out for yourself the optimal batch size, you will know that RustScan is the most optimised port scanner for your system. 
+By figuring out for yourself the optimal batch size, you will know that RustScan is the most optimised port scanner for your system.
 
 There are 2 things you can do:
 1. Decrease batch size
@@ -274,16 +278,16 @@ ulimit -n 5000
 ```
 
 **Mac OS**
-Mac OS has, from what I can tell, a naturally very low open file descriptor limit. The limit for Ubuntu is 8800. The limit for Mac OS is 255! 
+Mac OS has, from what I can tell, a naturally very low open file descriptor limit. The limit for Ubuntu is 8800. The limit for Mac OS is 255!
 
-In this case, I would say it is safe to increase the open file limit. As most Linux based OS' have limits in the thousands. 
+In this case, I would say it is safe to increase the open file limit. As most Linux based OS' have limits in the thousands.
 
-Although, if this breaks anything, please don't blame me. 
+Although, if this breaks anything, please don't blame me.
 
 **Windows Subsystem for Linux**
-Windows Subsystem for Linux does not support ulimit (see issue #39). 
+Windows Subsystem for Linux does not support ulimit (see issue #39).
 
-The best way is to use it on a host computer, in Docker, or in a VM that isn't WSL. 
+The best way is to use it on a host computer, in Docker, or in a VM that isn't WSL.
 
 **Automatic Ulimit updating**
 We are currently working on automatic Ulimit updating. If it is too high, it will lower itself. If it is too low, it will suggest a higher Ulimit. Watch [this issue](https://github.com/brandonskerritt/RustScan/issues/25) for more.
@@ -291,7 +295,7 @@ We are currently working on automatic Ulimit updating. If it is too high, it wil
 ## 🔌 Nmap Custom Flags
 To run your own nmap commands, end the RustScan command with `-- -A` where `--` indicates "end of RustScan flags, please do not parse anything further" and any flags after that will be entered into nmap.
 
-RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, execute the command `rustscan 127.0.0.1 -- -A`. 
+RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, execute the command `rustscan 127.0.0.1 -- -A`.
 
 If you want to run commands such as `--script (vuln and safe)`, you will need to enclose it in quotations like so `--script '"(vuln and safe) or default"'`.
 
@@ -320,7 +324,7 @@ TL;DR if you abuse members of our community you will be **perma-banned** 🤗
 
 RustScan has 2 major labels for GitHub issues you should look at:
 * Good First issue
-These are issues for newcomers to open source! 
+These are issues for newcomers to open source!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 * Help wanted
 These are issues that aren't really for newcomers, but we could still do wiht help!
