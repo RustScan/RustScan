@@ -1,95 +1,106 @@
 {
-	"files": [
-		"README.md"
-	],
-	"imageSize": 100,
-	"commit": false,
-	"contributors": [{
-			"login": "brandonskerritt",
-			"name": "Brandon",
-			"avatar_url": "https://avatars3.githubusercontent.com/u/10378052?v=4",
-			"profile": "https://skerritt.blog",
-			"contributions": [
-				"infra",
-				"test",
-				"code",
-				"design"
-			]
-		},
-		{
-			"login": "SakiiR",
-			"name": "SakiiR",
-			"avatar_url": "https://avatars1.githubusercontent.com/u/9950578?v=4",
-			"profile": "https://sakiir.ovh",
-			"contributions": [
-				"code",
-				"bug"
-			]
-		},
-		{
-			"login": "smackhack",
-			"name": "smackhack",
-			"avatar_url": "https://avatars2.githubusercontent.com/u/48143394?v=4",
-			"profile": "https://github.com/smackhack",
-			"contributions": [
-				"ideas",
-				"example"
-			]
-		},
-		{
-			"login": "bernardoamc",
-			"name": "Bernardo Araujo",
-			"avatar_url": "https://avatars0.githubusercontent.com/u/428984?v=4",
-			"profile": "http://bernardoamc.github.io/",
-			"contributions": [
-				"code",
-				"bug",
-				"design"
-			]
-		},
-		{
-			"login": "Isona",
-			"name": "Izzy Whistlecroft",
-			"avatar_url": "https://avatars2.githubusercontent.com/u/11759523?v=4",
-			"profile": "https://github.com/Isona",
-			"contributions": [
-				"bug"
-			]
-		},
-		{
-			"login": "imlonghao",
-			"name": "imlonghao",
-			"avatar_url": "https://avatars1.githubusercontent.com/u/4951333?v=4",
-			"profile": "https://imlonghao.com",
-			"contributions": [
-				"bug",
-				"maintenance"
-			]
-		},
-		{
-			"login": "royharoush",
-			"name": "royharoush",
-			"avatar_url": "https://avatars3.githubusercontent.com/u/8113056?v=4",
-			"profile": "https://github.com/royharoush",
-			"contributions": [
-				"ideas",
-				"design"
-			]
-		},
-		{
-			"login": "Atul9",
-			"name": "Atul Bhosale",
-			"avatar_url": "https://avatars1.githubusercontent.com/u/3390330?v=4",
-			"profile": "https://github.com/Atul9",
-			"contributions": [
-				"code"
-			]
-		}
-	],
-	"contributorsPerLine": 7,
-	"projectName": "RustScan",
-	"projectOwner": "RustScan",
-	"repoType": "github",
-	"repoHost": "https://github.com",
-	"skipCi": true
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "brandonskerritt",
+      "name": "Brandon",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10378052?v=4",
+      "profile": "https://skerritt.blog",
+      "contributions": [
+        "infra",
+        "test",
+        "code",
+        "design"
+      ]
+    },
+    {
+      "login": "SakiiR",
+      "name": "SakiiR",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/9950578?v=4",
+      "profile": "https://sakiir.ovh",
+      "contributions": [
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "smackhack",
+      "name": "smackhack",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/48143394?v=4",
+      "profile": "https://github.com/smackhack",
+      "contributions": [
+        "ideas",
+        "example"
+      ]
+    },
+    {
+      "login": "bernardoamc",
+      "name": "Bernardo Araujo",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/428984?v=4",
+      "profile": "http://bernardoamc.github.io/",
+      "contributions": [
+        "code",
+        "bug",
+        "design"
+      ]
+    },
+    {
+      "login": "Isona",
+      "name": "Izzy Whistlecroft",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/11759523?v=4",
+      "profile": "https://github.com/Isona",
+      "contributions": [
+        "bug"
+      ]
+    },
+    {
+      "login": "imlonghao",
+      "name": "imlonghao",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/4951333?v=4",
+      "profile": "https://imlonghao.com",
+      "contributions": [
+        "bug",
+        "maintenance"
+      ]
+    },
+    {
+      "login": "royharoush",
+      "name": "royharoush",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/8113056?v=4",
+      "profile": "https://github.com/royharoush",
+      "contributions": [
+        "ideas",
+        "design"
+      ]
+    },
+    {
+      "login": "Atul9",
+      "name": "Atul Bhosale",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/3390330?v=4",
+      "profile": "https://github.com/Atul9",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "remigourdon",
+      "name": "Rémi Gourdon",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/2874133?v=4",
+      "profile": "https://github.com/remigourdon",
+      "contributions": [
+        "doc",
+        "code"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "RustScan",
+  "projectOwner": "RustScan",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
 }
