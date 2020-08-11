@@ -134,7 +134,7 @@ fn main() {
 
         let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
         \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-        \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 second timeout.\n",
         "ERROR",
         ip,
         opts.batch_size,
