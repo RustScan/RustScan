@@ -1,17 +1,28 @@
 extern crate shell_words;
 
+mod tui;
+
 mod scanner;
 use scanner::Scanner;
 
-use colored::*;
+mod port_strategy;
+use port_strategy::PortStrategy;
+
+use colorful::Color;
+use colorful::Colorful;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
+use std::collections::HashMap;
 use std::process::Command;
 use std::{net::IpAddr, time::Duration};
-use structopt::StructOpt;
+use structopt::{clap::arg_enum, StructOpt};
 
+extern crate colorful;
 extern crate dirs;
+
+const LOWEST_PORT_NUMBER: u16 = 1;
+const TOP_PORT_NUMBER: u16 = 65535;
 // Average value for Ubuntu
 const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
 // Safest batch size based on experimentation
@@ -19,6 +30,14 @@ const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
 
 #[macro_use]
 extern crate log;
+
+arg_enum! {
+    #[derive(Debug, StructOpt)]
+    pub enum ScanOrder {
+        Serial,
+        Random,
+    }
+}
 
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
@@ -36,12 +55,16 @@ struct Opts {
     #[structopt(short, long)]
     quiet: bool,
 
+    //Accessible mode. Turns off features which negatively affect screen readers.
+    #[structopt(short, long)]
+    accessible: bool,
+
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
     /// support this.
     #[structopt(short, long, default_value = "4500")]
-    batch_size: u32,
+    batch_size: u16,
 
     /// The timeout in milliseconds before a port is assumed to be closed.
     #[structopt(short, long, default_value = "1500")]
@@ -50,6 +73,12 @@ struct Opts {
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
     ulimit: Option<rlimit::rlim>,
+
+    /// The order of scanning to be performed. The "serial" option will
+    /// scan ports in ascending order while the "random" option will scan
+    /// ports randomly.
+    #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
+    scan_order: ScanOrder,
 
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
@@ -70,62 +99,61 @@ fn main() {
     let opts = Opts::from_args();
     info!("Mains() `opts` arguments are {:?}", opts);
 
-    if !opts.quiet {
+    if !opts.quiet && !opts.accessible {
         print_opening();
     }
 
     let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
-    let batch_size: u32 = infer_batch_size(&opts, ulimit);
+    let batch_size: u16 = infer_batch_size(&opts, ulimit);
+
+    let scanner = Scanner::new(
+        &opts.ips,
+        batch_size,
+        Duration::from_millis(opts.timeout.into()),
+        opts.quiet,
+        PortStrategy::pick(LOWEST_PORT_NUMBER, TOP_PORT_NUMBER, opts.scan_order),
+    );
+
+    let scan_result = block_on(scanner.run());
+    let mut ports_per_ip = HashMap::new();
+
+    for socket in scan_result {
+        ports_per_ip
+            .entry(socket.ip())
+            .or_insert_with(Vec::new)
+            .push(socket.port());
+    }
 
     for ip in opts.ips {
-        println!("{} {}\n", "\nScanning ports from".green(), ip);
-
-        let scanner = Scanner::new(
-            ip,
-            1,
-            65535,
-            batch_size,
-            Duration::from_millis(opts.timeout.into()),
-            opts.quiet,
-        );
-
-        let scan_result = block_on(scanner.run());
-
-        // prints ports and places them into nmap string
-        let nmap_str_ports: Vec<String> = scan_result
-            .into_iter()
-            .map(|port| port.to_string())
-            .collect();
-
-        // if no ports are found, suggest running with less
-        if nmap_str_ports.is_empty() {
-            if opts.quiet {
-                println!("{}", "No ports found.".red());
-            } else {
-                println!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
-                \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
-                \n Alternatively, increase the timeout if your ping is high. Rustscan -T 2000 for 2000 second timeout.\n",
-                "ERROR".red(),
-                ip,
-                opts.batch_size,
-                (opts.batch_size / 2).to_string().green(),
-                "'rustscan -b <batch_size> <ip address>'".green());
-            }
-
+        if ports_per_ip.contains_key(&ip) {
             continue;
         }
 
-        // Tells the user we are now switching to Nmap
-        if !opts.quiet {
-            println!("\n{}", "Starting nmap.".blue(),);
-        }
+        // If we got here it means the IP was not found within the HashMap, this
+        // means the scan couldn't find any open ports for it.
 
-        // nmap port style is 80,443. Comma seperated with no spaces.
+        let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+        \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 second timeout.\n",
+        "ERROR",
+        ip,
+        opts.batch_size,
+        (opts.batch_size / 2).to_string(),
+        "'rustscan -b <batch_size> <ip address>'");
+        warning!(x, opts.quiet);
+    }
+
+    for (ip, ports) in ports_per_ip.iter_mut() {
+        let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
+
+        detail!("Starting Nmap", opts.quiet);
+
+        // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
-        // if quiet mode is on, return ports and exit
+        // if quiet mode is on nmap should not be spawned
         if opts.quiet {
-            println!("Ports: {:?}", ports_str);
+            println!("{}", ports_str);
             continue;
         }
 
@@ -134,9 +162,10 @@ fn main() {
             shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
         let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
-        if !opts.quiet {
-            println!("The Nmap command to be run is {}", &nmap_args.join(" "));
-        }
+        output!(format!(
+            "The Nmap command to be run is nmap {}\n",
+            &nmap_args.join(" ")
+        ));
 
         // Runs the nmap command and spawns it as a process.
         let mut child = Command::new("nmap")
@@ -151,15 +180,18 @@ fn main() {
 /// Prints the opening title of RustScan
 fn print_opening() {
     info!("Printing opening");
-    let s = "
-     _____           _    _____
-    |  __ \\         | |  / ____|
-    | |__) |   _ ___| |_| (___   ___ __ _ _ __
-    |  _  / | | / __| __|\\___ \\ / __/ _` | '_ \\
-    | | \\ \\ |_| \\__ \\ |_ ____) | (_| (_| | | | |
-    |_|  \\_\\__,_|___/\\__|_____/ \\___\\__,_|_| |_|
-    Faster nmap scanning with rust.";
-    println!("{}\n", s.green());
+    let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
+| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
+| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
+`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
+Faster Nmap scanning with Rust."#;
+    println!("{}", s.gradient(Color::Green).bold());
+    let info = r#"________________________________________
+: https://discord.gg/GFrQsGy           :
+: https://github.com/RustScan/RustScan :
+ --------------------------------------"#;
+    println!("{}", info.gradient(Color::Yellow).bold());
+    funny_opening!();
 
     let config_path = match dirs::config_dir() {
         Some(mut path) => {
@@ -170,11 +202,10 @@ fn print_opening() {
         None => panic!("Couldn't find config dir."),
     };
 
-    println!(
-        "{} {:?}\n",
-        "The config file is expected to be at".yellow(),
-        config_path
-    );
+    detail!(format!(
+        "{} {:?}",
+        "The config file is expected to be at", config_path
+    ));
 }
 #[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(
@@ -204,11 +235,12 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
-                if !opts.quiet {
-                    println!("\nAutomatically increasing ulimit value to {}.\n", limit);
-                }
+                detail!(
+                    format!("Automatically increasing ulimit value to {}.", limit),
+                    opts.quiet
+                );
             }
-            Err(_) => println!("{}", "ERROR. Failed to set ulimit value.".red()),
+            Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
         }
     }
 
@@ -217,14 +249,14 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
     rlim
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
+fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     let mut batch_size: rlimit::rlim = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
-        if !opts.quiet {
-            println!("{}", "WARNING: Your file description limit is lower than the provided batch size. Please considering upping this (instructions in our README). NOTE: this may be dangerous and may cause harm to sensitive servers. Automatically reducing the batch Size to match your system's limit, this process isn't harmful but reduces speed.".red());
-        }
+        warning!("File limit is lower than default batch size. Consider upping with --ulimt. May cause harm to sensitive servers",
+            opts.quiet
+        );
 
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
@@ -233,8 +265,8 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
+            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ");
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            println!("{}", "WARNING. Your open file description limit is smaller than expected. You can increase the ulimit with the '-u' flag like '-u 5000' to get default size. Or, use the Docker image. If you do not increase ulimit your RustScan speeds will be much slower in comparison to a normal ulimit.".red());
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
@@ -246,110 +278,31 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u32 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        if !opts.quiet {
-            println!(
-                "Your file descriptor limit is higher than the batch size. You can potentially increase the speed by increasing the batch size, but this may cause harm to sensitive servers. Your limit is {},Your batch size is {}, try batch size {}.\n",
-                ulimit,
-                batch_size,
-                ulimit - 1
-            );
-        }
+        detail!(format!(
+                "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
+                ulimit - 100
+            ), opts.quiet);
     }
-    batch_size as u32
+
+    batch_size as u16
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Scanner;
-    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts};
-    use async_std::task::block_on;
-    use std::{net::IpAddr, str::FromStr, time::Duration};
+    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts, ScanOrder};
+    use std::{net::IpAddr, str::FromStr};
 
-    #[test]
-    fn scanner_runs() {
-        // Makes sure te program still runs and doesn't panic
-        let addr = match "127.0.0.1".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), true);
-        block_on(scanner.run());
-        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn ipv6_scanner_runs() {
-        // Makes sure te program still runs and doesn't panic
-        let addr = match "::1".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 1, 65535, 100, Duration::from_millis(100), false);
-        block_on(scanner.run());
-        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn quad_zero_scanner_runs() {
-        let addr = match "0.0.0.0".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 1, 1000, 100, Duration::from_millis(500), true);
-        block_on(scanner.run());
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn zero_ports_no_return_no_panic() {
-        let addr = match "0.0.0.0".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 1, 1, 100, Duration::from_millis(50), true);
-        block_on(scanner.run());
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn backwards_ports_scanner_runs() {
-        let addr = match "0.0.0.0".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 10, 1, 100, Duration::from_millis(50), true);
-        block_on(scanner.run());
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn google_dns_runs() {
-        let addr = match "8.8.8.8".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        let scanner = Scanner::new(addr, 400, 445, 100, Duration::from_millis(1500), true);
-        block_on(scanner.run());
-        assert_eq!(1, 1);
-    }
-    #[test]
-    fn infer_ulimit_lowering_no_panic() {
-        // this test is because of a bug where Mac OS didn't automatically lower ulimit
-        let addr = match "8.8.8.8".parse::<IpAddr>() {
-            Ok(res) => res,
-            Err(_) => panic!("Could not parse IP Address"),
-        };
-        // mac should have this automatically scaled down
-        let scanner = Scanner::new(addr, 400, 600, 10_000, Duration::from_millis(1500), true);
-        block_on(scanner.run());
-        assert_eq!(1, 1);
-    }
     #[test]
     fn batch_size_lowered() {
         let opts = Opts {
             ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
-            timeout: 1000,
-            ulimit: Some(2000),
+            timeout: 1_000,
+            ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -362,13 +315,15 @@ mod tests {
             ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
-            timeout: 1000,
-            ulimit: Some(2000),
+            timeout: 1_000,
+            ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
         };
-        let batch_size = infer_batch_size(&opts, 9000);
+        let batch_size = infer_batch_size(&opts, 9_000);
 
-        assert!(batch_size == 3000);
+        assert!(batch_size == 3_000);
     }
     #[test]
     fn batch_size_equals_ulimit_lowered() {
@@ -378,13 +333,15 @@ mod tests {
             ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
-            timeout: 1000,
-            ulimit: Some(2000),
+            timeout: 1_000,
+            ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
         };
-        let batch_size = infer_batch_size(&opts, 5000);
+        let batch_size = infer_batch_size(&opts, 5_000);
 
-        assert!(batch_size == 4900);
+        assert!(batch_size == 4_900);
     }
     #[test]
     fn batch_size_adjusted_2000() {
@@ -393,17 +350,19 @@ mod tests {
             ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: true,
             batch_size: 50_000,
-            timeout: 1000,
-            ulimit: Some(2000),
+            timeout: 1_000,
+            ulimit: Some(2_000),
             command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
-        assert!(batch_size == 2000);
+        assert!(batch_size == 2_000);
     }
     #[test]
     fn test_print_opening_no_panic() {
-        // print opening should not paniic
+        // print opening should not panic
         print_opening();
         assert!(1 == 1);
     }
@@ -413,12 +372,14 @@ mod tests {
             ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
             quiet: false,
             batch_size: 10,
-            timeout: 1000,
+            timeout: 1_000,
             ulimit: None,
             command: Vec::new(),
+            accessible: true,
+            scan_order: ScanOrder::Serial,
         };
 
-        infer_batch_size(&opts, 1000000);
+        infer_batch_size(&opts, 1_000_000);
 
         assert!(1 == 1);
     }
