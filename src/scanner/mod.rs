@@ -12,14 +12,14 @@ use std::{
 };
 
 /// The class for the scanner
-/// Host is data type IpAddr and is the host address
+/// IP is data type IpAddr and is the IP address
 /// start & end is where the port scan starts and ends
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// Quiet is whether or not RustScan should print things, or wait until the end to print only open ports.
 #[cfg(not(tarpaulin_include))]
 pub struct Scanner {
-    hosts: Vec<IpAddr>,
+    ips: Vec<IpAddr>,
     batch_size: u16,
     timeout: Duration,
     quiet: bool,
@@ -28,7 +28,7 @@ pub struct Scanner {
 
 impl Scanner {
     pub fn new(
-        hosts: &[IpAddr],
+        ips: &[IpAddr],
         batch_size: u16,
         timeout: Duration,
         quiet: bool,
@@ -39,7 +39,7 @@ impl Scanner {
             timeout,
             quiet,
             port_strategy,
-            hosts: hosts.iter().map(|host| host.to_owned()).collect(),
+            ips: ips.iter().map(|ip| ip.to_owned()).collect(),
         }
     }
 
@@ -48,10 +48,10 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
-        let batch_per_host: usize = self.batch_size as usize / self.hosts.len();
+        let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
 
-        for batch in ports.chunks(batch_per_host) {
+        for batch in ports.chunks(batch_per_ip) {
             let mut sockets = self.scan_ports(batch).await;
             open_sockets.append(&mut sockets);
         }
@@ -64,8 +64,8 @@ impl Scanner {
     async fn scan_ports(&self, ports: &[u16]) -> Vec<SocketAddr> {
         let mut ftrs = FuturesUnordered::new();
         for port in ports {
-            for host in &self.hosts {
-                ftrs.push(self.scan_socket(SocketAddr::new(*host, *port)));
+            for ip in &self.ips {
+                ftrs.push(self.scan_socket(SocketAddr::new(*ip, *port)));
             }
         }
 
@@ -91,7 +91,7 @@ impl Scanner {
     ///
     ///     self.scan_port(10:u16)
     ///
-    /// Note: `self` must contain `self.host`.
+    /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         match self.connect(socket).await {
             Ok(x) => {
@@ -119,9 +119,9 @@ impl Scanner {
     /// # Example
     ///
     ///     let port: u16 = 80
-    ///     // Host is an IpAddr type
-    ///     let host = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
-    ///     let socket = SocketAddr::new(host, port);
+    ///     // ip is an IpAddr type
+    ///     let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    ///     let socket = SocketAddr::new(ip, port);
     ///     self.connect(socket)
     ///     // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
     ///     // Timeout occurs after self.timeout seconds
