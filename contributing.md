@@ -8,7 +8,7 @@ TL;DR if you abuse members of our community you will be **perma-banned** with no
 
 RustScan has 2 major labels for GitHub issues you should look at:
 * Good First issue
-These are issues for newcomers to open source! 
+These are issues for newcomers to open source!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 * Help wanted
 These are issues that aren't really for newcomers, but we could still do wiht help!
@@ -16,7 +16,7 @@ These are issues that aren't really for newcomers, but we could still do wiht he
 
 If you want to, solve the issue or comment on the issue for help.
 
-The flow for contributing to open source software is:
+The [flow for contributing](https://guides.github.com/introduction/flow/) to open source software is:
 * Fork the repo
 * Make changes
 * Pull request to the repo

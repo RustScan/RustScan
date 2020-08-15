@@ -252,7 +252,7 @@ You can also use both of these at the same time, to make it as slow or as fast a
 
 **Please** do not use this tool against sensitive servers. It is designed mainly for Capture the Flag events, not real world servers with sensitive data.
 
-## 🚨 Thread Paniced at Main: Too Many Open Files
+## 🚨 Thread Panicked at Main: Too Many Open Files
 This is the most common error found in RustScan.
 
 The open file limit is how many open sockets you can have at any given time.
