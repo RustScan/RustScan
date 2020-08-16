@@ -15,7 +15,8 @@ use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
 use std::process::Command;
-use std::{net::IpAddr, time::Duration};
+use std::str::FromStr;
+use std::{net::IpAddr, net::ToSocketAddrs, time::Duration};
 use structopt::{clap::arg_enum, StructOpt};
 
 extern crate colorful;
@@ -47,9 +48,9 @@ arg_enum! {
 /// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 struct Opts {
-    /// A list of comma separated IP addresses to be scanned.
-    #[structopt(use_delimiter = true, parse(try_from_str), required = true)]
-    ips: Vec<IpAddr>,
+    /// A list of comma separated IP addresses or hosts to be scanned.
+    #[structopt(use_delimiter = true, required = true)]
+    ips_or_hosts: Vec<String>,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -103,11 +104,18 @@ fn main() {
         print_opening();
     }
 
+    let ips: Vec<IpAddr> = parse_ips(&opts);
+
+    if ips.is_empty() {
+        warning!("No IPs could be resolved, aborting scan.", false);
+        std::process::exit(1);
+    }
+
     let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
     let batch_size: u16 = infer_batch_size(&opts, ulimit);
 
     let scanner = Scanner::new(
-        &opts.ips,
+        &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
         opts.quiet,
@@ -124,7 +132,7 @@ fn main() {
             .push(socket.port());
     }
 
-    for ip in opts.ips {
+    for ip in ips {
         if ports_per_ip.contains_key(&ip) {
             continue;
         }
@@ -229,6 +237,25 @@ fn build_nmap_arguments<'a>(
     arguments
 }
 
+fn parse_ips(opts: &Opts) -> Vec<IpAddr> {
+    let mut ips: Vec<IpAddr> = Vec::new();
+
+    for ip_or_host in &opts.ips_or_hosts {
+        match IpAddr::from_str(ip_or_host) {
+            Ok(ip) => ips.push(ip),
+            _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
+                Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
+                _ => {
+                    let failed_to_resolve = format!("Host {:?} could not be resolved.", ip_or_host);
+                    warning!(failed_to_resolve, opts.quiet);
+                }
+            },
+        }
+    }
+
+    ips
+}
+
 fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
     if opts.ulimit.is_some() {
         let limit: rlimit::rlim = opts.ulimit.unwrap();
@@ -289,13 +316,12 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, print_opening, Opts, ScanOrder};
-    use std::{net::IpAddr, str::FromStr};
+    use crate::{adjust_ulimit_size, infer_batch_size, parse_ips, print_opening, Opts, ScanOrder};
 
     #[test]
     fn batch_size_lowered() {
         let opts = Opts {
-            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
+            ips_or_hosts: vec!["127.0.0.1".to_owned()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -312,7 +338,7 @@ mod tests {
     #[test]
     fn batch_size_lowered_average_size() {
         let opts = Opts {
-            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
+            ips_or_hosts: vec!["127.0.0.1".to_owned()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -330,7 +356,7 @@ mod tests {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
         let opts = Opts {
-            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
+            ips_or_hosts: vec!["127.0.0.1".to_owned()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -347,7 +373,7 @@ mod tests {
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let opts = Opts {
-            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
+            ips_or_hosts: vec!["127.0.0.1".to_owned()],
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -369,7 +395,7 @@ mod tests {
     #[test]
     fn test_high_ulimit_no_quiet_mode() {
         let opts = Opts {
-            ips: vec![IpAddr::from_str("127.0.0.1").unwrap()],
+            ips_or_hosts: vec!["127.0.0.1".to_owned()],
             quiet: false,
             batch_size: 10,
             timeout: 1_000,
@@ -382,5 +408,56 @@ mod tests {
         infer_batch_size(&opts, 1_000_000);
 
         assert!(1 == 1);
+    }
+
+    #[test]
+    fn parse_correct_ips_or_hosts() {
+        let opts = Opts {
+            ips_or_hosts: vec!["127.0.0.1".to_owned(), "google.com".to_owned()],
+            quiet: true,
+            batch_size: 10,
+            timeout: 1_000,
+            ulimit: Some(2_000),
+            command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+        };
+        let ips = parse_ips(&opts);
+
+        assert_eq!(2, ips.len());
+    }
+
+    #[test]
+    fn parse_correct_and_incorrect_ips_or_hosts() {
+        let opts = Opts {
+            ips_or_hosts: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
+            quiet: true,
+            batch_size: 10,
+            timeout: 1_000,
+            ulimit: Some(2_000),
+            command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+        };
+        let ips = parse_ips(&opts);
+
+        assert_eq!(1, ips.len());
+    }
+
+    #[test]
+    fn parse_incorrect_ips_or_hosts() {
+        let opts = Opts {
+            ips_or_hosts: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
+            quiet: true,
+            batch_size: 10,
+            timeout: 1_000,
+            ulimit: Some(2_000),
+            command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+        };
+        let ips = parse_ips(&opts);
+
+        assert_eq!(0, ips.len());
     }
 }
