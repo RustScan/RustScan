@@ -24,7 +24,7 @@
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
 | ---- | ---- | ---- | --- |
 | <p align="center"><img src="pictures/docker.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/rust.png" /></p>
-| `docker pull cmnatic/rustscan:debian-buster` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
+| `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
 
 <hr>
 
@@ -127,7 +127,7 @@ To install Docker, [follow their guide](https://docs.docker.com/engine/install/)
 Simply run this command against the IP you want to target:
 
 ```
-docker run -it --rm --name rustscan cmnatic/rustscan:debian-buster rustscan 127.0.0.1
+docker run -it --rm --name rustscan rustscan/rustscan:alpine <rustscan arguments here> <ip address to scan>
 ```
 
 Note: this will scan the Docker's localhost, not your own.
@@ -137,7 +137,7 @@ Once done, you will no longer need to re-download the image (except when RustSca
 You will have to run this command every time, so we suggest aliasing it to something memorable.
 
 ```
-alias rustscan='docker run -it --rm --name rustscan cmnatic/rustscan:debian-buster rustscan'
+alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:alpine <rustscan arguments here> <ip address to scan>'
 ```
 
 Then we can:
@@ -151,6 +151,11 @@ rustscan 127.0.0.1 -t 500 -b 1500 -- -A
 Download the repo:
 ```
 git clone https://github.com/RustScan/RustScan.git
+```
+
+Ensure you navigate to the download location of the repo:
+```
+cd /path/to/download/RustScan
 ```
 
 Build away!
