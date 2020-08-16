@@ -124,6 +124,16 @@ To install Docker, [follow their guide](https://docs.docker.com/engine/install/)
 
 **Once Docker is installed, you can either build your own image using the `Dockerfile` (alpine) provided in the repo, or alternatively, use the published Docker image like below (most convenient)**
 
+Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further info, however, note that we have two Docker images:
+```
+rustscan/rustscan:alpine
+
+rustscan/rustscan:latest
+```
+We strongly recommend using the `alpine` tag, as this is the latest major - stable - release of RustScan. This READMDE uses the `alpine` image by default, however, note that the`latest` image is considered experimental.
+
+#### To get started:
+
 Simply run this command against the IP you want to target:
 
 ```
