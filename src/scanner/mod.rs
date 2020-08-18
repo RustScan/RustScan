@@ -139,7 +139,7 @@ impl Scanner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ScanOrder;
+    use crate::{PortRange, ScanOrder};
     use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
@@ -147,7 +147,11 @@ mod tests {
     fn scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
-        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -157,7 +161,11 @@ mod tests {
     fn ipv6_scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
-        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -166,7 +174,11 @@ mod tests {
     #[test]
     fn quad_zero_scanner_runs() {
         let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
-        let strategy = PortStrategy::pick(1, 1_000, ScanOrder::Random);
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -174,7 +186,11 @@ mod tests {
     #[test]
     fn google_dns_runs() {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
-        let strategy = PortStrategy::pick(400, 445, ScanOrder::Random);
+        let range = PortRange {
+            start: 400,
+            end: 445,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -185,7 +201,11 @@ mod tests {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
 
         // mac should have this automatically scaled down
-        let strategy = PortStrategy::pick(400, 600, ScanOrder::Random);
+        let range = PortRange {
+            start: 400,
+            end: 600,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
         block_on(scanner.run());
         assert_eq!(1, 1);
