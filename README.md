@@ -11,7 +11,7 @@
 <u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap.
 </p>
 <p align="center">
-<img alt="AUR version" src="https://img.shields.io/aur/version/rustscan-bin">
+<img alt="AUR version" src="https://img.shields.io/aur/version/rustscan">
 <img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
 <img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/brandonskerritt/rustscan">
 <img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads">
