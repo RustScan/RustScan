@@ -40,6 +40,35 @@ arg_enum! {
     }
 }
 
+#[derive(Debug)]
+pub struct PortRange {
+    start: u16,
+    end: u16,
+}
+
+fn parse_range(input: &str) -> Result<PortRange, String> {
+    let range = input
+        .split("-")
+        .map(|x| x.parse::<u16>())
+        .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
+
+    if range.is_err() {
+        return Err(String::from(
+            "the range format must be 'start-end'. Example: 1-1000.",
+        ));
+    }
+
+    match range.unwrap().as_slice() {
+        [start, end] => Ok(PortRange {
+            start: *start,
+            end: *end,
+        }),
+        _ => Err(String::from(
+            "the range format must be 'start-end'. Example: 1-1000.",
+        )),
+    }
+}
+
 #[derive(StructOpt, Debug)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
 /// Fast Port Scanner built in Rust.
@@ -51,6 +80,15 @@ struct Opts {
     /// A list of comma separated IP addresses or hosts to be scanned.
     #[structopt(use_delimiter = true, required = true)]
     ips_or_hosts: Vec<String>,
+
+    /// A list of comma separed ports to be scanned. Example: 80,443,8080.
+    /// These ports will be scanned sequentially.
+    #[structopt(short, long, use_delimiter = true)]
+    ports: Option<Vec<u16>>,
+
+    /// A range of ports with format start-end. Example: 1-1000.
+    #[structopt(short, long, conflicts_with = "ports", parse(try_from_str = parse_range))]
+    range: Option<PortRange>,
 
     ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -97,7 +135,15 @@ fn main() {
     env_logger::init();
 
     info!("Starting up");
-    let opts = Opts::from_args();
+    let mut opts = Opts::from_args();
+
+    if opts.ports.is_none() && opts.range.is_none() {
+        opts.range = Some(PortRange {
+            start: LOWEST_PORT_NUMBER,
+            end: TOP_PORT_NUMBER,
+        });
+    }
+
     info!("Mains() `opts` arguments are {:?}", opts);
 
     if !opts.quiet && !opts.accessible {
@@ -119,7 +165,7 @@ fn main() {
         batch_size,
         Duration::from_millis(opts.timeout.into()),
         opts.quiet,
-        PortStrategy::pick(LOWEST_PORT_NUMBER, TOP_PORT_NUMBER, opts.scan_order),
+        PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
     );
 
     let scan_result = block_on(scanner.run());
@@ -322,6 +368,8 @@ mod tests {
     fn batch_size_lowered() {
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -339,6 +387,8 @@ mod tests {
     fn batch_size_lowered_average_size() {
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -357,6 +407,8 @@ mod tests {
         // to ULIMIT - 100
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -374,6 +426,8 @@ mod tests {
         // ulimit == batch_size
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 50_000,
             timeout: 1_000,
@@ -396,6 +450,8 @@ mod tests {
     fn test_high_ulimit_no_quiet_mode() {
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: false,
             batch_size: 10,
             timeout: 1_000,
@@ -414,6 +470,8 @@ mod tests {
     fn parse_correct_ips_or_hosts() {
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned(), "google.com".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 10,
             timeout: 1_000,
@@ -431,6 +489,8 @@ mod tests {
     fn parse_correct_and_incorrect_ips_or_hosts() {
         let opts = Opts {
             ips_or_hosts: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 10,
             timeout: 1_000,
@@ -448,6 +508,8 @@ mod tests {
     fn parse_incorrect_ips_or_hosts() {
         let opts = Opts {
             ips_or_hosts: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
+            ports: None,
+            range: None,
             quiet: true,
             batch_size: 10,
             timeout: 1_000,
