@@ -10,6 +10,11 @@ license = "MIT"
 keywords = ["port", "scanning", "nmap"]
 categories = ["command-line-utilities"]
 readme="README.md"
+exclude = [
+    ".github/*",
+    "pictures/*",
+    "rustscan-debbuilder/*",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

@@ -5,7 +5,7 @@
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
  ⬅️
 <br>
-<img src="pictures/rustscan.png">
+<img src="https://github.com/RustScan/RustScan/blob/master/pictures/rustscan.png?raw=true">
 </p>
 <p align="center">
 <u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap.
@@ -23,7 +23,7 @@
 
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
 | ---- | ---- | ---- | --- |
-| <p align="center"><img src="pictures/docker.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/rust.png" /></p>
+| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p>
 | `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
 
 <hr>
@@ -42,8 +42,8 @@
   </tr>
   <tr>
   <th>Gif</th>
-    <td><img src="pictures/with_rustscan.gif" alt="The guy she tells you not to worry about"></td>
-    <td><img src="pictures/without_rustscan.gif" alt="You"></td>
+    <td><img src="https://github.com/RustScan/RustScan/blob/master/pictures/with_rustscan.gif?raw=true" alt="The guy she tells you not to worry about"></td>
+    <td><img src="https://github.com/RustScan/RustScan/blob/master/pictures/without_rustscan.gif?raw=true" alt="You"></td>
   </tr>
   <tr>
   <th>Time</th>
@@ -79,7 +79,7 @@ RustScans **only** job is to reduce the friction between finding open ports and 
 # 🔭 Why RustScan?
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
-![gif](pictures/8seconds.gif)
+![gif](https://github.com/RustScan/RustScan/blob/master/pictures/8seconds.gif?raw=true)
 
 **RustScan running in 8 seconds and finding all open ports out of 65k.**
 
