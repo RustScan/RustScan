@@ -230,8 +230,7 @@ OPTIONS:
     -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
                                      Depends on the open file limit of your OS.  If you do 65535 it will do every port
                                      at the same time. Although, your OS may not support this [default: 4500]
-    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080. These ports will
-                                     be scanned sequentially
+    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080.
     -r, --range <range>              A range of ports with format start-end. Example: 1-1000
         --scan-order <scan-order>    The order of scanning to be performed. The "serial" option will scan ports in
                                      ascending order while the "random" option will scan ports randomly [default:

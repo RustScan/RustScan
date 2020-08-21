@@ -82,7 +82,6 @@ struct Opts {
     ips_or_hosts: Vec<String>,
 
     /// A list of comma separed ports to be scanned. Example: 80,443,8080.
-    /// These ports will be scanned sequentially.
     #[structopt(short, long, use_delimiter = true)]
     ports: Option<Vec<u16>>,
 
