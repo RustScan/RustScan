@@ -16,8 +16,6 @@ exclude = [
     "rustscan-debbuilder/*",
 ]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 colored = "2.0.0"
 structopt = "0.3.16"
@@ -36,3 +34,7 @@ ansi_term = "0.12.1"
 [package.metadata.deb]
 depends = "$auto, nmap"
 section = "rust"
+
+[profile.release]
+lto = true
+panic = 'abort'

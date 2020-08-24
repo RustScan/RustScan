@@ -82,7 +82,6 @@ struct Opts {
     ips_or_hosts: Vec<String>,
 
     /// A list of comma separed ports to be scanned. Example: 80,443,8080.
-    /// These ports will be scanned sequentially.
     #[structopt(short, long, use_delimiter = true)]
     ports: Option<Vec<u16>>,
 
@@ -269,7 +268,6 @@ fn build_nmap_arguments<'a>(
     is_ipv6: bool,
 ) -> Vec<&'a str> {
     let mut arguments: Vec<&str> = user_args.iter().map(AsRef::as_ref).collect();
-    arguments.push("-A");
     arguments.push("-vvv");
 
     if is_ipv6 {
