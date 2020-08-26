@@ -11,12 +11,13 @@ use port_strategy::PortStrategy;
 use colorful::Color;
 use colorful::Colorful;
 use futures::executor::block_on;
+
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
 use std::process::Command;
 use std::str::FromStr;
-use std::{net::IpAddr, net::ToSocketAddrs, time::Duration};
+use std::{net::IpAddr, net::ToSocketAddrs, time::Duration, convert::TryInto};
 use structopt::{clap::arg_enum, StructOpt};
 
 extern crate colorful;
@@ -25,9 +26,9 @@ extern crate dirs;
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: u32 = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
+const AVERAGE_BATCH_SIZE: u32 = 3000;
 
 #[macro_use]
 extern crate log;
@@ -110,7 +111,7 @@ struct Opts {
 
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
-    ulimit: Option<rlimit::rlim>,
+    ulimit: Option<u32>,
 
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
@@ -158,7 +159,7 @@ fn main() {
 
     // Rlimit does not support Windows
     // set to 1000 if Windows is used
-    let ulimit: rlimit::rlim = if !(cfg!(windows)) {
+    let ulimit: u32 = if !(cfg!(windows)) {
         adjust_ulimit_size(&opts)
     } else {
         1000
@@ -307,9 +308,9 @@ fn parse_ips(opts: &Opts) -> Vec<IpAddr> {
     ips
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
+fn adjust_ulimit_size(opts: &Opts) -> u32 {
     if opts.ulimit.is_some() {
-        let limit: rlimit::rlim = opts.ulimit.unwrap();
+        let limit: rlimit::rlim = opts.ulimit.unwrap().into();
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
@@ -324,11 +325,11 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
     let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
 
-    rlim
+    rlim.try_into().unwrap()
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
-    let mut batch_size: rlimit::rlim = opts.batch_size.into();
+fn infer_batch_size(opts: &Opts, ulimit: u32) -> u16 {
+    let mut batch_size: u32 = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
