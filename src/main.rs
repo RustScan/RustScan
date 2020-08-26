@@ -325,7 +325,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
-        warning!("File limit is lower than default batch size. Consider upping with --ulimt. May cause harm to sensitive servers",
+        warning!("File limit is lower than default batch size. Consider upping with --ulimit. May cause harm to sensitive servers",
             opts.quiet
         );
 
