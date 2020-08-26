@@ -241,7 +241,7 @@ OPTIONS:
 ARGS:
     <ips-or-hosts>...    A list of comma separated IP addresses or hosts to be scanned
     <command>...         The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'.
-                         Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
+                         Example: 'rustscan -t 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
                          automatically to nmap. For things like --script '(safe and vuln)' enclose it in quotations
                          marks \"'(safe and vuln)'\"")
 ```
