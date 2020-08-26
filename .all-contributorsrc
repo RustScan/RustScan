@@ -115,6 +115,15 @@
         "doc",
         "design"
       ]
+    },
+    {
+      "login": "Ferryistaken",
+      "name": "Alessandro Ferrari",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/47927670?v=4",
+      "profile": "https://github.com/Ferryistaken",
+      "contributions": [
+        "content"
+      ]
     }
   ],
   "contributorsPerLine": 7,
