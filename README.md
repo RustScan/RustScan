@@ -381,7 +381,7 @@ Please read the [contributing.md file](contributing.md)
 
 ## Contributors ✨
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-12-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-13-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -405,6 +405,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/remigourdon"><img src="https://avatars3.githubusercontent.com/u/2874133?v=4" width="100px;" alt=""/><br /><sub><b>Rémi Gourdon</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=remigourdon" title="Documentation">📖</a> <a href="https://github.com/RustScan/RustScan/commits?author=remigourdon" title="Code">💻</a></td>
     <td align="center"><a href="https://cmnatic.co.uk"><img src="https://avatars3.githubusercontent.com/u/4163116?v=4" width="100px;" alt=""/><br /><sub><b>Ben (CMNatic)</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=cmnatic" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/commits?author=cmnatic" title="Documentation">📖</a> <a href="#design-cmnatic" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/Ferryistaken"><img src="https://avatars3.githubusercontent.com/u/47927670?v=4" width="100px;" alt=""/><br /><sub><b>Alessandro Ferrari</b></sub></a><br /><a href="#content-Ferryistaken" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/Phenomite"><img src="https://avatars2.githubusercontent.com/u/8285537?v=4" width="100px;" alt=""/><br /><sub><b>Phenomite</b></sub></a><br /><a href="#content-Phenomite" title="Content">🖋</a></td>
   </tr>
 </table>
 
