@@ -156,7 +156,14 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
+    // Rlimit does not support Windows
+    // set to 1000 if Windows is used
+    let ulimit: rlimit::rlim = if !(cfg!(windows)) {
+        adjust_ulimit_size(&opts)
+    } else {
+        1000
+    };
+
     let batch_size: u16 = infer_batch_size(&opts, ulimit);
 
     let scanner = Scanner::new(

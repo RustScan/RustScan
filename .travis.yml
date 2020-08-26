@@ -3,7 +3,7 @@ language: rust
 os:
   - linux
   - osx
-  # - windows
+  - windows
 
 arch:
   - amd64
