@@ -17,7 +17,7 @@ use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
 use std::process::Command;
 use std::str::FromStr;
-use std::{net::IpAddr, net::ToSocketAddrs, time::Duration, convert::TryInto};
+use std::{convert::TryInto, net::IpAddr, net::ToSocketAddrs, time::Duration};
 use structopt::{clap::arg_enum, StructOpt};
 
 extern crate colorful;
