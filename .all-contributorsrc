@@ -149,7 +149,9 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/25358963?v=4",
       "profile": "https://swag.lgbt",
       "contributions": [
-        "platform"
+        "platform",
+        "code",
+        "bug"
       ]
     }
   ],
