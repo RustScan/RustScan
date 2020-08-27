@@ -12,8 +12,9 @@ use colorful::Color;
 use colorful::Colorful;
 use futures::executor::block_on;
 
-use rlimit::Resource;
-use rlimit::{getrlimit, setrlimit};
+#[cfg(not(target_os = "windows"))]
+use rlimit::{getrlimit, setrlimit, Resource};
+
 use std::collections::HashMap;
 use std::process::Command;
 use std::str::FromStr;
