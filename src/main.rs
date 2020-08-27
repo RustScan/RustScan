@@ -351,6 +351,8 @@ fn infer_batch_size(opts: &Opts, ulimit: u32) -> u16 {
             // decrease batch size to half of ulimit
             if !(cfg!(windows)) {
                 warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ");
+            } else {
+                warning!("Windows is known to be much slower than scanning on Unix systems. Use the Docker image if you need faster speeds.")
             }
             info!("Halving batch_size because ulimit is smaller than average batch size");
             batch_size = ulimit / 2
