@@ -142,6 +142,15 @@
       "contributions": [
         "content"
       ]
+    },
+    {
+      "login": "caass",
+      "name": "Cass",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/25358963?v=4",
+      "profile": "https://swag.lgbt",
+      "contributions": [
+        "platform"
+      ]
     }
   ],
   "contributorsPerLine": 7,
