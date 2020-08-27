@@ -54,3 +54,14 @@ after_failure:
   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
   - chmod +x send.sh
   - ./send.sh failure $WEBHOOK_URL
+
+after_success: |
+  if [ -n "${GITHUB_TOKEN}" ]; then
+    [ "${TRAVIS_BRANCH} " = master ] &&
+    [ "${TRAVIS_PULL_REQUEST}" = false ] &&
+    cargo doc &&
+    echo "<meta http-equiv=refresh content=0;url=rustscan/index.html>" > target/doc/index.html &&
+    sudo pip install ghp-import &&
+    ghp-import -n target/doc &&
+    git push -fq https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
+  fi
