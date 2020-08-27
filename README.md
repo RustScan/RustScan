@@ -208,11 +208,9 @@ If you maintain a community distribution and want it listed here, leave an issue
 
 # 🤸 Usage
 
-```bash
-rustscan -h
-```
-
 ```console
+$ rustscan -h
+
 Fast Port Scanner built in Rust. WARNING Do not use this program against sensitive infrastructure since the specified
 server may not be able to handle this many socket connections at once. - Discord https://discord.gg/GFrQsGy - GitHub
 https://github.com/RustScan/RustScan
