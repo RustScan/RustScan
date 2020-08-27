@@ -147,7 +147,7 @@ Once done, you will no longer need to re-download the image (except when RustSca
 You will have to run this command every time, so we suggest aliasing it to something memorable.
 
 ```
-alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:alpine <rustscan arguments here> <ip address to scan>'
+alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:alpine'
 ```
 
 Then we can:
