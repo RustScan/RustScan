@@ -759,7 +759,7 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
-version = "1.7.1"
+version = "1.8.0"
 dependencies = [
  "ansi_term 0.12.1",
  "async-std",
