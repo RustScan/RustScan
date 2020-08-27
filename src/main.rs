@@ -379,6 +379,7 @@ fn infer_batch_size(opts: &Opts, ulimit: u32) -> u16 {
 mod tests {
     use crate::{adjust_ulimit_size, infer_batch_size, parse_ips, print_opening, Opts, ScanOrder};
 
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn batch_size_lowered() {
         let opts = Opts {
@@ -398,6 +399,7 @@ mod tests {
         assert!(batch_size < 50_000);
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn batch_size_lowered_average_size() {
         let opts = Opts {
@@ -416,6 +418,7 @@ mod tests {
 
         assert!(batch_size == 3_000);
     }
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
@@ -436,6 +439,7 @@ mod tests {
 
         assert!(batch_size == 4_900);
     }
+    #[cfg(not(target_os = "windows"))]
     #[test]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
