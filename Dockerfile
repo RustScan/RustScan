@@ -5,7 +5,7 @@ WORKDIR /usr/src/rustscan
 COPY . .
 RUN cargo install --path .
 
-FROM alpine
+FROM alpine:3.12
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
 RUN addgroup -S rustscan && \
     adduser -S -G rustscan rustscan && \
