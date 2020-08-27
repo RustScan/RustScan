@@ -305,18 +305,8 @@ fn parse_ips(opts: &Opts) -> Vec<IpAddr> {
     ips
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> u32 {
-    if !(cfg!(windows)) {
-        adjust_ulimit_size_unix(opts)
-    } else {
-        // Rlimit does not support Windows
-        // set to 1000 if Windows is used
-        1000
-    }
-}
-
 #[cfg(not(target_os = "windows"))]
-fn adjust_ulimit_size_unix(opts: &Opts) -> u32 {
+fn adjust_ulimit_size(opts: &Opts) -> u32 {
     if opts.ulimit.is_some() {
         let limit: rlimit::rlim = opts.ulimit.unwrap().into();
 
@@ -334,6 +324,13 @@ fn adjust_ulimit_size_unix(opts: &Opts) -> u32 {
     let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
 
     rlim.try_into().unwrap()
+}
+
+// Rlimit does not support Windows
+// set to 1000 if Windows is used
+#[cfg(target_os = "windows")]
+fn adjust_ulimit_size(_opts: &Opts) -> u32 {
+    1000
 }
 
 fn infer_batch_size(opts: &Opts, ulimit: u32) -> u16 {
