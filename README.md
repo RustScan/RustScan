@@ -5,7 +5,7 @@
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
  ⬅️
 <br>
-<img src="pictures/rustscan.png">
+<img src="pictures/rustscan.png" height=400px width=400px>
 </p>
 <p align="center">
 <u><b> Turns a 17 minutes Nmap scan into 19 seconds. </b></u><br> Find all open ports <b>fast</b> with RustScan, automatically pipe them into Nmap.
