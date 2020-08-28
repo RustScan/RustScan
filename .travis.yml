@@ -1,60 +1,27 @@
 language: rust
-
 os:
-  - linux
-  - osx
-  # - windows
-
+- linux
+- osx
 arch:
-  - amd64
-  - arm64
-
+- amd64
+- arm64
 services:
-  - docker  
-
+- docker
 before_install:
 - rustup component add rustfmt
-
-# cargo test
 rust:
-  - stable
-  - beta
+- stable
+- beta
 jobs:
   fast_finish: true
-
-# Cargo fmt
 script:
 - cargo build
 - cargo test
 - cargo fmt -- --check
-
-# automatic deployment to cargo on release
-# deploy:
-
-#   provider: releases
-#   api_key: "GITHUB OAUTH TOKEN"
-#   file: "FILE TO UPLOAD"
-#   skip_cleanup: true
-#   on:
-#     tags: true
-
-# after_success:
-#   - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
-#   - chmod +x send.sh
-#   - ./send.sh success $WEBHOOK_URL
-
-        # only deploy on master branch
-        # on:
-                # branch: master
-        # provider: cargo
-        # token: $crates 
-
-
 after_failure:
-  - wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
-  - chmod +x send.sh
-  - ./send.sh failure $WEBHOOK_URL
-
+- wget https://raw.githubusercontent.com/DiscordHooks/travis-ci-discord-webhook/master/send.sh
+- chmod +x send.sh
+- "./send.sh failure $WEBHOOK_URL"
 after_success: |
   if [ -n "${GITHUB_TOKEN}" ]; then
     [ "${TRAVIS_BRANCH} " = master ] &&
@@ -65,3 +32,6 @@ after_success: |
     ghp-import -n target/doc &&
     git push -fq https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git gh-pages
   fi
+env:
+  global:
+    secure: Gf24LG7Hr3Q0drWyPrvISTL35Z57DxdS/wIOo7v+ZdauzY3Qjvv3Lh4TY//C4sdN0g1CLj4yjg7LQOqF4XRdh2Qah7JZPv/i2B5uz9nwjTsoRzmmMWML9VtfT1u53nSFqsNeXbvpmoNG9rfMXcoiyd+Lv+EgniHphDEBlXvS9n9KMcpOi1F2x7bsH0EK37wQYKMTpCCd5TPUPdZou7BJNiZS3ikRLpTRFF7uIN4gYtRH9kU5uBSphWgnJ6eBm2ItzZcUPOgrjAoF4RkmZAzGG4idDh1Qkf3No3nZwT3U5NSk8h7owtJ4oADlRgYqYKCB4YcC9cAKCJgDsyMlKKMkEyagvw1seFnBLCY3ljsW4EklpVEZ0rVqZOx4pTkIaxIxytLTC9pHmdDSnhdhFknOcVAQQWjg+nAZfD07QUeAqUdr0i/vxQoZitvbNY0znzEarycE1waKvwlkiB4gt385U1CBfYldydnOnRKkdtLNrCLClu13HU0djmSXMhojQJhTuNxTHtZAf5fKcWIWwkVbNZ5MNKYjQh4rKufqW3o1iHphB8dfAGsDEPv0RQMtVbu6H4+clCouLkFlxHOIrrOJ5SXQ8cIATPhnJR7y4cSDdRaN0DRLRjeLAIKlbOGBtNuFC+BftocaTY5qN42aKAMqQcT30ycfiLuRVJNiQJ5pkto=
