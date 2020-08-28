@@ -34,27 +34,7 @@
 3. ???
 4. Profit!
 
-<table>
-  <tr>
-  <th>Name</th>
-    <th>⚡ Nmap <b>with RustScan</b> ⚡ </th>
-    <th>🐢 Nmap 🐢</th>
-  </tr>
-  <tr>
-  <th>Gif</th>
-    <td><img src="https://github.com/RustScan/RustScan/blob/master/pictures/with_rustscan.gif?raw=true" alt="The guy she tells you not to worry about"></td>
-    <td><img src="https://github.com/RustScan/RustScan/blob/master/pictures/without_rustscan.gif?raw=true" alt="You"></td>
-  </tr>
-  <tr>
-  <th>Time</th>
-    <td><b>39 seconds</b></td>
-    <td><b>17 minutes and 41 seconds</b></td>
-  </tr>
-</table>
 
-<sub><b>Note</b> This is an older gif. RustScan's current top speed is 3 seconds for all 65k ports. This gif is 26 seconds.</sub><br>
-
-RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
 * Scans all 65k ports in **8 seconds** (on 10k batch size).
@@ -136,7 +116,7 @@ We strongly recommend using the `alpine` tag, as this is the latest major - stab
 
 Simply run this command against the IP you want to target:
 
-```
+```bash
 docker run -it --rm --name rustscan rustscan/rustscan:alpine <rustscan arguments here> <ip address to scan>
 ```
 
@@ -146,30 +126,30 @@ Once done, you will no longer need to re-download the image (except when RustSca
 
 You will have to run this command every time, so we suggest aliasing it to something memorable.
 
-```
-alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:alpine <rustscan arguments here> <ip address to scan>'
+```bash
+alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:alpine'
 ```
 
 Then we can:
 
-```
+```bash
 rustscan 127.0.0.1 -t 500 -b 1500 -- -A
 ```
 
 #### To build your own image:
 
 Download the repo:
-```
+```bash
 git clone https://github.com/RustScan/RustScan.git
 ```
 
 Ensure you navigate to the download location of the repo:
-```
+```bash
 cd /path/to/download/RustScan
 ```
 
 Build away!
-```
+```bash
 docker build -t <yourimagename> .
 ```
 
@@ -179,13 +159,13 @@ docker build -t <yourimagename> .
 
 Tap the brew:
 
-```
+```bash
 brew tap brandonskerritt/rustscan
 ```
 
 Install it:
 
-```
+```bash
 brew install rustscan
 ```
 
@@ -208,11 +188,9 @@ If you maintain a community distribution and want it listed here, leave an issue
 
 # 🤸 Usage
 
-```
-rustscan -h
-```
+```console
+$ rustscan -h
 
-```
 Fast Port Scanner built in Rust. WARNING Do not use this program against sensitive infrastructure since the specified
 server may not be able to handle this many socket connections at once. - Discord https://discord.gg/GFrQsGy - GitHub
 https://github.com/RustScan/RustScan
@@ -287,7 +265,7 @@ Decreasing batch size slows down the program, so as long as it isn't too drastic
 
 Run these 3 commands:
 
-```
+```bash
 ulimit -a
 ulimit -Hn
 ulimit -Sn
@@ -301,7 +279,7 @@ Increasing the open file limit increases speed, but poses danger. Although, **op
 
 To open more, set the ulimit to a higher number:
 
-```
+```bash
 ulimit -n 5000
 ```
 
