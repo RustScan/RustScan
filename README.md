@@ -203,6 +203,7 @@ Here are all of RustScan's community distributions.
 If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however you want to let us know.
 
 * [OpenSuse](https://software.opensuse.org/package/rustscan?search_term=rustscan)
+* [Fedora/CentOS](https://copr.fedorainfracloud.org/coprs/atim/rustscan/)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
 
