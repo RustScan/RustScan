@@ -140,7 +140,9 @@
       "avatar_url": "https://avatars2.githubusercontent.com/u/7258858?v=4",
       "profile": "https://supersandro.de/",
       "contributions": [
-        "content"
+        "content",
+        "bug",
+        "code"
       ]
     },
     {
