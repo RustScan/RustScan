@@ -1,22 +1,16 @@
 FROM rust:alpine as builder
-RUN apk update && \
-    apk add build-base && \
-    rm -rf /var/cache/apk/*
+RUN apk add --no-cache build-base
 
 WORKDIR /usr/src/rustscan
 COPY . .
 RUN cargo install --path .
 
-FROM alpine
+FROM alpine:3.12
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
-RUN ulimit -n 100000 && \
-    apk update && \
-    apk add \
-    nmap nmap-scripts wget \
-    && \
-    rm -rf /var/cache/apk/*
-COPY --from=builder /usr/local/cargo/bin/rustscan /usr/local/bin/rustscan
 RUN addgroup -S rustscan && \
-    adduser -S -G rustscan rustscan
+    adduser -S -G rustscan rustscan && \
+    ulimit -n 100000 && \
+    apk add --no-cache nmap nmap-scripts wget
+COPY --from=builder /usr/local/cargo/bin/rustscan /usr/local/bin/rustscan
 USER rustscan
-ENTRYPOINT ["/usr/local/bin/rustscan"]
+ENTRYPOINT [ "/usr/local/bin/rustscan" ]
