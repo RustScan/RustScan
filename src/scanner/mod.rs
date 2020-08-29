@@ -5,6 +5,7 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use colored::*;
 use futures::stream::FuturesUnordered;
+use indicatif::ProgressBar;
 use std::time::Duration;
 use std::{
     io::ErrorKind,
@@ -48,12 +49,19 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
+        let progress: ProgressBar = ProgressBar::new(ports.len() as u64);
         let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
 
         for batch in ports.chunks(batch_per_ip) {
-            let mut sockets = self.scan_ports(batch).await;
+            let mut sockets = self.scan_ports(batch, &progress).await;
             open_sockets.append(&mut sockets);
+        }
+        progress.finish();
+        if !self.quiet {
+            for socket in &open_sockets {
+                println!("Open {}", socket.to_string().purple());
+            }
         }
 
         open_sockets
@@ -61,7 +69,7 @@ impl Scanner {
 
     /// Given a slice of sockets, scan them all.
     /// Returns a vector of open sockets.
-    async fn scan_ports(&self, ports: &[u16]) -> Vec<SocketAddr> {
+    async fn scan_ports(&self, ports: &[u16], progress: &ProgressBar) -> Vec<SocketAddr> {
         let mut ftrs = FuturesUnordered::new();
         for port in ports {
             for ip in &self.ips {
@@ -75,8 +83,10 @@ impl Scanner {
                 Ok(socket) => open_sockets.push(socket),
                 _ => {}
             }
+            if !self.quiet {
+                progress.inc(1);
+            }
         }
-
         open_sockets
     }
 
@@ -99,9 +109,6 @@ impl Scanner {
                 info!("Shutting down stream");
                 match x.shutdown(Shutdown::Both) {
                     _ => {}
-                }
-                if !self.quiet {
-                    println!("Open {}", socket.to_string().purple());
                 }
 
                 Ok(socket)
