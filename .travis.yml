@@ -1,7 +1,9 @@
 language: rust
 os:
-- linux
-- osx
+  - linux
+  - osx
+  - windows
+
 arch:
 - amd64
 - arm64

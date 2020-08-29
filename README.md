@@ -212,25 +212,24 @@ If you maintain a community distribution and want it listed here, leave an issue
 ```console
 $ rustscan -h
 
+```
+rustscan 1.7.1
 Fast Port Scanner built in Rust. WARNING Do not use this program against sensitive infrastructure since the specified
 server may not be able to handle this many socket connections at once. - Discord https://discord.gg/GFrQsGy - GitHub
 https://github.com/RustScan/RustScan
 
 USAGE:
-    rustscan [FLAGS] [OPTIONS] <ips-or-hosts>... [-- <command>...]
+    rustscan [FLAGS] [OPTIONS] <ips>... [-- <command>...]
 
 FLAGS:
-    -a, --accessible
-    -h, --help          Prints help information
-    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
-    -V, --version       Prints version information
+    -h, --help       Prints help information
+    -q, --quiet      Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+    -V, --version    Prints version information
 
 OPTIONS:
     -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
                                      Depends on the open file limit of your OS.  If you do 65535 it will do every port
                                      at the same time. Although, your OS may not support this [default: 4500]
-    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080.
-    -r, --range <range>              A range of ports with format start-end. Example: 1-1000
         --scan-order <scan-order>    The order of scanning to be performed. The "serial" option will scan ports in
                                      ascending order while the "random" option will scan ports randomly [default:
                                      serial]  [possible values: Serial, Random]
@@ -238,11 +237,11 @@ OPTIONS:
     -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
 
 ARGS:
-    <ips-or-hosts>...    A list of comma separated IP addresses or hosts to be scanned
-    <command>...         The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'.
-                         Example: 'rustscan -t 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
-                         automatically to nmap. For things like --script '(safe and vuln)' enclose it in quotations
-                         marks \"'(safe and vuln)'\"")
+    <ips>...        A list of comma separated IP addresses to be scanned
+    <command>...    The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
+                    'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                    nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
+                    vuln)'\"")
 ```
 
 The format is `rustscan -b 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 batch size with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
