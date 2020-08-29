@@ -2,6 +2,9 @@ extern crate shell_words;
 
 mod tui;
 
+pub mod common;
+use common::{PortRange, ScanOrder};
+
 mod scanner;
 use scanner::Scanner;
 
@@ -17,7 +20,7 @@ use std::collections::HashMap;
 use std::process::Command;
 use std::str::FromStr;
 use std::{net::IpAddr, net::ToSocketAddrs, time::Duration};
-use structopt::{clap::arg_enum, StructOpt};
+use structopt::StructOpt;
 
 extern crate colorful;
 extern crate dirs;
@@ -31,20 +34,6 @@ const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
 
 #[macro_use]
 extern crate log;
-
-arg_enum! {
-    #[derive(Debug, StructOpt)]
-    pub enum ScanOrder {
-        Serial,
-        Random,
-    }
-}
-
-#[derive(Debug)]
-pub struct PortRange {
-    start: u16,
-    end: u16,
-}
 
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let range = input

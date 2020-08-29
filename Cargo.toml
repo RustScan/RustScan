@@ -16,6 +16,14 @@ exclude = [
     "rustscan-debbuilder/*",
 ]
 
+[lib]
+name = "rustscan"
+path = "src/lib.rs"
+
+[[bin]]
+name = "rustscan"
+path = "src/main.rs"
+
 [dependencies]
 colored = "2.0.0"
 structopt = "0.3.17"

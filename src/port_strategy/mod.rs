@@ -1,5 +1,5 @@
 mod range_iterator;
-use super::{PortRange, ScanOrder};
+use crate::common::{PortRange, ScanOrder};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use range_iterator::RangeIterator;

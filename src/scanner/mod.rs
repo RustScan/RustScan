@@ -1,4 +1,4 @@
-use super::PortStrategy;
+use crate::port_strategy::PortStrategy;
 
 use async_std::io;
 use async_std::net::TcpStream;
@@ -139,7 +139,7 @@ impl Scanner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{PortRange, ScanOrder};
+    use super::{PortRange, ScanOrder};
     use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
