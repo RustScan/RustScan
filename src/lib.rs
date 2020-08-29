@@ -4,7 +4,7 @@ extern crate log;
 mod common;
 
 mod port_strategy;
-pub use port_strategy::PortStrategy;
+pub use port_strategy::{PortStrategy, RandomRange, SerialRange};
 
 pub mod scanner;
 pub use scanner::Scanner;
