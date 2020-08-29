@@ -21,14 +21,15 @@
 </p>
 <hr>
 
-| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
-| ---- | ---- | ---- | --- |
-| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p>
-| `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
+| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                    | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p>                     |
+| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p>    | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p> |
+| `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
 
 <hr>
 
 # 🤔 What is this?
+
 1. Find ports quickly using Rustscan (**3 seconds at its fastest**).
 2. Automatically runs `nmap` on those ports.
 3. ???
@@ -57,26 +58,29 @@
 RustScans **only** job is to reduce the friction between finding open ports and inputting them into nmap.
 
 # ✨ Features
-* Scans all 65k ports in **8 seconds** (on 10k batch size).
-* Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
-* Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
-* Let's you choose what Nmap commands to run, or uses the default.
-* IPv6 Support
+
+- Scans all 65k ports in **8 seconds** (on 10k batch size).
+- Saves you time by automatically piping it into Nmap. No more manual copying and pasting!
+- Does one thing and does it well. **Only** purpose is to improve Nmap, not replace it!
+- Let's you choose what Nmap commands to run, or uses the default.
+- IPv6 Support
 
 ## ‼️ Important Links
 
-| Installation Guide | Documentation | Discord |
-| ------------------ | ------------- | ------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](https://discord.gg/GFrQsGy)
+| Installation Guide                                                                     | Documentation                                            | Discord                                  |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](https://discord.gg/GFrQsGy) |
 
 ## 🙋 Table of Contents
-* 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
-* 🐋 [Docker Usage](https://github.com/RustScan/RustScan#docker-whale)
-* 🦜 [Discord](https://discord.gg/GFrQsGy)
-* 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
-* 🎪 [Community](https://github.com/RustScan/RustScan#-community)
+
+- 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide)
+- 🐋 [Docker Usage](https://github.com/RustScan/RustScan#docker-whale)
+- 🦜 [Discord](https://discord.gg/GFrQsGy)
+- 🤸 [Usage](https://github.com/RustScan/RustScan#-usage)
+- 🎪 [Community](https://github.com/RustScan/RustScan#-community)
 
 # 🔭 Why RustScan?
+
 Why spend time running fast scans and manually copying the ports, or waiting for a 20 minute scan to finish when you can just do all 65k ports in less than a minute?
 
 ![gif](https://github.com/RustScan/RustScan/blob/master/pictures/8seconds.gif?raw=true)
@@ -87,11 +91,12 @@ Why spend time running fast scans and manually copying the ports, or waiting for
 
 | **Name**                                                                                   | RustScan | Nmap | Masscan |
 | ------------------------------------------------------------------------------------------ | -------- | ---- | ------- |
-| Fast                                                                                       | ✅        | ❌    | ✅       |
-| Actually useful                                                                            | ❌        | ✅    | ❌       |
-| Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅        | ❌    | ❌       |
+| Fast                                                                                       | ✅       | ❌   | ✅      |
+| Actually useful                                                                            | ❌       | ✅   | ❌      |
+| Realises it's not useful, and pipes the only useful data into the only useful port scanner | ✅       | ❌   | ❌      |
 
 # 📖 Full Installation Guide
+
 **You need Nmap**. If you have Kali Linux or Parrot OS installed, you already have Nmap. If not, [follow the nmap install guide](https://nmap.org/download.html).
 
 The easiest way to install RustScan is to use one of the packages provided for your system, such as HomeBrew or Yay for Arch Linux.
@@ -115,21 +120,24 @@ Note: sometimes you can double click the file to achieve the same result.
 ## Docker :whale:
 
 Docker is the recommended way of installing RustScan. This is because:
-* It has a high open file descriptor limit, which is one of the [main problems](https://github.com/RustScan/RustScan/issues/40) with RustScan. Now you don't have to fiddle around trying to understand your OS.
-* It works on all systems, regardless of OS. Even Windows, which we don't officially support.
-* The Docker image uses the latest build from Cargo, our main source-of-truth package. This means that you will always be using the latest version.
-* No need to install Rust, Cargo, or Nmap.
+
+- It has a high open file descriptor limit, which is one of the [main problems](https://github.com/RustScan/RustScan/issues/40) with RustScan. Now you don't have to fiddle around trying to understand your OS.
+- It works on all systems, regardless of OS. Even Windows, which we don't officially support.
+- The Docker image uses the latest build from Cargo, our main source-of-truth package. This means that you will always be using the latest version.
+- No need to install Rust, Cargo, or Nmap.
 
 To install Docker, [follow their guide](https://docs.docker.com/engine/install/).
 
 **Once Docker is installed, you can either build your own image using the `Dockerfile` (alpine) provided in the repo, or alternatively, use the published Docker image like below (most convenient)**
 
 Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further info, however, note that we have two Docker images:
+
 ```
 rustscan/rustscan:alpine
 
 rustscan/rustscan:latest
 ```
+
 We strongly recommend using the `alpine` tag, as this is the latest major - stable - release of RustScan. This READMDE uses the `alpine` image by default, however, note that the`latest` image is considered experimental.
 
 #### To get started:
@@ -159,16 +167,19 @@ rustscan 127.0.0.1 -t 500 -b 1500 -- -A
 #### To build your own image:
 
 Download the repo:
+
 ```bash
 git clone https://github.com/RustScan/RustScan.git
 ```
 
 Ensure you navigate to the download location of the repo:
+
 ```bash
 cd /path/to/download/RustScan
 ```
 
 Build away!
+
 ```bash
 docker build -t <yourimagename> .
 ```
@@ -198,12 +209,13 @@ brew install rustscan
 5. Symlink to the binary or something. Whatever you want!
 
 ## 🦊 Community Distributions
+
 Here are all of RustScan's community distributions.
 
 If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however you want to let us know.
 
-* [OpenSuse](https://software.opensuse.org/package/rustscan?search_term=rustscan)
-* [Fedora/CentOS](https://copr.fedorainfracloud.org/coprs/atim/rustscan/)
+- [OpenSuse](https://software.opensuse.org/package/rustscan?search_term=rustscan)
+- [Fedora/CentOS](https://copr.fedorainfracloud.org/coprs/atim/rustscan/)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
 
@@ -217,19 +229,20 @@ server may not be able to handle this many socket connections at once. - Discord
 https://github.com/RustScan/RustScan
 
 USAGE:
-    rustscan [FLAGS] [OPTIONS] <ips-or-hosts>... [-- <command>...]
+    rustscan [FLAGS] [OPTIONS] [ips-or-hosts]... [-- <command>...]
 
 FLAGS:
-    -a, --accessible
-    -h, --help          Prints help information
-    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
-    -V, --version       Prints version information
+        --accessible       Accessible mode. Turns off features which negatively affect screen readers
+    -h, --help             Prints help information
+    -i, --ignore-config    Whether to ignore the configuration file or not
+    -q, --quiet            Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+    -V, --version          Prints version information
 
 OPTIONS:
     -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
                                      Depends on the open file limit of your OS.  If you do 65535 it will do every port
                                      at the same time. Although, your OS may not support this [default: 4500]
-    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080.
+    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080
     -r, --range <range>              A range of ports with format start-end. Example: 1-1000
         --scan-order <scan-order>    The order of scanning to be performed. The "serial" option will scan ports in
                                      ascending order while the "random" option will scan ports randomly [default:
@@ -240,7 +253,7 @@ OPTIONS:
 ARGS:
     <ips-or-hosts>...    A list of comma separated IP addresses or hosts to be scanned
     <command>...         The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'.
-                         Example: 'rustscan -t 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
+                         Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
                          automatically to nmap. For things like --script '(safe and vuln)' enclose it in quotations
                          marks \"'(safe and vuln)'\"")
 ```
@@ -251,6 +264,37 @@ The batch size determines how fast RustScan is. Set it to 65k, and it will scan 
 
 Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly I will be releasing a dockerised version with a much larger open file limit, so this will be possible.
 
+## Configuration file
+
+This binary accepts a configuration file that is read from the home directory of the user. It follows the TOML format
+and accepts the following fields:
+
+- `ips_or_hosts`
+- `ports`
+- `range`
+- `scan_order`
+- `command`
+- `accessible`
+- `quiet`
+- `batch-size`
+- `timeout`
+- `ulimit`
+
+### Format example
+
+```toml
+ips_or_hosts = ["127.0.0.1", "192.168.0.1", "www.google.com"]
+command = ["-A"]
+ports = [80, 443, 8080]
+range = { start = 1, end = 10 }
+quiet = false
+accessible = true
+scan_order = "Serial"
+batch_size = 1000
+timeout = 1000
+ulimit = 1000
+```
+
 ## ⚠️ WARNING
 
 This program, by default, scans 5000 ports at a time (5000 per second).
@@ -258,16 +302,18 @@ This program, by default, scans 5000 ports at a time (5000 per second).
 This may cause damage to a server, or may make it incredibly obvious you are scanning the server.
 
 There are 2 ways to deal with this;
+
 1. Decrease batch size
-`rustscan -b 10` will run 10 port scans for 1 second, and then another 10 for 1 second and so on.
+   `rustscan -b 10` will run 10 port scans for 1 second, and then another 10 for 1 second and so on.
 2. Increase timeout
-`rustscan -T 5000` will mean RustScan waits 5 seconds until it scans the next ports.
+   `rustscan -T 5000` will mean RustScan waits 5 seconds until it scans the next ports.
 
 You can also use both of these at the same time, to make it as slow or as fast as you want. A fun favourite is 65535 batch size with 1 second timeout. Theoretically, this scans all 65535 ports in 1 second.
 
 **Please** do not use this tool against sensitive servers. It is designed mainly for Capture the Flag events, not real world servers with sensitive data.
 
 ## 🚨 Thread Panicked at Main: Too Many Open Files
+
 This is the most common error found in RustScan.
 
 The open file limit is how many open sockets you can have at any given time.
@@ -279,6 +325,7 @@ RustScan does not automatically create defaults (other than 5000) like Nmap does
 By figuring out for yourself the optimal batch size, you will know that RustScan is the most optimised port scanner for your system.
 
 There are 2 things you can do:
+
 1. Decrease batch size
 2. Increase open file limit
 
@@ -320,6 +367,7 @@ The best way is to use it on a host computer, in Docker, or in a VM that isn't W
 We are currently working on automatic Ulimit updating. If it is too high, it will lower itself. If it is too low, it will suggest a higher Ulimit. Watch [this issue](https://github.com/brandonskerritt/RustScan/issues/25) for more.
 
 ## 🔌 Nmap Custom Flags
+
 To run your own nmap commands, end the RustScan command with `-- -A` where `--` indicates "end of RustScan flags, please do not parse anything further" and any flags after that will be entered into nmap.
 
 RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, execute the command `rustscan 127.0.0.1 -- -A`.
@@ -327,13 +375,14 @@ RustScan automatically runs `nmap -vvv -p $PORTS $IP`. To make it run `-A`, exec
 If you want to run commands such as `--script (vuln and safe)`, you will need to enclose it in quotations like so `--script '"(vuln and safe) or default"'`.
 
 ## 🎯 Increasing speed / accuracy
-* Batch size
+
+- Batch size
 
 This increases speed, by allowing us to process more at once. Something experimental I am working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-b 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
 
 For non-experimental speed increases, slowly increase the batch size until it no longer gets open ports, or it breaks.
 
-* Accuracy (and some speed)
+- Accuracy (and some speed)
 
 To increase accuracy, the easiest way is to increase the timeout. The default is 1.5 seconds, by setting it to 4 seconds (4000) we are telling RustScan "if we do not hear back from a port in 4 seconds, assume it is closed".
 
@@ -350,19 +399,21 @@ Before contributing, read our [code of conduct](https://github.com/RustScan/Rust
 TL;DR if you abuse members of our community you will be **perma-banned** 🤗
 
 RustScan has 2 major labels for GitHub issues you should look at:
-* Good First issue
-These are issues for newcomers to open source!
-[https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
-* Help wanted
-These are issues that aren't really for newcomers, but we could still do wiht help!
-[https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
+
+- Good First issue
+  These are issues for newcomers to open source!
+  [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
+- Help wanted
+  These are issues that aren't really for newcomers, but we could still do wiht help!
+  [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
 
 If you want to, solve the issue or comment on the issue for help.
 
 The flow for contributing to open source software is:
-* Fork the repo
-* Make changes
-* Pull request to the repo
+
+- Fork the repo
+- Make changes
+- Pull request to the repo
 
 And then comment on the issue that you've done.
 
@@ -373,14 +424,17 @@ If you have any feature suggestions or bugs, leave a GitHub issue. We welcome an
 We communicate over Discord. [Click here](https://discord.gg/GFrQsGy) to join our Discord community!
 
 ## Rewarding you
-I cannot pay you :-( But, I can place your GitHub profile on the README under `#Contributors` as a thank you! :)
 
+I cannot pay you :-( But, I can place your GitHub profile on the README under `#Contributors` as a thank you! :)
 
 Please read the [contributing.md file](contributing.md)
 
 ## Contributors ✨
+
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-17-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -416,6 +470,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
