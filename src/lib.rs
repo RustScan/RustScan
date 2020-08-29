@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate log;
 
-pub mod common;
+mod common;
 
-pub mod port_strategy;
+mod port_strategy;
 pub use port_strategy::PortStrategy;
 
 pub mod scanner;

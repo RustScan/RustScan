@@ -94,7 +94,7 @@ impl RangeOrder for RandomRange {
 #[cfg(test)]
 mod tests {
     use super::PortStrategy;
-    use crate::{PortRange, ScanOrder};
+    use crate::common::{PortRange, ScanOrder};
 
     #[test]
     fn serial_strategy_with_range() {

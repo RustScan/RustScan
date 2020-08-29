@@ -139,7 +139,7 @@ impl Scanner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::{PortRange, ScanOrder};
+    use crate::common::{PortRange, ScanOrder};
     use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
