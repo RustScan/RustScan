@@ -2,6 +2,9 @@ extern crate shell_words;
 
 mod tui;
 
+mod input;
+use input::{Config, Opts, PortRange, ScanOrder};
+
 mod scanner;
 use scanner::Scanner;
 
@@ -13,17 +16,16 @@ use colorful::Colorful;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
+
 use std::collections::HashMap;
+use std::net::ToSocketAddrs;
 use std::process::Command;
 use std::str::FromStr;
-use std::{net::IpAddr, net::ToSocketAddrs, time::Duration};
-use structopt::{clap::arg_enum, StructOpt};
+use std::{net::IpAddr, time::Duration};
 
 extern crate colorful;
 extern crate dirs;
 
-const LOWEST_PORT_NUMBER: u16 = 1;
-const TOP_PORT_NUMBER: u16 = 65535;
 // Average value for Ubuntu
 const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
 // Safest batch size based on experimentation
@@ -32,118 +34,18 @@ const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
 #[macro_use]
 extern crate log;
 
-arg_enum! {
-    #[derive(Debug, StructOpt)]
-    pub enum ScanOrder {
-        Serial,
-        Random,
-    }
-}
-
-#[derive(Debug)]
-pub struct PortRange {
-    start: u16,
-    end: u16,
-}
-
-fn parse_range(input: &str) -> Result<PortRange, String> {
-    let range = input
-        .split("-")
-        .map(|x| x.parse::<u16>())
-        .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
-
-    if range.is_err() {
-        return Err(String::from(
-            "the range format must be 'start-end'. Example: 1-1000.",
-        ));
-    }
-
-    match range.unwrap().as_slice() {
-        [start, end] => Ok(PortRange {
-            start: *start,
-            end: *end,
-        }),
-        _ => Err(String::from(
-            "the range format must be 'start-end'. Example: 1-1000.",
-        )),
-    }
-}
-
-#[derive(StructOpt, Debug)]
-#[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
-/// Fast Port Scanner built in Rust.
-/// WARNING Do not use this program against sensitive infrastructure since the
-/// specified server may not be able to handle this many socket connections at once.
-/// - Discord https://discord.gg/GFrQsGy
-/// - GitHub https://github.com/RustScan/RustScan
-struct Opts {
-    /// A list of comma separated IP addresses or hosts to be scanned.
-    #[structopt(use_delimiter = true, required = true)]
-    ips_or_hosts: Vec<String>,
-
-    /// A list of comma separed ports to be scanned. Example: 80,443,8080.
-    #[structopt(short, long, use_delimiter = true)]
-    ports: Option<Vec<u16>>,
-
-    /// A range of ports with format start-end. Example: 1-1000.
-    #[structopt(short, long, conflicts_with = "ports", parse(try_from_str = parse_range))]
-    range: Option<PortRange>,
-
-    ///Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
-    #[structopt(short, long)]
-    quiet: bool,
-
-    //Accessible mode. Turns off features which negatively affect screen readers.
-    #[structopt(short, long)]
-    accessible: bool,
-
-    /// The batch size for port scanning, it increases or slows the speed of
-    /// scanning. Depends on the open file limit of your OS.  If you do 65535
-    /// it will do every port at the same time. Although, your OS may not
-    /// support this.
-    #[structopt(short, long, default_value = "4500")]
-    batch_size: u16,
-
-    /// The timeout in milliseconds before a port is assumed to be closed.
-    #[structopt(short, long, default_value = "1500")]
-    timeout: u32,
-
-    /// Automatically ups the ULIMIT with the value you provided.
-    #[structopt(short, long)]
-    ulimit: Option<rlimit::rlim>,
-
-    /// The order of scanning to be performed. The "serial" option will
-    /// scan ports in ascending order while the "random" option will scan
-    /// ports randomly.
-    #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
-    scan_order: ScanOrder,
-
-    /// The Nmap arguments to run.
-    /// To use the argument -A, end RustScan's args with '-- -A'.
-    /// Example: 'rustscan -t 1500 127.0.0.1 -- -A -sC'.
-    /// This command adds -Pn -vvv -p $PORTS automatically to nmap.
-    /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
-    #[structopt(last = true)]
-    command: Vec<String>,
-}
-
 #[cfg(not(tarpaulin_include))]
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
     env_logger::init();
 
-    info!("Starting up");
-    let mut opts = Opts::from_args();
+    let mut opts: Opts = Opts::read();
+    let config = Config::read();
+    opts.merge(&config);
+    dbg!(&opts);
 
-    if opts.ports.is_none() && opts.range.is_none() {
-        opts.range = Some(PortRange {
-            start: LOWEST_PORT_NUMBER,
-            end: TOP_PORT_NUMBER,
-        });
-    }
-
-    info!("Mains() `opts` arguments are {:?}", opts);
+    info!("Main() `opts` arguments are {:?}", opts);
 
     if !opts.quiet && !opts.accessible {
         print_opening();
@@ -375,6 +277,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -394,6 +297,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -414,6 +318,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -433,6 +338,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -457,6 +363,7 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -477,6 +384,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -496,6 +404,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -515,6 +424,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
 
