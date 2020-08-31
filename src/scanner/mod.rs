@@ -88,9 +88,9 @@ impl Scanner {
     /// If no  errors occur, it returns the port number in Result to signify the port is open.
     /// This function mainly deals with the logic of Results handling.
     /// # Example
-    ///
+    /// ```ignore
     ///     self.scan_port(10:u16)
-    ///
+    /// ```
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         match self.connect(socket).await {
@@ -117,6 +117,7 @@ impl Scanner {
 
     /// Performs the connection to the socket with timeout
     /// # Example
+    /// ```ignore
     ///
     ///     let port: u16 = 80
     ///     // ip is an IpAddr type
@@ -125,7 +126,7 @@ impl Scanner {
     ///     self.connect(socket)
     ///     // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
     ///     // Timeout occurs after self.timeout seconds
-    ///
+    ///```
     async fn connect(&self, socket: SocketAddr) -> io::Result<TcpStream> {
         let stream = io::timeout(
             self.timeout,
