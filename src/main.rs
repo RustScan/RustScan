@@ -93,6 +93,10 @@ struct Opts {
     #[structopt(short, long)]
     quiet: bool,
 
+    ///No Nmap. Runs the program without Nmap.
+    #[structopt(short, long)]
+    no_nmap: bool,
+
     //Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(short, long)]
     accessible: bool,
@@ -205,7 +209,7 @@ fn main() {
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
-        if opts.quiet {
+        if opts.quiet || opts.no_nmap{
             println!("{}", ports_str);
             continue;
         }
@@ -375,6 +379,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -394,6 +399,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -414,6 +420,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -433,6 +440,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -457,6 +465,7 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -477,6 +486,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
@@ -496,6 +506,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
@@ -515,6 +526,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
