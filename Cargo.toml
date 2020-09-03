@@ -16,8 +16,6 @@ exclude = [
     "rustscan-debbuilder/*",
 ]
 
-
-
 [dependencies]
 colored = "2.0.0"
 structopt = "0.3.17"
