@@ -68,7 +68,7 @@ pub struct Opts {
 
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
-    pub ignore_config: bool,
+    pub no_config: bool,
 
     /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -80,7 +80,7 @@ pub struct Opts {
 
     /// Turns off Nmap.
     #[structopt(long)]
-    pub without_nmap: bool,
+    pub no_nmap: bool,
 
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
@@ -129,7 +129,7 @@ impl Opts {
     /// Reads the command line arguments into an Opts struct and merge
     /// values found within the user configuration file.
     pub fn merge(&mut self, config: &Config) {
-        if !self.ignore_config {
+        if !self.no_config {
             self.merge_required(&config);
             self.merge_optional(&config);
         }
@@ -184,6 +184,7 @@ pub struct Config {
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
+    no_nmap: Option<bool>,
     ulimit: Option<rlimit::rlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
@@ -245,9 +246,9 @@ mod tests {
             ulimit: None,
             command: vec![],
             accessible: false,
-            without_nmap: false,
+            no_nmap: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: true,
+            no_config: true,
         };
 
         let config = Config {
@@ -286,8 +287,8 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {
@@ -326,8 +327,8 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {

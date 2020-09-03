@@ -108,7 +108,7 @@ fn main() {
         if opts.quiet {
             println!("{}", ports_str);
             continue;
-        } else if opts.without_nmap {
+        } else if opts.no_nmap {
             continue;
         } else {
             detail!("Starting Nmap", opts.quiet);
@@ -279,8 +279,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -300,8 +300,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -321,9 +321,9 @@ mod tests {
             ulimit: Some(2_000),
             command: Vec::new(),
             accessible: false,
-            without_nmap: false,
+            no_nmap: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: false,
+            no_config: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -343,8 +343,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -369,8 +369,8 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -391,8 +391,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -412,8 +412,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -433,8 +433,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            without_nmap: false,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
         let ips = parse_ips(&opts);
 
