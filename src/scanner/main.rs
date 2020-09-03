@@ -279,8 +279,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -300,8 +304,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -323,7 +331,11 @@ mod tests {
             accessible: false,
             no_nmap: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -343,8 +355,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -369,8 +385,12 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -391,8 +411,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let ips = parse_ips(&opts);
 
@@ -412,8 +436,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let ips = parse_ips(&opts);
 
@@ -433,8 +461,12 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+<<<<<<< HEAD:src/main.rs
             no_nmap: false,
             no_config: false,
+=======
+            ignore_config: false,
+>>>>>>> master:src/scanner/main.rs
         };
         let ips = parse_ips(&opts);
 

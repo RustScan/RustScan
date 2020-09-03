@@ -259,6 +259,7 @@ mod tests {
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
+            no_nmap: Some(false),
             command: Some(vec!["-A".to_owned()]),
             accessible: Some(true),
             scan_order: Some(ScanOrder::Random),
@@ -294,6 +295,7 @@ mod tests {
         let config = Config {
             ips_or_hosts: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
+            no_nmap: Some(false),
             range: None,
             quiet: Some(true),
             batch_size: Some(25_000),
@@ -341,6 +343,7 @@ mod tests {
             quiet: None,
             batch_size: None,
             timeout: None,
+            no_nmap: Some(false),
             ulimit: Some(1_000),
             command: None,
             accessible: None,
