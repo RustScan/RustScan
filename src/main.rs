@@ -101,20 +101,16 @@ fn main() {
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        
-
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
-        if opts.quiet{
+        if opts.quiet {
             println!("{}", ports_str);
             continue;
-        }
-        else if opts.without_nmap{
+        } else if opts.without_nmap {
             continue;
-        }
-        else{
+        } else {
             detail!("Starting Nmap", opts.quiet);
         }
 
