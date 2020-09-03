@@ -101,15 +101,21 @@ fn main() {
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        detail!("Starting Nmap", opts.quiet);
+        
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
-        if opts.quiet {
+        if opts.quiet{
             println!("{}", ports_str);
             continue;
+        }
+        else if opts.without_nmap{
+            continue;
+        }
+        else{
+            detail!("Starting Nmap", opts.quiet);
         }
 
         let addr = ip.to_string();
@@ -277,6 +283,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
@@ -297,6 +304,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
@@ -317,6 +325,7 @@ mod tests {
             ulimit: Some(2_000),
             command: Vec::new(),
             accessible: false,
+            without_nmap: false,
             scan_order: ScanOrder::Serial,
             ignore_config: false,
         };
@@ -338,6 +347,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
@@ -363,6 +373,7 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
 
@@ -384,6 +395,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let ips = parse_ips(&opts);
@@ -404,6 +416,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let ips = parse_ips(&opts);
@@ -424,6 +437,7 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
         let ips = parse_ips(&opts);

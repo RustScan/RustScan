@@ -78,6 +78,10 @@ pub struct Opts {
     #[structopt(long)]
     pub accessible: bool,
 
+    /// Turns off Nmap.
+    #[structopt(long)]
+    pub without_nmap: bool,
+
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
@@ -241,6 +245,7 @@ mod tests {
             ulimit: None,
             command: vec![],
             accessible: false,
+            without_nmap: false,
             scan_order: ScanOrder::Serial,
             ignore_config: true,
         };
@@ -281,6 +286,7 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
 
@@ -320,6 +326,7 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
+            without_nmap: false,
             ignore_config: false,
         };
 
