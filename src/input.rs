@@ -197,23 +197,40 @@ impl Config {
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
-        let path = match dirs::home_dir() {
+        let mut paths = Vec::new();
+        paths.push(match dirs::home_dir() {
             Some(mut path) => {
                 path.push(".rustscan.toml");
                 path
             }
             None => panic!("Could not infer config file path."),
-        };
+        });
 
-        let contents = match fs::read_to_string(&path) {
-            Ok(content) => content,
-            Err(_) => {
-                println!("Could not find configation file at {:?}", &path);
-                String::new()
+        paths.push(match dirs::config_dir() {
+            Some(mut path) => {
+                path.push("rustscan");
+                path.push("config.toml");
+                path
             }
-        };
+            None => panic!("Could not infer config file path."),
+        });
 
-        let config: Config = match toml::from_str(&contents) {
+        let mut contents: Option<String> = None;
+        for path in paths.iter().rev() {
+            contents = match fs::read_to_string(path) {
+                Ok(content) => {
+                    contents = Some(content);
+                    break;
+                }
+                Err(_) => None,
+            };
+        }
+
+        if contents.is_none() {
+            contents = Some(String::new());
+        }
+
+        let config: Config = match toml::from_str(&contents.unwrap()) {
             Ok(config) => config,
             Err(e) => {
                 println!("Found {} in configuration file.\nAborting scan.\n", e);
