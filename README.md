@@ -113,7 +113,7 @@ Download the .deb file from the releases page:
 
 [https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
 
-Run the commpand `dpkg -i` on the file.
+Run the command `dpkg -i` on the file.
 
 Note: sometimes you can double click the file to achieve the same result.
 
