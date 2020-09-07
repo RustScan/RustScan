@@ -43,7 +43,6 @@ fn main() {
     let mut opts: Opts = Opts::read();
     let config = Config::read();
     opts.merge(&config);
-
     dbg!(&opts);
 
     info!("Main() `opts` arguments are {:?}", opts);
@@ -282,6 +281,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -303,6 +303,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -325,6 +326,7 @@ mod tests {
             no_nmap: false,
             scan_order: ScanOrder::Serial,
             no_config: false,
+            ignore_config: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -346,6 +348,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -372,6 +375,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -394,6 +398,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -415,6 +420,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
 
@@ -436,9 +442,9 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            ignore_config: false,
         };
         let ips = parse_ips(&opts);
-
         assert_eq!(0, ips.len());
     }
 }
