@@ -43,7 +43,6 @@ fn main() {
     let mut opts: Opts = Opts::read();
     let config = Config::read();
     opts.merge(&config);
-
     dbg!(&opts);
 
     info!("Main() `opts` arguments are {:?}", opts);
@@ -102,6 +101,8 @@ fn main() {
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
+        detail!("Starting Nmap", opts.quiet);
+
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
@@ -109,10 +110,6 @@ fn main() {
         if opts.quiet {
             println!("{}", ports_str);
             continue;
-        } else if opts.no_nmap {
-            continue;
-        } else {
-            detail!("Starting Nmap", opts.quiet);
         }
 
         let addr = ip.to_string();
@@ -280,8 +277,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -301,8 +298,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -322,9 +319,9 @@ mod tests {
             ulimit: Some(2_000),
             command: Vec::new(),
             accessible: false,
-            no_nmap: false,
             scan_order: ScanOrder::Serial,
             no_config: false,
+            no_nmap: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -344,8 +341,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -370,8 +367,8 @@ mod tests {
             command: Vec::new(),
             accessible: true,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -392,8 +389,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
@@ -413,8 +410,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
@@ -434,8 +431,8 @@ mod tests {
             command: Vec::new(),
             accessible: false,
             scan_order: ScanOrder::Serial,
-            no_nmap: false,
             no_config: false,
+            no_nmap: false,
         };
         let ips = parse_ips(&opts);
 
