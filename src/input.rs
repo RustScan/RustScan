@@ -69,7 +69,6 @@ pub struct Opts {
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
     pub no_config: bool,
-    pub ignore_config: bool,
 
     /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
