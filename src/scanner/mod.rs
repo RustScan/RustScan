@@ -1,16 +1,17 @@
-use super::PortStrategy;
+use std::{
+    io::{ErrorKind, Stdout},
+    net::{IpAddr, Shutdown, SocketAddr},
+    time::Duration,
+};
 
 use async_std::io;
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use colored::*;
 use futures::stream::FuturesUnordered;
-use indicatif::ProgressBar;
-use std::time::Duration;
-use std::{
-    io::ErrorKind,
-    net::{IpAddr, Shutdown, SocketAddr},
-};
+use pbr::ProgressBar;
+
+use super::PortStrategy;
 
 /// The class for the scanner
 /// IP is data type IpAddr and is the IP address
@@ -49,12 +50,12 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
-        let progress: ProgressBar = ProgressBar::new(ports.len() as u64);
+        let mut progress: ProgressBar<Stdout> = ProgressBar::new(ports.len() as u64);
         let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
 
         for batch in ports.chunks(batch_per_ip) {
-            let mut sockets = self.scan_ports(batch, &progress).await;
+            let mut sockets = self.scan_ports(batch, &mut progress).await;
             open_sockets.append(&mut sockets);
         }
         progress.finish();
@@ -69,7 +70,7 @@ impl Scanner {
 
     /// Given a slice of sockets, scan them all.
     /// Returns a vector of open sockets.
-    async fn scan_ports(&self, ports: &[u16], progress: &ProgressBar) -> Vec<SocketAddr> {
+    async fn scan_ports(&self, ports: &[u16], progress: &mut ProgressBar<Stdout>) -> Vec<SocketAddr> {
         let mut ftrs = FuturesUnordered::new();
         for port in ports {
             for ip in &self.ips {
@@ -84,7 +85,7 @@ impl Scanner {
                 _ => {}
             }
             if !self.quiet {
-                progress.inc(1);
+                progress.inc();
             }
         }
         open_sockets
@@ -145,10 +146,13 @@ impl Scanner {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{PortRange, ScanOrder};
-    use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
+
+    use async_std::task::block_on;
+
+    use crate::{PortRange, ScanOrder};
+
+    use super::*;
 
     #[test]
     fn scanner_runs() {
