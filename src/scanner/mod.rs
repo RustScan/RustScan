@@ -70,7 +70,11 @@ impl Scanner {
 
     /// Given a slice of sockets, scan them all.
     /// Returns a vector of open sockets.
-    async fn scan_ports(&self, ports: &[u16], progress: &mut ProgressBar<Stdout>) -> Vec<SocketAddr> {
+    async fn scan_ports(
+        &self,
+        ports: &[u16],
+        progress: &mut ProgressBar<Stdout>,
+    ) -> Vec<SocketAddr> {
         let mut ftrs = FuturesUnordered::new();
         for port in ports {
             for ip in &self.ips {
