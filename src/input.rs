@@ -68,7 +68,7 @@ pub struct Opts {
 
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
-    pub ignore_config: bool,
+    pub no_config: bool,
 
     /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -77,6 +77,10 @@ pub struct Opts {
     /// Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(long)]
     pub accessible: bool,
+
+    /// Turns off Nmap.
+    #[structopt(long)]
+    pub no_nmap: bool,
 
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
@@ -125,7 +129,7 @@ impl Opts {
     /// Reads the command line arguments into an Opts struct and merge
     /// values found within the user configuration file.
     pub fn merge(&mut self, config: &Config) {
-        if !self.ignore_config {
+        if !self.no_config {
             self.merge_required(&config);
             self.merge_optional(&config);
         }
@@ -180,6 +184,7 @@ pub struct Config {
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
+    no_nmap: Option<bool>,
     ulimit: Option<rlimit::rlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
@@ -258,8 +263,9 @@ mod tests {
             ulimit: None,
             command: vec![],
             accessible: false,
+            no_nmap: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: true,
+            no_config: true,
         };
 
         let config = Config {
@@ -270,6 +276,7 @@ mod tests {
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
+            no_nmap: Some(false),
             command: Some(vec!["-A".to_owned()]),
             accessible: Some(true),
             scan_order: Some(ScanOrder::Random),
@@ -298,12 +305,14 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {
             ips_or_hosts: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
+            no_nmap: Some(false),
             range: None,
             quiet: Some(true),
             batch_size: Some(25_000),
@@ -337,7 +346,8 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {
@@ -350,6 +360,7 @@ mod tests {
             quiet: None,
             batch_size: None,
             timeout: None,
+            no_nmap: Some(false),
             ulimit: Some(1_000),
             command: None,
             accessible: None,
