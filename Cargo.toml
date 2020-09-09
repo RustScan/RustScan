@@ -33,6 +33,7 @@ ansi_term = "0.12.1"
 toml = "0.5.6"
 serde = "1.0.115"
 serde_derive = "1.0.115"
+cidr-utils = "0.5.0"
 
 [package.metadata.deb]
 depends = "$auto, nmap"

@@ -11,16 +11,15 @@ use scanner::Scanner;
 mod port_strategy;
 use port_strategy::PortStrategy;
 
+use cidr_utils::cidr::IpCidr;
 use colorful::Color;
 use colorful::Colorful;
 use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
-
 use std::collections::HashMap;
 use std::net::ToSocketAddrs;
 use std::process::Command;
-use std::str::FromStr;
 use std::{net::IpAddr, time::Duration};
 
 extern crate colorful;
@@ -51,7 +50,7 @@ fn main() {
         print_opening();
     }
 
-    let ips: Vec<IpAddr> = parse_ips(&opts);
+    let ips: Vec<IpAddr> = parse_addresses(&opts);
 
     if ips.is_empty() {
         warning!("No IPs could be resolved, aborting scan.", false);
@@ -183,12 +182,12 @@ fn build_nmap_arguments<'a>(
     arguments
 }
 
-fn parse_ips(opts: &Opts) -> Vec<IpAddr> {
+fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
-    for ip_or_host in &opts.ips_or_hosts {
-        match IpAddr::from_str(ip_or_host) {
-            Ok(ip) => ips.push(ip),
+    for ip_or_host in &opts.addresses {
+        match IpCidr::from_str(ip_or_host) {
+            Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
             _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
                 Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
                 _ => {
@@ -262,12 +261,15 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, parse_ips, print_opening, Opts, ScanOrder};
+    use crate::{
+        adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts, ScanOrder,
+    };
+    use std::net::Ipv4Addr;
 
     #[test]
     fn batch_size_lowered() {
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -288,7 +290,7 @@ mod tests {
     #[test]
     fn batch_size_lowered_average_size() {
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -310,7 +312,7 @@ mod tests {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -331,7 +333,7 @@ mod tests {
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -357,7 +359,7 @@ mod tests {
     #[test]
     fn test_high_ulimit_no_quiet_mode() {
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
             quiet: false,
@@ -377,9 +379,9 @@ mod tests {
     }
 
     #[test]
-    fn parse_correct_ips_or_hosts() {
+    fn parse_correct_addresses() {
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned(), "google.com".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -392,15 +394,24 @@ mod tests {
             no_config: false,
             no_nmap: false,
         };
-        let ips = parse_ips(&opts);
+        let ips = parse_addresses(&opts);
 
-        assert_eq!(2, ips.len());
+        assert_eq!(
+            ips,
+            [
+                Ipv4Addr::new(127, 0, 0, 1),
+                Ipv4Addr::new(192, 168, 0, 0),
+                Ipv4Addr::new(192, 168, 0, 1),
+                Ipv4Addr::new(192, 168, 0, 2),
+                Ipv4Addr::new(192, 168, 0, 3)
+            ]
+        );
     }
 
     #[test]
-    fn parse_correct_and_incorrect_ips_or_hosts() {
+    fn parse_correct_host_addresses() {
         let opts = Opts {
-            ips_or_hosts: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
+            addresses: vec!["google.com".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -413,15 +424,15 @@ mod tests {
             no_config: false,
             no_nmap: false,
         };
-        let ips = parse_ips(&opts);
+        let ips = parse_addresses(&opts);
 
-        assert_eq!(1, ips.len());
+        assert_eq!(ips.len(), 1);
     }
 
     #[test]
-    fn parse_incorrect_ips_or_hosts() {
+    fn parse_correct_and_incorrect_addresses() {
         let opts = Opts {
-            ips_or_hosts: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
+            addresses: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
             ports: None,
             range: None,
             quiet: true,
@@ -434,8 +445,29 @@ mod tests {
             no_config: false,
             no_nmap: false,
         };
-        let ips = parse_ips(&opts);
+        let ips = parse_addresses(&opts);
 
-        assert_eq!(0, ips.len());
+        assert_eq!(ips, [Ipv4Addr::new(127, 0, 0, 1),]);
+    }
+
+    #[test]
+    fn parse_incorrect_addresses() {
+        let opts = Opts {
+            addresses: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
+            ports: None,
+            range: None,
+            quiet: true,
+            batch_size: 10,
+            timeout: 1_000,
+            ulimit: Some(2_000),
+            command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+            no_config: false,
+            no_nmap: false,
+        };
+        let ips = parse_addresses(&opts);
+
+        assert_eq!(ips.is_empty(), true);
     }
 }
