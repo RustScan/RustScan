@@ -54,9 +54,9 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 pub struct Opts {
-    /// A list of comma separated IP addresses or hosts to be scanned.
+    /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
     #[structopt(use_delimiter = true)]
-    pub ips_or_hosts: Vec<String>,
+    pub addresses: Vec<String>,
 
     /// A list of comma separed ports to be scanned. Example: 80,443,8080.
     #[structopt(short, long, use_delimiter = true)]
@@ -68,7 +68,7 @@ pub struct Opts {
 
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
-    pub ignore_config: bool,
+    pub no_config: bool,
 
     /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -77,6 +77,10 @@ pub struct Opts {
     /// Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(long)]
     pub accessible: bool,
+
+    /// Turns off Nmap.
+    #[structopt(long)]
+    pub no_nmap: bool,
 
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
@@ -125,7 +129,7 @@ impl Opts {
     /// Reads the command line arguments into an Opts struct and merge
     /// values found within the user configuration file.
     pub fn merge(&mut self, config: &Config) {
-        if !self.ignore_config {
+        if !self.no_config {
             self.merge_required(&config);
             self.merge_optional(&config);
         }
@@ -142,15 +146,7 @@ impl Opts {
             }
         }
 
-        merge_required!(
-            ips_or_hosts,
-            quiet,
-            accessible,
-            batch_size,
-            timeout,
-            scan_order,
-            command
-        );
+        merge_required!(addresses, quiet, accessible, batch_size, timeout, scan_order, command);
     }
 
     fn merge_optional(&mut self, config: &Config) {
@@ -173,13 +169,14 @@ impl Opts {
 /// generate the final Opts struct.
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    ips_or_hosts: Option<Vec<String>>,
+    addresses: Option<Vec<String>>,
     ports: Option<Vec<u16>>,
     range: Option<PortRange>,
     quiet: Option<bool>,
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
+    no_nmap: Option<bool>,
     ulimit: Option<rlimit::rlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
@@ -191,29 +188,46 @@ impl Config {
     ///
     /// # Format
     ///
-    /// ips_or_hosts = ["127.0.0.1", "127.0.0.1"]
+    /// addresses = ["127.0.0.1", "127.0.0.1"]
     /// ports = [80, 443, 8080]
     /// quiet = true
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
-        let path = match dirs::home_dir() {
+        let mut paths = Vec::new();
+        paths.push(match dirs::home_dir() {
             Some(mut path) => {
                 path.push(".rustscan.toml");
                 path
             }
             None => panic!("Could not infer config file path."),
-        };
+        });
 
-        let contents = match fs::read_to_string(&path) {
-            Ok(content) => content,
-            Err(_) => {
-                println!("Could not find configation file at {:?}", &path);
-                String::new()
+        paths.push(match dirs::config_dir() {
+            Some(mut path) => {
+                path.push("rustscan");
+                path.push("config.toml");
+                path
             }
-        };
+            None => panic!("Could not infer config file path."),
+        });
 
-        let config: Config = match toml::from_str(&contents) {
+        let mut contents: Option<String> = None;
+        for path in paths.iter().rev() {
+            contents = match fs::read_to_string(path) {
+                Ok(content) => {
+                    contents = Some(content);
+                    break;
+                }
+                Err(_) => None,
+            };
+        }
+
+        if contents.is_none() {
+            contents = Some(String::new());
+        }
+
+        let config: Config = match toml::from_str(&contents.unwrap()) {
             Ok(config) => config,
             Err(e) => {
                 println!("Found {} in configuration file.\nAborting scan.\n", e);
@@ -232,7 +246,7 @@ mod tests {
     #[test]
     fn opts_no_merge_when_config_is_ignored() {
         let mut opts = Opts {
-            ips_or_hosts: vec![],
+            addresses: vec![],
             ports: None,
             range: None,
             quiet: false,
@@ -241,18 +255,20 @@ mod tests {
             ulimit: None,
             command: vec![],
             accessible: false,
+            no_nmap: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: true,
+            no_config: true,
         };
 
         let config = Config {
-            ips_or_hosts: Some(vec!["127.0.0.1".to_owned()]),
+            addresses: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
             range: None,
             quiet: Some(true),
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
+            no_nmap: Some(false),
             command: Some(vec!["-A".to_owned()]),
             accessible: Some(true),
             scan_order: Some(ScanOrder::Random),
@@ -260,7 +276,7 @@ mod tests {
 
         opts.merge(&config);
 
-        assert_eq!(opts.ips_or_hosts, vec![] as Vec<String>);
+        assert_eq!(opts.addresses, vec![] as Vec<String>);
         assert_eq!(opts.quiet, false);
         assert_eq!(opts.accessible, false);
         assert_eq!(opts.timeout, 0);
@@ -271,7 +287,7 @@ mod tests {
     #[test]
     fn opts_merge_required_arguments() {
         let mut opts = Opts {
-            ips_or_hosts: vec![],
+            addresses: vec![],
             ports: None,
             range: None,
             quiet: false,
@@ -281,12 +297,14 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {
-            ips_or_hosts: Some(vec!["127.0.0.1".to_owned()]),
+            addresses: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
+            no_nmap: Some(false),
             range: None,
             quiet: Some(true),
             batch_size: Some(25_000),
@@ -299,7 +317,7 @@ mod tests {
 
         opts.merge_required(&config);
 
-        assert_eq!(opts.ips_or_hosts, config.ips_or_hosts.unwrap());
+        assert_eq!(opts.addresses, config.addresses.unwrap());
         assert_eq!(opts.quiet, config.quiet.unwrap());
         assert_eq!(opts.timeout, config.timeout.unwrap());
         assert_eq!(opts.command, config.command.unwrap());
@@ -310,7 +328,7 @@ mod tests {
     #[test]
     fn opts_merge_optional_arguments() {
         let mut opts = Opts {
-            ips_or_hosts: vec![],
+            addresses: vec![],
             ports: None,
             range: None,
             quiet: false,
@@ -320,11 +338,12 @@ mod tests {
             command: vec![],
             accessible: false,
             scan_order: ScanOrder::Serial,
-            ignore_config: false,
+            no_nmap: false,
+            no_config: false,
         };
 
         let config = Config {
-            ips_or_hosts: None,
+            addresses: None,
             ports: Some(vec![80, 403]),
             range: Some(PortRange {
                 start: 1,
@@ -333,6 +352,7 @@ mod tests {
             quiet: None,
             batch_size: None,
             timeout: None,
+            no_nmap: Some(false),
             ulimit: Some(1_000),
             command: None,
             accessible: None,
