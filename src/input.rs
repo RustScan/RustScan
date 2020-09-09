@@ -110,6 +110,10 @@ pub struct Opts {
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
     #[structopt(last = true)]
     pub command: Vec<String>,
+
+    /// Use the top 1000 ports.
+    #[structopt(long)]
+    pub top: bool,
 }
 
 impl Opts {
@@ -160,6 +164,11 @@ impl Opts {
             }
         }
 
+        // Only use top ports when the user asks for them
+        if self.top {
+            merge_optional!(ports)
+        }
+
         merge_optional!(ports, range, ulimit);
     }
 }
@@ -198,15 +207,6 @@ impl Config {
         paths.push(match dirs::home_dir() {
             Some(mut path) => {
                 path.push(".rustscan.toml");
-                path
-            }
-            None => panic!("Could not infer config file path."),
-        });
-
-        paths.push(match dirs::config_dir() {
-            Some(mut path) => {
-                path.push("rustscan");
-                path.push("config.toml");
                 path
             }
             None => panic!("Could not infer config file path."),
@@ -258,6 +258,7 @@ mod tests {
             no_nmap: false,
             scan_order: ScanOrder::Serial,
             no_config: true,
+            top: false,
         };
 
         let config = Config {
@@ -299,6 +300,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            top: false,
         };
 
         let config = Config {
@@ -340,6 +342,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            top: false,
         };
 
         let config = Config {

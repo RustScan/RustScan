@@ -281,6 +281,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -302,6 +303,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -324,6 +326,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -345,6 +348,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -371,6 +375,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -423,6 +428,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -444,6 +450,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -465,6 +472,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
