@@ -13,7 +13,7 @@
 <p align="center">
 <img alt="AUR version" src="https://img.shields.io/aur/version/rustscan">
 <img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
-<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/brandonskerritt/rustscan">
+<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/w/Rustscan/Rustscan">
 <img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads">
 <img alt="Discord" src="https://img.shields.io/discord/736614461313515576">
@@ -21,10 +21,10 @@
 </p>
 <hr>
 
-| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                    | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p>                     |
-| ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p>    | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p> |
-| `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
+| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                 | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p>                     |
+| ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p> |
+| `docker pull rustscan/rustscan:alpine` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/Rustscan/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali)     | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
 
 <hr>
 
@@ -111,7 +111,7 @@ Note: sometimes Rust doesn't add Cargo to the path. Please see [this issue](http
 
 Download the .deb file from the releases page:
 
-[https://github.com/brandonskerritt/RustScan/releases](https://github.com/brandonskerritt/RustScan/releases)
+[https://github.com/RustScan/RustScan/releases](https://github.com/RustScan/RustScan/releases)
 
 Run the command `dpkg -i` on the file.
 
@@ -229,14 +229,15 @@ server may not be able to handle this many socket connections at once. - Discord
 https://github.com/RustScan/RustScan
 
 USAGE:
-    rustscan [FLAGS] [OPTIONS] [ips-or-hosts]... [-- <command>...]
+    rustscan [FLAGS] [OPTIONS] [addresses]... [-- <command>...]
 
 FLAGS:
-        --accessible       Accessible mode. Turns off features which negatively affect screen readers
-    -h, --help             Prints help information
-    -i, --ignore-config    Whether to ignore the configuration file or not
-    -q, --quiet            Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
-    -V, --version          Prints version information
+        --accessible    Accessible mode. Turns off features which negatively affect screen readers
+    -h, --help          Prints help information
+    -n, --no-config     Whether to ignore the configuration file or not
+        --no-nmap       Turns off Nmap
+    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+    -V, --version       Prints version information
 
 OPTIONS:
     -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
@@ -251,11 +252,11 @@ OPTIONS:
     -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
 
 ARGS:
-    <ips-or-hosts>...    A list of comma separated IP addresses or hosts to be scanned
-    <command>...         The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'.
-                         Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS
-                         automatically to nmap. For things like --script '(safe and vuln)' enclose it in quotations
-                         marks \"'(safe and vuln)'\"")
+    <addresses>...    A list of comma separated CIDRs, IPs, or hosts to be scanned
+    <command>...      The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
+                      'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                      nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
+                      vuln)'\"")
 ```
 
 The format is `rustscan -b 500 -T 1500 192.168.0.1` to scan 192.168.0.1 with 500 batch size with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.
@@ -269,7 +270,7 @@ Your operating system may not support this, but it is worth it to play around an
 This binary accepts a configuration file that is read from the home directory of the user. It follows the TOML format
 and accepts the following fields:
 
-- `ips_or_hosts`
+- `addresses`
 - `ports`
 - `range`
 - `scan_order`
@@ -283,7 +284,7 @@ and accepts the following fields:
 ### Format example
 
 ```toml
-ips_or_hosts = ["127.0.0.1", "192.168.0.1", "www.google.com"]
+addresses = ["127.0.0.1", "192.168.0.0/30", "www.google.com"]
 command = ["-A"]
 ports = [80, 443, 8080]
 range = { start = 1, end = 10 }
@@ -364,7 +365,7 @@ Windows Subsystem for Linux does not support ulimit (see issue #39).
 The best way is to use it on a host computer, in Docker, or in a VM that isn't WSL.
 
 **Automatic Ulimit updating**
-We are currently working on automatic Ulimit updating. If it is too high, it will lower itself. If it is too low, it will suggest a higher Ulimit. Watch [this issue](https://github.com/brandonskerritt/RustScan/issues/25) for more.
+We are currently working on automatic Ulimit updating. If it is too high, it will lower itself. If it is too low, it will suggest a higher Ulimit. Watch [this issue](https://github.com/RustScan/RustScan/issues/25) for more.
 
 ## 🔌 Nmap Custom Flags
 
@@ -432,7 +433,9 @@ Please read the [contributing.md file](contributing.md)
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-18-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -469,6 +472,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
