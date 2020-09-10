@@ -61,7 +61,7 @@ impl Scanner {
         }
 
         while ftrs.len() < self.batch_size as usize {
-            if targets.len() != 0 {
+            if !targets.is_empty() {
                 ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
             }
         }
@@ -84,7 +84,6 @@ impl Scanner {
         }
         open_sockets
     }
-
 
     /// Given a port, scan it.
     /// Turns the address into a SocketAddr
