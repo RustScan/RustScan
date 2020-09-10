@@ -49,7 +49,6 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
-        // let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut targets: VecDeque<SocketAddr> =
             VecDeque::with_capacity(self.ips.len() * ports.len());
@@ -61,7 +60,7 @@ impl Scanner {
             }
         }
 
-        while ftrs.len() < self.batch_size as usize {
+        while ftrs.len() <= self.batch_size as usize {
             if !targets.is_empty() {
                 ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
             }
