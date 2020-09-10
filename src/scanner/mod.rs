@@ -6,10 +6,10 @@ use async_std::prelude::*;
 use colored::*;
 use futures::stream::FuturesUnordered;
 use std::{
-    time::Duration,
+    collections::VecDeque,
     io::ErrorKind,
     net::{IpAddr, Shutdown, SocketAddr},
-    collections::VecDeque,
+    time::Duration,
 };
 
 /// The class for the scanner
@@ -51,7 +51,8 @@ impl Scanner {
         let ports: Vec<u16> = self.port_strategy.order();
         // let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        let mut targets: VecDeque<SocketAddr> = VecDeque::with_capacity(self.ips.len() * ports.len());
+        let mut targets: VecDeque<SocketAddr> =
+            VecDeque::with_capacity(self.ips.len() * ports.len());
         let mut ftrs = FuturesUnordered::new();
 
         for port in ports {
@@ -72,7 +73,7 @@ impl Scanner {
                     match result {
                         Ok(socket) => open_sockets.push(socket),
                         Err(_) => {}
-                    }         
+                    }
                     if !targets.is_empty() {
                         ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
                     }
