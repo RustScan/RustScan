@@ -5,10 +5,11 @@ use async_std::net::TcpStream;
 use async_std::prelude::*;
 use colored::*;
 use futures::stream::FuturesUnordered;
-use std::time::Duration;
 use std::{
+    time::Duration,
     io::ErrorKind,
     net::{IpAddr, Shutdown, SocketAddr},
+    collections::VecDeque,
 };
 
 /// The class for the scanner
@@ -48,37 +49,42 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
-        let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
+        // let batch_per_ip: usize = self.batch_size as usize / self.ips.len();
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-
-        for batch in ports.chunks(batch_per_ip) {
-            let mut sockets = self.scan_ports(batch).await;
-            open_sockets.append(&mut sockets);
-        }
-
-        open_sockets
-    }
-
-    /// Given a slice of sockets, scan them all.
-    /// Returns a vector of open sockets.
-    async fn scan_ports(&self, ports: &[u16]) -> Vec<SocketAddr> {
+        let mut targets: VecDeque<SocketAddr> = VecDeque::with_capacity(self.ips.len() * ports.len());
         let mut ftrs = FuturesUnordered::new();
+
         for port in ports {
             for ip in &self.ips {
-                ftrs.push(self.scan_socket(SocketAddr::new(*ip, *port)));
+                targets.push_back(SocketAddr::new(*ip, port));
             }
         }
 
-        let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        while let Some(result) = ftrs.next().await {
-            match result {
-                Ok(socket) => open_sockets.push(socket),
-                _ => {}
+        while ftrs.len() < self.batch_size as usize {
+            if targets.len() != 0 {
+                ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
             }
         }
 
+        loop {
+            match ftrs.next().await {
+                Some(result) => {
+                    match result {
+                        Ok(socket) => open_sockets.push(socket),
+                        Err(_) => {}
+                    }         
+                    if !targets.is_empty() {
+                        ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
+                    }
+                }
+                None => {
+                    break;
+                }
+            }
+        }
         open_sockets
     }
+
 
     /// Given a port, scan it.
     /// Turns the address into a SocketAddr
