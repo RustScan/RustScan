@@ -398,6 +398,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
