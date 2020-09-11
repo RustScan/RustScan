@@ -182,6 +182,17 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "bergabman",
+      "name": "bergabman",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/44554109?v=4",
+      "profile": "https://github.com/bergabman",
+      "contributions": [
+        "code",
+        "bug",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
