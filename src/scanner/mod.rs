@@ -60,18 +60,19 @@ impl Scanner {
             }
         }
 
-        while ftrs.len() <= self.batch_size as usize {
+        while ftrs.len() < self.batch_size as usize {
             if !targets.is_empty() {
                 ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
+            } else {
+                break;
             }
         }
 
         loop {
             match ftrs.next().await {
                 Some(result) => {
-                    match result {
-                        Ok(socket) => open_sockets.push(socket),
-                        Err(_) => {}
+                    if let Ok(socket) = result {
+                        open_sockets.push(socket);
                     }
                     if !targets.is_empty() {
                         ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
