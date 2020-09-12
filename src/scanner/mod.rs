@@ -114,7 +114,18 @@ impl Scanner {
             }
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
-                    panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                    if e.to_string().contains("No route to host (os error 113)") {
+                        println!(
+                            "{} {}",
+                            socket.ip().to_string(),
+                            "Host unreachable! Make sure the ip you target is online. Exiting."
+                                .to_string()
+                                .red()
+                        );
+                        std::process::exit(1);
+                    } else {
+                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                    }
                 }
                 _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
             },
