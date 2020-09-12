@@ -1,12 +1,14 @@
 use super::PortStrategy;
 
+mod socket_iterator;
+use socket_iterator::SocketIterator;
+
 use async_std::io;
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use colored::*;
 use futures::stream::FuturesUnordered;
 use std::{
-    collections::VecDeque,
     io::ErrorKind,
     net::{IpAddr, Shutdown, SocketAddr},
     time::Duration,
@@ -49,40 +51,29 @@ impl Scanner {
     /// Returns all open ports as Vec<u16>
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self.port_strategy.order();
+        let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        let mut targets: VecDeque<SocketAddr> =
-            VecDeque::with_capacity(self.ips.len() * ports.len());
         let mut ftrs = FuturesUnordered::new();
 
-        for port in ports {
-            for ip in &self.ips {
-                targets.push_back(SocketAddr::new(*ip, port));
-            }
-        }
-
-        while ftrs.len() < self.batch_size as usize {
-            if !targets.is_empty() {
-                ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
+        for _ in 0..self.batch_size {
+            if let Some(socket) = socket_iterator.next() {
+                ftrs.push(self.scan_socket(socket));
             } else {
                 break;
             }
         }
 
-        loop {
-            match ftrs.next().await {
-                Some(result) => {
-                    if let Ok(socket) = result {
-                        open_sockets.push(socket);
-                    }
-                    if !targets.is_empty() {
-                        ftrs.push(self.scan_socket(targets.pop_front().unwrap()));
-                    }
-                }
-                None => {
-                    break;
-                }
+        while let Some(result) = ftrs.next().await {
+            if let Some(socket) = socket_iterator.next() {
+                ftrs.push(self.scan_socket(socket));
+            }
+
+            match result {
+                Ok(socket) => open_sockets.push(socket),
+                _ => {}
             }
         }
+
         open_sockets
     }
 
