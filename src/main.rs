@@ -11,6 +11,9 @@ use scanner::Scanner;
 mod port_strategy;
 use port_strategy::PortStrategy;
 
+mod benchmark;
+use benchmark::{Benchmark, NamedTimer};
+
 use cidr_utils::cidr::IpCidr;
 use colorful::Color;
 use colorful::Colorful;
@@ -38,12 +41,14 @@ extern crate log;
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
     env_logger::init();
+    let mut benchmarks = Benchmark::init();
+    let mut rustscan_bench = NamedTimer::start("RustScan");
 
     let mut opts: Opts = Opts::read();
     let config = Config::read();
     opts.merge(&config);
 
-    info!("Main() `opts` arguments are {:?}", opts);
+    debug!("Main() `opts` arguments are {:?}", opts);
 
     if !opts.quiet && !opts.accessible {
         print_opening();
@@ -66,8 +71,13 @@ fn main() {
         opts.quiet,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
     );
+    debug!("Scanner finished building: {:?}", scanner);
 
+    let mut portscan_bench = NamedTimer::start("Portscan");
     let scan_result = block_on(scanner.run());
+    portscan_bench.end();
+    benchmarks.push(portscan_bench);
+
     let mut ports_per_ip = HashMap::new();
 
     for socket in scan_result {
@@ -94,6 +104,7 @@ fn main() {
         warning!(x, opts.quiet);
     }
 
+    let mut nmap_bench = NamedTimer::start("Nmap");
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
@@ -126,11 +137,19 @@ fn main() {
 
         child.wait().expect("failed to wait on nmap process");
     }
+
+    // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
+    nmap_bench.end();
+    benchmarks.push(nmap_bench);
+    rustscan_bench.end();
+    benchmarks.push(rustscan_bench);
+    debug!("Benchmarks raw {:?}", benchmarks);
+    info!("{}", benchmarks.summary());
 }
 
 /// Prints the opening title of RustScan
 fn print_opening() {
-    info!("Printing opening");
+    debug!("Printing opening");
     let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
