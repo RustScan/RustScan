@@ -114,11 +114,11 @@ impl Scanner {
             }
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
-                    if e.to_string().contains("No route to host (os error 113)") {
+                    if e.to_string().contains("No route to host") {
                         println!(
                             "{} {}",
                             socket.ip().to_string(),
-                            "Host unreachable! Make sure the ip you target is online. Exiting."
+                            "Host unreachable! Make sure the ip you target is online and you have a route to reach it. Exiting."
                                 .to_string()
                                 .red()
                         );
