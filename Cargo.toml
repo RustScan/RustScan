@@ -31,7 +31,7 @@ rand = "0.7.3"
 colorful = "0.2.1"
 ansi_term = "0.12.1"
 toml = "0.5.6"
-serde = "1.0.115"
+serde = "1.0.116"
 serde_derive = "1.0.115"
 cidr-utils = "0.5.0"
 
