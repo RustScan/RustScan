@@ -42,7 +42,7 @@ fn main() {
     let mut opts: Opts = Opts::read();
     let config = Config::read();
     opts.merge(&config);
-    
+
     info!("Main() `opts` arguments are {:?}", opts);
 
     if !opts.quiet && !opts.accessible {
