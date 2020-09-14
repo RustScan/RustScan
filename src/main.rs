@@ -20,7 +20,7 @@ use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
 use std::net::ToSocketAddrs;
 use std::process::Command;
-use std::{net::IpAddr, time::Duration};
+use std::{net::IpAddr, time::Duration, time::Instant};
 
 extern crate colorful;
 extern crate dirs;
@@ -38,6 +38,7 @@ extern crate log;
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
     env_logger::init();
+    let startprocess = Instant::now();
 
     let mut opts: Opts = Opts::read();
     let config = Config::read();
@@ -66,8 +67,12 @@ fn main() {
         opts.quiet,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
     );
+    debug!("Scanner finished building: {:?}", scanner);
 
+    let startscan = Instant::now();
     let scan_result = block_on(scanner.run());
+    let finishedscan = startscan.elapsed().as_millis();
+
     let mut ports_per_ip = HashMap::new();
 
     for socket in scan_result {
@@ -120,6 +125,7 @@ fn main() {
             &nmap_args.join(" ")
         ));
 
+        let startnmapscan = Instant::now();
         // Runs the nmap command and spawns it as a process.
         let mut child = Command::new("nmap")
             .args(&nmap_args)
@@ -127,6 +133,25 @@ fn main() {
             .expect("failed to execute nmap process");
 
         child.wait().expect("failed to wait on nmap process");
+
+        // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
+        info!("Portscan runtime:   {}ms", finishedscan);
+        info!(
+            "Nmap scan runtime:  {}ms",
+            startnmapscan.elapsed().as_millis()
+        );
+        info!(
+            "RustScan runtime    {}ms ",
+            startprocess.elapsed().as_millis()
+        );
+        info!(
+            "Ports scanned       {}",
+            scanner.ips.len() * scanner.port_strategy.order().len()
+        );
+        info!(
+            "It took             {}ms to scan an individual port",
+            finishedscan as usize / (scanner.ips.len() * scanner.port_strategy.order().len())
+        );
     }
 }
 

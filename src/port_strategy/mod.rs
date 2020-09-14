@@ -8,6 +8,7 @@ use range_iterator::RangeIterator;
 ///
 /// Right now all these options involve ranges, but in the future
 /// it will also contain custom lists of ports.
+#[derive(Debug)]
 pub enum PortStrategy {
     Manual(Vec<u16>),
     Serial(SerialRange),
@@ -58,6 +59,7 @@ trait RangeOrder {
 
 /// As the name implies SerialRange will always generate a vector in
 /// ascending order.
+#[derive(Debug)]
 pub struct SerialRange {
     start: u16,
     end: u16,
@@ -71,6 +73,7 @@ impl RangeOrder for SerialRange {
 
 /// As the name implies RandomRange will always generate a vector with
 /// a random order. This vector is built following the LCG algorithm.
+#[derive(Debug)]
 pub struct RandomRange {
     start: u16,
     end: u16,
