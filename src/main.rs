@@ -85,13 +85,11 @@ fn main() {
         // If we got here it means the IP was not found within the HashMap, this
         // means the scan couldn't find any open ports for it.
 
-        let x = format!("{} Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
-        \n*I used {} batch size, consider lowering to {} with {} or a comfortable number for your system.
+        let x = format!("Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
+        \n*I used {} batch size, consider lowering it with {} or a comfortable number for your system.
         \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 milliseconds (2s) timeout.\n",
-        "ERROR",
         ip,
         opts.batch_size,
-        (opts.batch_size / 2).to_string(),
         "'rustscan -b <batch_size> <ip address>'");
         warning!(x, opts.quiet);
     }
@@ -99,14 +97,14 @@ fn main() {
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        detail!("Starting Nmap", opts.quiet);
+        detail!("Starting Nmap", opts.quiet || opts.no_nmap);
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
-        if opts.quiet {
-            println!("{}", ports_str);
+        if opts.quiet || opts.no_nmap {
+            println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
 
