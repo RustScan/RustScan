@@ -128,7 +128,6 @@ impl Scanner {
                         // );
                         debug!("Socket connect error: {} {}", &e.to_string(), &socket);
                         Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
-                    // std::process::exit(1);
                     } else {
                         debug!("Socket connect error: {} {}", &e.to_string(), &socket);
                         panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
@@ -156,8 +155,6 @@ impl Scanner {
             async move { TcpStream::connect(socket).await },
         )
         .await?;
-        // let newtimeout = &self.timeout;
-        // *&self.timeout = *newtimeout;
         Ok(stream)
     }
 }
