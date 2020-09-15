@@ -45,14 +45,14 @@ fn main() {
 
     info!("Main() `opts` arguments are {:?}", opts);
 
-    if !opts.quiet && !opts.accessible {
+    if !opts.greppable && !opts.accessible {
         print_opening();
     }
 
     let ips: Vec<IpAddr> = parse_addresses(&opts);
 
     if ips.is_empty() {
-        warning!("No IPs could be resolved, aborting scan.", false);
+        warning!("No IPs could be resolved, aborting scan.", false, opts.accessible);
         std::process::exit(1);
     }
 
@@ -63,7 +63,7 @@ fn main() {
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
-        opts.quiet,
+        opts.greppable,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
     );
 
@@ -93,19 +93,19 @@ fn main() {
         opts.batch_size,
         (opts.batch_size / 2).to_string(),
         "'rustscan -b <batch_size> <ip address>'");
-        warning!(x, opts.quiet);
+        warning!(x, opts.greppable, opts.accessible);
     }
 
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        detail!("Starting Nmap", opts.quiet);
+        detail!("Starting Nmap", opts.greppable, opts.accessible);
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
-        // if quiet mode is on nmap should not be spawned
-        if opts.quiet {
+        // if greppable mode is on nmap should not be spawned
+        if opts.greppable {
             println!("{}", ports_str);
             continue;
         }
@@ -118,7 +118,7 @@ fn main() {
         output!(format!(
             "The Nmap command to be run is nmap {}\n",
             &nmap_args.join(" ")
-        ));
+        ), false, opts.accessible);
 
         // Runs the nmap command and spawns it as a process.
         let mut child = Command::new("nmap")
@@ -179,7 +179,7 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
                 Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
                 _ => {
                     let failed_to_resolve = format!("Host {:?} could not be resolved.", ip_or_host);
-                    warning!(failed_to_resolve, opts.quiet);
+                    warning!(failed_to_resolve, opts.greppable, opts.accessible);
                 }
             },
         }
@@ -196,7 +196,7 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
             Ok(_) => {
                 detail!(
                     format!("Automatically increasing ulimit value to {}.", limit),
-                    opts.quiet
+                    opts.greppable, opts.accessible
                 );
             }
             Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
@@ -214,7 +214,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
         warning!("File limit is lower than default batch size. Consider upping with --ulimit. May cause harm to sensitive servers",
-            opts.quiet
+            opts.greppable, opts.accessible
         );
 
         // When the OS supports high file limits like 8000, but the user
@@ -224,7 +224,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
-            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ");
+            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", false, opts.accessible);
             info!("Halving batch_size because ulimit is smaller than average batch size");
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
@@ -240,7 +240,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
         detail!(format!(
                 "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
                 ulimit - 100
-            ), opts.quiet);
+            ), opts.greppable, opts.accessible);
     }
 
     batch_size as u16
@@ -259,7 +259,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -281,7 +281,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -304,7 +304,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -326,7 +326,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -348,12 +348,12 @@ mod tests {
         assert!(1 == 1);
     }
     #[test]
-    fn test_high_ulimit_no_quiet_mode() {
+    fn test_high_ulimit_no_greppable_mode() {
         let opts = Opts {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 10,
             timeout: 1_000,
             ulimit: None,
@@ -376,7 +376,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -407,7 +407,7 @@ mod tests {
             addresses: vec!["google.com".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -429,7 +429,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -451,7 +451,7 @@ mod tests {
             addresses: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),

@@ -71,9 +71,9 @@ pub struct Opts {
     #[structopt(short, long)]
     pub no_config: bool,
 
-    /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
+    /// greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
-    pub quiet: bool,
+    pub greppable: bool,
 
     /// Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(long)]
@@ -151,7 +151,7 @@ impl Opts {
             }
         }
 
-        merge_required!(addresses, quiet, accessible, batch_size, timeout, scan_order, command);
+        merge_required!(addresses, greppable, accessible, batch_size, timeout, scan_order, command);
     }
 
     fn merge_optional(&mut self, config: &Config) {
@@ -182,7 +182,7 @@ pub struct Config {
     addresses: Option<Vec<String>>,
     ports: Option<Vec<u16>>,
     range: Option<PortRange>,
-    quiet: Option<bool>,
+    greppable: Option<bool>,
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
@@ -201,7 +201,7 @@ impl Config {
     ///
     /// addresses = ["127.0.0.1", "127.0.0.1"]
     /// ports = [80, 443, 8080]
-    /// quiet = true
+    /// greppable = true
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
@@ -264,7 +264,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -280,7 +280,7 @@ mod tests {
             addresses: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
             range: None,
-            quiet: Some(true),
+            greppable: Some(true),
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
@@ -293,7 +293,7 @@ mod tests {
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.quiet, false);
+        assert_eq!(opts.greppable, false);
         assert_eq!(opts.accessible, false);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
@@ -306,7 +306,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -323,7 +323,7 @@ mod tests {
             ports: None,
             no_nmap: Some(false),
             range: None,
-            quiet: Some(true),
+            greppable: Some(true),
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
@@ -335,7 +335,7 @@ mod tests {
         opts.merge_required(&config);
 
         assert_eq!(opts.addresses, config.addresses.unwrap());
-        assert_eq!(opts.quiet, config.quiet.unwrap());
+        assert_eq!(opts.greppable, config.greppable.unwrap());
         assert_eq!(opts.timeout, config.timeout.unwrap());
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
@@ -348,7 +348,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -367,7 +367,7 @@ mod tests {
                 start: 1,
                 end: 1_000,
             }),
-            quiet: None,
+            greppable: None,
             batch_size: None,
             timeout: None,
             no_nmap: Some(false),

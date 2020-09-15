@@ -3,44 +3,46 @@
 
 #[macro_export]
 macro_rules! warning {
-    ($name:expr) => {
+    ($name:expr, $greppable:expr, $accessible:expr) => {
         use ansi_term::Colour::Red;
-        println!("{} {}", Red.bold().paint("[!]"), $name);
-    };
-    // quiet mode
-    ($name:expr, $quiet:expr) => {
-        use ansi_term::Colour::Red;
-        if !$quiet {
+        // if greppable, no else statement so do not print.
+        if !$greppable {
             println!("{} {}", Red.bold().paint("[!]"), $name);
+        }
+        else if !$accessible{
+            // Don't print the ascii art
+            println!("{}", $name);
         }
     };
 }
 
 #[macro_export]
 macro_rules! detail {
-    ($name:expr) => {
-        use ansi_term::Colour::Blue;
-        println!("{} {}", Blue.bold().paint("[~]"), $name);
-    };
-    ($name:expr, $quiet:expr) => {
-        use ansi_term::Colour::Blue;
-        if !$quiet {
+    ($name:expr, $greppable:expr, $accessible:expr) => {
+        use ansi_term::Colour::Red;
+        // if greppable, no else statement so do not print.
+        if !$greppable {
             println!("{} {}", Blue.bold().paint("[~]"), $name);
+        }
+        else if !$accessible{
+            // Don't print the ascii art
+            println!("{}", $name);
         }
     };
 }
 
 #[macro_export]
 macro_rules! output {
-    ($name:expr, $quiet:expr) => {
-        use ansi_term::Colour::RGB;
-        if !$quiet {
+    ($name:expr, $greppable:expr, $accessible:expr) => {
+        use ansi_term::Colour::Red;
+        // if greppable, no else statement so do not print.
+        if !$greppable {
             println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
         }
-    };
-    ($name:expr) => {
-        use ansi_term::Colour::RGB;
-        println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+        else if !$accessible{
+            // Don't print the ascii art
+            println!("{}", $name);
+        }
     };
 }
 
