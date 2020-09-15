@@ -42,7 +42,6 @@ fn main() {
     let mut opts: Opts = Opts::read();
     let config = Config::read();
     opts.merge(&config);
-    dbg!(&opts);
 
     info!("Main() `opts` arguments are {:?}", opts);
 

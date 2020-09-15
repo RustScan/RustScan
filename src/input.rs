@@ -165,11 +165,16 @@ impl Opts {
         }
 
         // Only use top ports when the user asks for them
+        println!("I get to here");
+        println!("{:?}", self.no_config);
         if self.top {
-            merge_optional!(ports)
+            println!("{:?}", config.ports.clone());
+            println!("{:?}", config.ports);
+            //self.ports = config.ports.clone().values().cloned().collect();
+            //merge_optional!(ports)
         }
 
-        merge_optional!(ports, range, ulimit);
+        merge_optional!(range, ulimit);
     }
 }
 
@@ -222,6 +227,7 @@ impl Config {
                 Err(_) => None,
             };
         }
+        println!("{:?}", contents);
 
         if contents.is_none() {
             contents = Some(String::new());
@@ -234,6 +240,8 @@ impl Config {
                 std::process::exit(1);
             }
         };
+
+        println!("{:?}", config);
 
         config
     }
