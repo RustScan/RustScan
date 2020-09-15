@@ -1,6 +1,6 @@
 extern crate shell_words;
 
-mod tui;
+pub mod tui;
 
 mod input;
 use input::{Config, Opts, PortRange, ScanOrder};
@@ -146,19 +146,7 @@ Faster Nmap scanning with Rust."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = match dirs::config_dir() {
-        Some(mut path) => {
-            path.push("rustscan");
-            path.push("config.toml");
-            path
-        }
-        None => panic!("Couldn't find config dir."),
-    };
 
-    detail!(format!(
-        "{} {:?}",
-        "The config file is expected to be at", config_path
-    ));
 }
 #[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(

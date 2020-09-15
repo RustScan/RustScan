@@ -50,15 +50,15 @@ macro_rules! funny_opening {
     () => {
         use rand::seq::SliceRandom;
         let quotes = vec![
-            "Nmap? More like slowmap.🐢",
+            "Hello, Elliot.",
             "🌍HACK THE PLANET🌍",
             "Real hackers hack time ⌛",
             "Please contribute more quotes to our GitHub https://github.com/rustscan/rustscan",
             "😵 https://admin.tryhackme.com",
+            "Mess with the best, die like the rest",
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 
         println!("{}\n", random_quote);
-        // println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
     };
 }

@@ -92,7 +92,6 @@ impl Scanner {
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         match self.connect(socket).await {
             Ok(x) => {
-                // match stream_result.shutdown(Shutdown::Both)
                 info!("Shutting down stream");
                 match x.shutdown(Shutdown::Both) {
                     _ => {}

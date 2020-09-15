@@ -2,6 +2,7 @@ use serde_derive::Deserialize;
 use std::fs;
 use structopt::{clap::arg_enum, StructOpt};
 
+
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
 
@@ -165,13 +166,8 @@ impl Opts {
         }
 
         // Only use top ports when the user asks for them
-        println!("I get to here");
-        println!("{:?}", self.no_config);
         if self.top {
-            println!("{:?}", config.ports.clone());
-            println!("{:?}", config.ports);
-            //self.ports = config.ports.clone().values().cloned().collect();
-            //merge_optional!(ports)
+            self.ports = config.ports.clone().values().cloned().collect();
         }
 
         merge_optional!(range, ulimit);
@@ -196,6 +192,7 @@ pub struct Config {
     command: Option<Vec<String>>,
 }
 
+#[macro_use]
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.
@@ -208,6 +205,12 @@ impl Config {
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
+
+        crate::detail!(format!(
+            "{} {:?}",
+            "The config file is expected to be at", dirs::home_dir()
+        ));
+
         let mut paths = Vec::new();
         paths.push(match dirs::home_dir() {
             Some(mut path) => {
@@ -219,6 +222,7 @@ impl Config {
 
         let mut contents: Option<String> = None;
         for path in paths.iter().rev() {
+            println!{"path is {:?}", path};
             contents = match fs::read_to_string(path) {
                 Ok(content) => {
                     contents = Some(content);
@@ -226,6 +230,7 @@ impl Config {
                 }
                 Err(_) => None,
             };
+            println!("{:?}", contents);
         }
         println!("{:?}", contents);
 
