@@ -167,7 +167,7 @@ impl Opts {
 
         // Only use top ports when the user asks for them
         if self.top {
-            self.ports = config.ports.clone().values().cloned().collect();
+            // self.ports = config.ports.clone().values().cloned().collect();
         }
 
         merge_optional!(range, ulimit);
@@ -206,13 +206,15 @@ impl Config {
     ///
     pub fn read() -> Self {
 
+        let config_dir = dirs::home_dir();
+
         crate::detail!(format!(
             "{} {:?}",
-            "The config file is expected to be at", dirs::home_dir()
+            "The config file is expected to be at", config_dir
         ));
 
         let mut paths = Vec::new();
-        paths.push(match dirs::home_dir() {
+        paths.push(match config_dir {
             Some(mut path) => {
                 path.push(".rustscan.toml");
                 path
