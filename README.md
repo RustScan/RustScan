@@ -138,7 +138,7 @@ Stable and supported: rustscan/rustscan:v1.8.0
 Bleeding edge (run at your own risk!): rustscan/rustscan:latest
 ```
 
-We strongly recommend using the `v1.8.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `v1.8.0` image by default, however, note that the`latest` image is considered experimental.
+We strongly recommend using the `v1.8.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `v1.8.0` image by default, however, note that the `latest` image is considered experimental.
 
 #### To get started:
 
@@ -158,7 +158,7 @@ You will have to run this command every time, so we suggest aliasing it to somet
 alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:v1.8.0'
 ```
 
-Then we can:
+Then we can scan:
 
 ```bash
 rustscan 192.168.1.0/24 -t 500 -b 1500 -- -A
