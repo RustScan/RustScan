@@ -19,7 +19,7 @@ macro_rules! warning {
 #[macro_export]
 macro_rules! detail {
     ($name:expr, $greppable:expr, $accessible:expr) => {
-        use ansi_term::Colour::Red;
+        use ansi_term::Colour::Blue;
         // if greppable, no else statement so do not print.
         if !$greppable {
             println!("{} {}", Blue.bold().paint("[~]"), $name);
@@ -34,7 +34,7 @@ macro_rules! detail {
 #[macro_export]
 macro_rules! output {
     ($name:expr, $greppable:expr, $accessible:expr) => {
-        use ansi_term::Colour::Red;
+        use ansi_term::Colour::RGB;
         // if greppable, no else statement so do not print.
         if !$greppable {
             println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);

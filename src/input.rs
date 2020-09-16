@@ -192,7 +192,7 @@ pub struct Config {
     command: Option<Vec<String>>,
 }
 
-#[macro_use]
+
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.
@@ -208,10 +208,13 @@ impl Config {
 
         let config_dir = dirs::home_dir();
 
+        // TODO make opt.accessible use opts
+        // right now its greppable=False, accessible=True
+        // I want it to use opts.accessible instead of accessible=True
         crate::detail!(format!(
             "{} {:?}",
             "The config file is expected to be at", config_dir
-        ));
+        ), false, true);
 
         let mut paths = Vec::new();
         paths.push(match config_dir {
@@ -228,17 +231,23 @@ impl Config {
             contents = match fs::read_to_string(path) {
                 Ok(content) => {
                     contents = Some(content);
+                    println!("contents is {:?}", contents);
                     break;
                 }
                 Err(_) => None,
             };
-            println!("{:?}", contents);
+            println!("contents is {:?}", contents);
         }
-        println!("{:?}", contents);
+        // println!("{:?}", contents);
 
         if contents.is_none() {
             contents = Some(String::new());
         }
+
+        let c: Config = toml::from_str(&contents.unwrap()).unwrap();
+
+        println!("config as toml is {:?}", c);
+        panic!();
 
         let config: Config = match toml::from_str(&contents.unwrap()) {
             Ok(config) => config,
@@ -248,7 +257,7 @@ impl Config {
             }
         };
 
-        println!("{:?}", config);
+        println!("\nconfig is {:?}", config);
 
         config
     }
