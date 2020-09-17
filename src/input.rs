@@ -244,10 +244,6 @@ impl Config {
             contents = Some(String::new());
         }
 
-        let c: Config = toml::from_str(&contents.unwrap()).unwrap();
-
-        println!("config as toml is {:?}", c);
-        panic!();
 
         let config: Config = match toml::from_str(&contents.unwrap()) {
             Ok(config) => config,
