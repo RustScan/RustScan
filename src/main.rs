@@ -163,18 +163,22 @@ Faster Nmap scanning with Rust."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = match dirs::config_dir() {
-        Some(mut path) => {
-            path.push("rustscan");
-            path.push("config.toml");
-            path
-        }
-        None => panic!("Couldn't find config dir."),
+    let mut config_dir = match dirs::config_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
     };
+    config_dir.push("rustscan");
+    config_dir.push("config.toml");
+
+    let mut home_dir = match dirs::home_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
+    };
+    home_dir.push(".rustscan.toml");
 
     detail!(format!(
-        "{} {:?}",
-        "The config file is expected to be at", config_path
+        "The config file is expected to be at {:?} or {:?}",
+        config_dir, home_dir
     ));
 }
 #[cfg(not(tarpaulin_include))]
@@ -297,6 +301,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -318,6 +323,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -340,6 +346,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -361,6 +368,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -387,6 +395,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -409,6 +418,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -439,6 +449,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -460,6 +471,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -481,6 +493,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
