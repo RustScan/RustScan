@@ -302,6 +302,8 @@ This program, by default, scans 5000 ports at a time (5000 per second).
 
 This may cause damage to a server, or may make it incredibly obvious you are scanning the server.
 
+Servers as well as individual services can block your IP completely after a huge amount of simultaneous connections/tries, Possibly causing you to see false positives. False positives are open ports at the initial scanning process later found closed when you want to do further scanning, or connect to it.
+
 There are 2 ways to deal with this;
 
 1. Decrease batch size

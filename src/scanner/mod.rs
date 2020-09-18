@@ -21,6 +21,7 @@ use std::{
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// Quiet is whether or not RustScan should print things, or wait until the end to print only open ports.
 #[cfg(not(tarpaulin_include))]
+#[derive(Debug)]
 pub struct Scanner {
     ips: Vec<IpAddr>,
     batch_size: u16,
@@ -63,6 +64,12 @@ impl Scanner {
             }
         }
 
+        debug!("Start scanning sockets. \nBatch size {}\nNumber of ip-s {}\nNumber of ports {}\nTargets all together {} ", 
+            self.batch_size,
+            self.ips.len(),
+            &ports.len(),
+            (self.ips.len() * &ports.len()));
+
         while let Some(result) = ftrs.next().await {
             if let Some(socket) = socket_iterator.next() {
                 ftrs.push(self.scan_socket(socket));
@@ -73,7 +80,7 @@ impl Scanner {
                 _ => {}
             }
         }
-
+        debug!("Open Sockets found: {:?}", &open_sockets);
         open_sockets
     }
 
@@ -92,9 +99,12 @@ impl Scanner {
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         match self.connect(socket).await {
             Ok(x) => {
-                // match stream_result.shutdown(Shutdown::Both)
-                info!("Shutting down stream");
+                debug!(
+                    "Connection was successful, shutting down stream {}",
+                    &socket
+                );
                 match x.shutdown(Shutdown::Both) {
+                    Err(e) => debug!("Shutdown stream error {}", &e),
                     _ => {}
                 }
                 if !self.quiet {
@@ -105,7 +115,15 @@ impl Scanner {
             }
             Err(e) => match e.kind() {
                 ErrorKind::Other => {
-                    panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                    if e.to_string().contains("No route to host")
+                        || e.to_string().contains("Network is unreachable")
+                    {
+                        debug!("Socket connect error: {} {}", &e.to_string(), &socket);
+                        Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
+                    } else {
+                        debug!("Socket connect error: {} {}", &e.to_string(), &socket);
+                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                    }
                 }
                 _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
             },
