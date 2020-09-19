@@ -1,4 +1,5 @@
 use serde_derive::Deserialize;
+use std::collections::HashMap;
 use std::fs;
 use structopt::{clap::arg_enum, StructOpt};
 
@@ -70,9 +71,9 @@ pub struct Opts {
     #[structopt(short, long)]
     pub no_config: bool,
 
-    /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
+    /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
-    pub quiet: bool,
+    pub greppable: bool,
 
     /// Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(long)]
@@ -110,6 +111,10 @@ pub struct Opts {
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
     #[structopt(last = true)]
     pub command: Vec<String>,
+
+    /// Use the top 1000 ports.
+    #[structopt(long)]
+    pub top: bool,
 }
 
 impl Opts {
@@ -146,7 +151,7 @@ impl Opts {
             }
         }
 
-        merge_required!(addresses, quiet, accessible, batch_size, timeout, scan_order, command);
+        merge_required!(addresses, greppable, accessible, batch_size, timeout, scan_order, command);
     }
 
     fn merge_optional(&mut self, config: &Config) {
@@ -160,7 +165,18 @@ impl Opts {
             }
         }
 
-        merge_optional!(ports, range, ulimit);
+        // Only use top ports when the user asks for them
+        if self.top {
+            if config.ports.is_some() {
+                let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
+                for entry in config.ports.clone().unwrap().keys() {
+                    ports.push(entry.parse().unwrap())
+                }
+                self.ports = Some(ports);
+            }
+        }
+
+        merge_optional!(range, ulimit);
     }
 }
 
@@ -170,9 +186,9 @@ impl Opts {
 #[derive(Debug, Deserialize)]
 pub struct Config {
     addresses: Option<Vec<String>>,
-    ports: Option<Vec<u16>>,
+    ports: Option<HashMap<String, u16>>,
     range: Option<PortRange>,
-    quiet: Option<bool>,
+    greppable: Option<bool>,
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
@@ -194,40 +210,21 @@ impl Config {
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
-        let mut paths = Vec::new();
-        paths.push(match dirs::home_dir() {
-            Some(mut path) => {
-                path.push(".rustscan.toml");
-                path
-            }
+        let mut home_dir = match dirs::home_dir() {
+            Some(dir) => dir,
             None => panic!("Could not infer config file path."),
-        });
+        };
+        home_dir.push(".rustscan.toml");
 
-        paths.push(match dirs::config_dir() {
-            Some(mut path) => {
-                path.push("rustscan");
-                path.push("config.toml");
-                path
+        let mut content = String::new();
+        if home_dir.exists() {
+            content = match fs::read_to_string(home_dir) {
+                Ok(content) => content,
+                Err(_) => String::new(),
             }
-            None => panic!("Could not infer config file path."),
-        });
-
-        let mut contents: Option<String> = None;
-        for path in paths.iter().rev() {
-            contents = match fs::read_to_string(path) {
-                Ok(content) => {
-                    contents = Some(content);
-                    break;
-                }
-                Err(_) => None,
-            };
         }
 
-        if contents.is_none() {
-            contents = Some(String::new());
-        }
-
-        let config: Config = match toml::from_str(&contents.unwrap()) {
+        let config: Config = match toml::from_str(&content) {
             Ok(config) => config,
             Err(e) => {
                 println!("Found {} in configuration file.\nAborting scan.\n", e);
@@ -249,7 +246,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -258,13 +255,14 @@ mod tests {
             no_nmap: false,
             scan_order: ScanOrder::Serial,
             no_config: true,
+            top: false,
         };
 
         let config = Config {
             addresses: Some(vec!["127.0.0.1".to_owned()]),
             ports: None,
             range: None,
-            quiet: Some(true),
+            greppable: Some(true),
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
@@ -277,7 +275,7 @@ mod tests {
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.quiet, false);
+        assert_eq!(opts.greppable, false);
         assert_eq!(opts.accessible, false);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
@@ -290,7 +288,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -299,6 +297,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            top: false,
         };
 
         let config = Config {
@@ -306,7 +305,7 @@ mod tests {
             ports: None,
             no_nmap: Some(false),
             range: None,
-            quiet: Some(true),
+            greppable: Some(true),
             batch_size: Some(25_000),
             timeout: Some(1_000),
             ulimit: None,
@@ -318,7 +317,7 @@ mod tests {
         opts.merge_required(&config);
 
         assert_eq!(opts.addresses, config.addresses.unwrap());
-        assert_eq!(opts.quiet, config.quiet.unwrap());
+        assert_eq!(opts.greppable, config.greppable.unwrap());
         assert_eq!(opts.timeout, config.timeout.unwrap());
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
@@ -331,7 +330,7 @@ mod tests {
             addresses: vec![],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 0,
             timeout: 0,
             ulimit: None,
@@ -340,16 +339,17 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_nmap: false,
             no_config: false,
+            top: false,
         };
 
         let config = Config {
             addresses: None,
-            ports: Some(vec![80, 403]),
+            ports: None,
             range: Some(PortRange {
                 start: 1,
                 end: 1_000,
             }),
-            quiet: None,
+            greppable: None,
             batch_size: None,
             timeout: None,
             no_nmap: Some(false),
@@ -361,7 +361,6 @@ mod tests {
 
         opts.merge_optional(&config);
 
-        assert_eq!(opts.ports, config.ports);
         assert_eq!(opts.range, config.range);
         assert_eq!(opts.ulimit, config.ulimit);
     }

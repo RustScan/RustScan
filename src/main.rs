@@ -50,14 +50,18 @@ fn main() {
 
     debug!("Main() `opts` arguments are {:?}", opts);
 
-    if !opts.quiet && !opts.accessible {
-        print_opening();
+    if !opts.greppable && !opts.accessible {
+        print_opening(&opts);
     }
 
     let ips: Vec<IpAddr> = parse_addresses(&opts);
 
     if ips.is_empty() {
-        warning!("No IPs could be resolved, aborting scan.", false);
+        warning!(
+            "No IPs could be resolved, aborting scan.",
+            opts.greppable,
+            opts.accessible
+        );
         std::process::exit(1);
     }
 
@@ -68,8 +72,9 @@ fn main() {
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
-        opts.quiet,
+        opts.greppable,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
+        opts.accessible,
     );
     debug!("Scanner finished building: {:?}", scanner);
 
@@ -101,33 +106,36 @@ fn main() {
         ip,
         opts.batch_size,
         "'rustscan -b <batch_size> <ip address>'");
-        warning!(x, opts.quiet);
+        warning!(x, opts.greppable, opts.accessible);
     }
 
     let mut nmap_bench = NamedTimer::start("Nmap");
     for (ip, ports) in ports_per_ip.iter_mut() {
         let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
-        detail!("Starting Nmap", opts.quiet || opts.no_nmap);
-
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
         // if quiet mode is on nmap should not be spawned
-        if opts.quiet || opts.no_nmap {
+        if opts.greppable || opts.no_nmap {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
+        detail!("Starting Nmap", opts.greppable, opts.accessible);
 
         let addr = ip.to_string();
         let user_nmap_args =
             shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
         let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
 
-        output!(format!(
-            "The Nmap command to be run is nmap {}\n",
-            &nmap_args.join(" ")
-        ));
+        output!(
+            format!(
+                "The Nmap command to be run is nmap {}\n",
+                &nmap_args.join(" ")
+            ),
+            opts.greppable.clone(),
+            opts.accessible.clone()
+        );
 
         // Runs the nmap command and spawns it as a process.
         let mut child = Command::new("nmap")
@@ -148,7 +156,7 @@ fn main() {
 }
 
 /// Prints the opening title of RustScan
-fn print_opening() {
+fn print_opening(opts: &Opts) {
     debug!("Printing opening");
     let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
@@ -163,19 +171,17 @@ Faster Nmap scanning with Rust."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = match dirs::config_dir() {
-        Some(mut path) => {
-            path.push("rustscan");
-            path.push("config.toml");
-            path
-        }
-        None => panic!("Couldn't find config dir."),
+    let mut home_dir = match dirs::home_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
     };
+    home_dir.push(".rustscan.toml");
 
-    detail!(format!(
-        "{} {:?}",
-        "The config file is expected to be at", config_path
-    ));
+    detail!(
+        format!("The config file is expected to be at {:?}", home_dir),
+        opts.greppable,
+        opts.accessible
+    );
 }
 #[cfg(not(tarpaulin_include))]
 fn build_nmap_arguments<'a>(
@@ -208,7 +214,7 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
                 Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
                 _ => {
                     let failed_to_resolve = format!("Host {:?} could not be resolved.", ip_or_host);
-                    warning!(failed_to_resolve, opts.quiet);
+                    warning!(failed_to_resolve, opts.greppable, opts.accessible);
                 }
             },
         }
@@ -225,7 +231,8 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
             Ok(_) => {
                 detail!(
                     format!("Automatically increasing ulimit value to {}.", limit),
-                    opts.quiet
+                    opts.greppable,
+                    opts.accessible
                 );
             }
             Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
@@ -243,7 +250,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
         warning!("File limit is lower than default batch size. Consider upping with --ulimit. May cause harm to sensitive servers",
-            opts.quiet
+            opts.greppable, opts.accessible
         );
 
         // When the OS supports high file limits like 8000, but the user
@@ -269,7 +276,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
         detail!(format!(
                 "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
                 ulimit - 100
-            ), opts.quiet);
+            ), opts.greppable, opts.accessible);
     }
 
     batch_size as u16
@@ -288,7 +295,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -297,6 +304,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 120);
 
@@ -309,7 +317,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -318,6 +326,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 9_000);
 
@@ -331,7 +340,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -340,6 +349,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = infer_batch_size(&opts, 5_000);
 
@@ -352,7 +362,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 50_000,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -361,6 +371,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let batch_size = adjust_ulimit_size(&opts);
 
@@ -368,8 +379,23 @@ mod tests {
     }
     #[test]
     fn test_print_opening_no_panic() {
+        let opts = Opts {
+            addresses: vec!["127.0.0.1".to_owned()],
+            ports: None,
+            range: None,
+            greppable: true,
+            batch_size: 50_000,
+            timeout: 1_000,
+            ulimit: Some(2_000),
+            command: Vec::new(),
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+            no_config: false,
+            no_nmap: false,
+            top: false,
+        };
         // print opening should not panic
-        print_opening();
+        print_opening(&opts);
         assert!(1 == 1);
     }
     #[test]
@@ -378,7 +404,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned()],
             ports: None,
             range: None,
-            quiet: false,
+            greppable: false,
             batch_size: 10,
             timeout: 1_000,
             ulimit: None,
@@ -387,6 +413,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
 
         infer_batch_size(&opts, 1_000_000);
@@ -400,7 +427,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -409,6 +436,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -430,7 +458,7 @@ mod tests {
             addresses: vec!["google.com".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -439,6 +467,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -451,7 +480,7 @@ mod tests {
             addresses: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -460,6 +489,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
@@ -472,7 +502,7 @@ mod tests {
             addresses: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
             ports: None,
             range: None,
-            quiet: true,
+            greppable: true,
             batch_size: 10,
             timeout: 1_000,
             ulimit: Some(2_000),
@@ -481,6 +511,7 @@ mod tests {
             scan_order: ScanOrder::Serial,
             no_config: false,
             no_nmap: false,
+            top: false,
         };
         let ips = parse_addresses(&opts);
 
