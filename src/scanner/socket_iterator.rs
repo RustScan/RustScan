@@ -1,12 +1,17 @@
+use itertools::{iproduct, Product};
 use std::net::{IpAddr, SocketAddr};
 
 pub struct SocketIterator<'s> {
-    ips: &'s [IpAddr],
-    ports: &'s [u16],
-    ip_idx: usize,
-    ip_len: usize,
-    port_idx: usize,
-    port_len: usize,
+    // product_it is a cartesian product iterator over
+    // the slices of ports and IP addresses.
+    //
+    // The IP/port order is intentionally reversed here since we want
+    // the itertools::iproduct! macro below to generate the pairs with
+    // all the IPs for one port before moving on to the next one
+    // ("hold the port, go through all the IPs, then advance the port...").
+    // See also the comments in the iterator implementation for an example.
+    product_it:
+        Product<Box<std::slice::Iter<'s, u16>>, Box<std::slice::Iter<'s, std::net::IpAddr>>>,
 }
 
 /// An iterator that receives a slice of IPs and ports and returns a Socket
@@ -16,13 +21,10 @@ pub struct SocketIterator<'s> {
 /// generating a vector containing all these combinations.
 impl<'s> SocketIterator<'s> {
     pub fn new(ips: &'s [IpAddr], ports: &'s [u16]) -> Self {
+        let ports_it = Box::new(ports.into_iter());
+        let ips_it = Box::new(ips.into_iter());
         Self {
-            ip_idx: 0,
-            ip_len: ips.len(),
-            port_idx: 0,
-            port_len: ports.len(),
-            ips,
-            ports,
+            product_it: iproduct!(ports_it, ips_it),
         }
     }
 }
@@ -41,20 +43,10 @@ impl<'s> Iterator for SocketIterator<'s> {
     /// it.next(); // 192.168.0.1:443
     /// it.next(); // None
     fn next(&mut self) -> Option<Self::Item> {
-        if self.port_idx == self.port_len {
-            return None;
+        match self.product_it.next() {
+            None => None,
+            Some((port, ip)) => Some(SocketAddr::new(*ip, *port)),
         }
-
-        self.ip_idx = self.ip_idx % self.ip_len;
-
-        let socket = SocketAddr::new(self.ips[self.ip_idx], self.ports[self.port_idx]);
-        self.ip_idx += 1;
-
-        if self.ip_idx == self.ip_len {
-            self.port_idx += 1;
-        }
-
-        Some(socket)
     }
 }
 
