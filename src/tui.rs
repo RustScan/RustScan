@@ -7,11 +7,16 @@ macro_rules! warning {
         use ansi_term::Colour::Red;
         println!("{} {}", Red.bold().paint("[!]"), $name);
     };
-    // quiet mode
-    ($name:expr, $quiet:expr) => {
+    ($name:expr, $greppable:expr, $accessible:expr) => {
         use ansi_term::Colour::Red;
-        if !$quiet {
-            println!("{} {}", Red.bold().paint("[!]"), $name);
+        // if not greppable then print, otherwise no else statement so do not print.
+        if !$greppable {
+            if $accessible {
+                // Don't print the ascii art
+                println!("{}", $name);
+            } else {
+                println!("{} {}", Red.bold().paint("[!]"), $name);
+            }
         }
     };
 }
@@ -22,25 +27,37 @@ macro_rules! detail {
         use ansi_term::Colour::Blue;
         println!("{} {}", Blue.bold().paint("[~]"), $name);
     };
-    ($name:expr, $quiet:expr) => {
+    ($name:expr, $greppable:expr, $accessible:expr) => {
         use ansi_term::Colour::Blue;
-        if !$quiet {
-            println!("{} {}", Blue.bold().paint("[~]"), $name);
+        // if not greppable then print, otherwise no else statement so do not print.
+        if !$greppable {
+            if $accessible {
+                // Don't print the ascii art
+                println!("{}", $name);
+            } else {
+                println!("{} {}", Blue.bold().paint("[~]"), $name);
+            }
         }
     };
 }
 
 #[macro_export]
 macro_rules! output {
-    ($name:expr, $quiet:expr) => {
-        use ansi_term::Colour::RGB;
-        if !$quiet {
-            println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
-        }
-    };
     ($name:expr) => {
         use ansi_term::Colour::RGB;
         println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+    };
+    ($name:expr, $greppable:expr, $accessible:expr) => {
+        use ansi_term::Colour::RGB;
+        // if not greppable then print, otherwise no else statement so do not print.
+        if !$greppable {
+            if $accessible {
+                // Don't print the ascii art
+                println!("{}", $name);
+            } else {
+                println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+            }
+        }
     };
 }
 
