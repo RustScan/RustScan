@@ -213,8 +213,11 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
             _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
                 Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
                 _ => {
-                    let failed_to_resolve = format!("Host {:?} could not be resolved.", ip_or_host);
-                    warning!(failed_to_resolve, opts.greppable, opts.accessible);
+                    warning!(
+                        format!("Host {:?} could not be resolved.", ip_or_host),
+                        opts.greppable,
+                        opts.accessible
+                    );
                 }
             },
         }
@@ -235,7 +238,13 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
                     opts.accessible
                 );
             }
-            Err(_) => println!("{}", "ERROR. Failed to set ulimit value."),
+            Err(_) => {
+                warning!(
+                    "ERROR. Failed to set ulimit value.",
+                    opts.greppable,
+                    opts.accessible
+                );
+            }
         }
     }
 
@@ -273,10 +282,8 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        detail!(format!(
-                "File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.",
-                ulimit - 100
-            ), opts.greppable, opts.accessible);
+        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100), 
+            opts.greppable, opts.accessible);
     }
 
     batch_size as u16
@@ -284,50 +291,22 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts, ScanOrder,
-    };
+    use crate::{adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
     fn batch_size_lowered() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 50_000,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.batch_size = 50_000;
         let batch_size = infer_batch_size(&opts, 120);
 
-        assert!(batch_size < 50_000);
+        assert!(batch_size < opts.batch_size);
     }
 
     #[test]
     fn batch_size_lowered_average_size() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 50_000,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.batch_size = 50_000;
         let batch_size = infer_batch_size(&opts, 9_000);
 
         assert!(batch_size == 3_000);
@@ -336,21 +315,8 @@ mod tests {
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 50_000,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.batch_size = 50_000;
         let batch_size = infer_batch_size(&opts, 5_000);
 
         assert!(batch_size == 4_900);
@@ -358,86 +324,36 @@ mod tests {
     #[test]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 50_000,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.batch_size = 50_000;
+        opts.ulimit = Some(2_000);
         let batch_size = adjust_ulimit_size(&opts);
 
         assert!(batch_size == 2_000);
     }
     #[test]
     fn test_print_opening_no_panic() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 50_000,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.ulimit = Some(2_000);
         // print opening should not panic
         print_opening(&opts);
         assert!(1 == 1);
     }
     #[test]
-    fn test_high_ulimit_no_quiet_mode() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: false,
-            batch_size: 10,
-            timeout: 1_000,
-            ulimit: None,
-            command: Vec::new(),
-            accessible: true,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+    fn test_high_ulimit_no_greppable_mode() {
+        let mut opts = Opts::default();
+        opts.batch_size = 10;
+        opts.greppable = false;
 
-        infer_batch_size(&opts, 1_000_000);
+        let batch_size = infer_batch_size(&opts, 1_000_000);
 
-        assert!(1 == 1);
+        assert!(batch_size == opts.batch_size);
     }
 
     #[test]
     fn parse_correct_addresses() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 10,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.addresses = vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()];
         let ips = parse_addresses(&opts);
 
         assert_eq!(
@@ -454,21 +370,8 @@ mod tests {
 
     #[test]
     fn parse_correct_host_addresses() {
-        let opts = Opts {
-            addresses: vec!["google.com".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 10,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.addresses = vec!["google.com".to_owned()];
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips.len(), 1);
@@ -476,21 +379,8 @@ mod tests {
 
     #[test]
     fn parse_correct_and_incorrect_addresses() {
-        let opts = Opts {
-            addresses: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 10,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.addresses = vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()];
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips, [Ipv4Addr::new(127, 0, 0, 1),]);
@@ -498,21 +388,8 @@ mod tests {
 
     #[test]
     fn parse_incorrect_addresses() {
-        let opts = Opts {
-            addresses: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
-            ports: None,
-            range: None,
-            greppable: true,
-            batch_size: 10,
-            timeout: 1_000,
-            ulimit: Some(2_000),
-            command: Vec::new(),
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_config: false,
-            no_nmap: false,
-            top: false,
-        };
+        let mut opts = Opts::default();
+        opts.addresses = vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()];
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips.is_empty(), true);
