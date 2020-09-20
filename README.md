@@ -24,7 +24,7 @@
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                 | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p>                     |
 | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p> |
-| `docker pull rustscan/rustscan:v1.8.0` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/Rustscan/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali)     | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
+| `docker pull rustscan/rustscan:v1.9.0` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/Rustscan/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali)     | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
 
 <hr>
 
@@ -130,22 +130,22 @@ To install Docker, [follow their guide](https://docs.docker.com/engine/install/)
 
 **Once Docker is installed, you can either build your own image using the `Dockerfile` (alpine) provided in the repo, or alternatively, use the published Docker image like below (most convenient)**
 
-Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further our published versions. However, we recommend using our latest release [v1.8.0](https://github.com/RustScan/RustScan/releases/tag/1.8.0)
+Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further our published versions. However, we recommend using our latest release [v1.9.0](https://github.com/RustScan/RustScan/releases/tag/1.9.0)
 
 ```
-Stable and supported: rustscan/rustscan:v1.8.0
+Stable and supported: rustscan/rustscan:v1.9.0
 
 Bleeding edge (run at your own risk!): rustscan/rustscan:latest
 ```
 
-We strongly recommend using the `v1.8.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `v1.8.0` image by default, however, note that the `latest` image is considered experimental.
+We strongly recommend using the `v1.9.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `v1.9.0` image by default, however, note that the `latest` image is considered experimental.
 
 #### To get started:
 
 Simply run this command against the IP you want to target:
 
 ```bash
-docker run -it --rm --name rustscan rustscan/rustscan:v1.8.0 <rustscan arguments here> <ip address to scan>
+docker run -it --rm --name rustscan rustscan/rustscan:v1.9.0 <rustscan arguments here> <ip address to scan>
 ```
 
 Note: this will scan the Docker's localhost, not your own.
@@ -155,7 +155,7 @@ Once done, you will no longer need to re-download the image (except when RustSca
 You will have to run this command every time, so we suggest aliasing it to something memorable.
 
 ```bash
-alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:v1.8.0'
+alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:v1.9.0'
 ```
 
 Then we can scan:
