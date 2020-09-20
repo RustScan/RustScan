@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::fs;
 use structopt::{clap::arg_enum, StructOpt};
+use std::path::PathBuf;
 
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
@@ -44,6 +45,15 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
             "the range format must be 'start-end'. Example: 1-1000.",
         )),
     }
+}
+
+/// Parses an input file of IPs and uses those
+fn read_ips_from_file(config: Opts) -> (){
+    let path = Some(config.input);
+    if path == None{
+        return None;
+    }
+
 }
 
 #[derive(StructOpt, Debug)]
@@ -102,6 +112,10 @@ pub struct Opts {
     /// ports randomly.
     #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
     pub scan_order: ScanOrder,
+
+    /// Input file containing IP addresses delimited by new lines
+    #[structopt(short, long)]
+    pub input: Option<PathBuf>,
 
     /// The Nmap arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
@@ -179,6 +193,7 @@ pub struct Config {
     no_nmap: Option<bool>,
     ulimit: Option<rlimit::rlim>,
     scan_order: Option<ScanOrder>,
+    input: Option<PathBuf>,
     command: Option<Vec<String>>,
 }
 
