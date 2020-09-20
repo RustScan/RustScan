@@ -133,7 +133,7 @@ To install Docker, [follow their guide](https://docs.docker.com/engine/install/)
 Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further our published versions. However, we recommend using our latest release [v1.9.0](https://github.com/RustScan/RustScan/releases/tag/1.9.0)
 
 ```
-Stable and supported: rustscan/rustscan:v1..0
+Stable and supported: rustscan/rustscan:v1.9.0
 
 Bleeding edge (run at your own risk!): rustscan/rustscan:latest
 ```
