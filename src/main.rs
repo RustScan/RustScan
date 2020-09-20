@@ -260,7 +260,7 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
-            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ");
+            warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", opts.greppable, opts.accessible);
             info!("Halving batch_size because ulimit is smaller than average batch size");
             batch_size = ulimit / 2
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
