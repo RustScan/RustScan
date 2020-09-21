@@ -239,43 +239,53 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::{Config, Opts, PortRange, ScanOrder};
+    impl Config {
+        fn default() -> Self {
+            Self {
+                addresses: Some(vec!["127.0.0.1".to_owned()]),
+                ports: None,
+                range: None,
+                greppable: Some(true),
+                batch_size: Some(25_000),
+                timeout: Some(1_000),
+                ulimit: None,
+                no_nmap: Some(false),
+                command: Some(vec!["-A".to_owned()]),
+                accessible: Some(true),
+                scan_order: Some(ScanOrder::Random),
+            }
+        }
+    }
+
+    impl Opts {
+        pub fn default() -> Self {
+            Self {
+                addresses: vec![],
+                ports: None,
+                range: None,
+                greppable: true,
+                batch_size: 0,
+                timeout: 0,
+                ulimit: None,
+                command: vec![],
+                accessible: false,
+                no_nmap: false,
+                scan_order: ScanOrder::Serial,
+                no_config: true,
+                top: false,
+            }
+        }
+    }
 
     #[test]
     fn opts_no_merge_when_config_is_ignored() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            greppable: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            no_nmap: false,
-            scan_order: ScanOrder::Serial,
-            no_config: true,
-            top: false,
-        };
-
-        let config = Config {
-            addresses: Some(vec!["127.0.0.1".to_owned()]),
-            ports: None,
-            range: None,
-            greppable: Some(true),
-            batch_size: Some(25_000),
-            timeout: Some(1_000),
-            ulimit: None,
-            no_nmap: Some(false),
-            command: Some(vec!["-A".to_owned()]),
-            accessible: Some(true),
-            scan_order: Some(ScanOrder::Random),
-        };
+        let mut opts = Opts::default();
+        let config = Config::default();
 
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.greppable, false);
+        assert_eq!(opts.greppable, true);
         assert_eq!(opts.accessible, false);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
@@ -284,35 +294,8 @@ mod tests {
 
     #[test]
     fn opts_merge_required_arguments() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            greppable: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_nmap: false,
-            no_config: false,
-            top: false,
-        };
-
-        let config = Config {
-            addresses: Some(vec!["127.0.0.1".to_owned()]),
-            ports: None,
-            no_nmap: Some(false),
-            range: None,
-            greppable: Some(true),
-            batch_size: Some(25_000),
-            timeout: Some(1_000),
-            ulimit: None,
-            command: Some(vec!["-A".to_owned()]),
-            accessible: Some(true),
-            scan_order: Some(ScanOrder::Random),
-        };
+        let mut opts = Opts::default();
+        let config = Config::default();
 
         opts.merge_required(&config);
 
@@ -326,38 +309,13 @@ mod tests {
 
     #[test]
     fn opts_merge_optional_arguments() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            greppable: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_nmap: false,
-            no_config: false,
-            top: false,
-        };
-
-        let config = Config {
-            addresses: None,
-            ports: None,
-            range: Some(PortRange {
-                start: 1,
-                end: 1_000,
-            }),
-            greppable: None,
-            batch_size: None,
-            timeout: None,
-            no_nmap: Some(false),
-            ulimit: Some(1_000),
-            command: None,
-            accessible: None,
-            scan_order: None,
-        };
+        let mut opts = Opts::default();
+        let mut config = Config::default();
+        config.range = Some(PortRange {
+            start: 1,
+            end: 1_000,
+        });
+        config.ulimit = Some(1_000);
 
         opts.merge_optional(&config);
 
