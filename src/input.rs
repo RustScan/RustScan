@@ -24,6 +24,7 @@ pub struct PortRange {
     pub end: u16,
 }
 
+#[cfg(not(tarpaulin_include))]
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let range = input
         .split("-")
@@ -117,6 +118,7 @@ pub struct Opts {
     pub top: bool,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Opts {
     pub fn read() -> Self {
         let mut opts = Opts::from_args();
@@ -183,6 +185,7 @@ impl Opts {
 /// Struct used to deserialize the options specified within our config file.
 /// These will be further merged with our command line arguments in order to
 /// generate the final Opts struct.
+#[cfg(not(tarpaulin_include))]
 #[derive(Debug, Deserialize)]
 pub struct Config {
     addresses: Option<Vec<String>>,
@@ -198,6 +201,7 @@ pub struct Config {
     command: Option<Vec<String>>,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.
