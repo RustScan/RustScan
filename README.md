@@ -188,15 +188,7 @@ docker build -t <yourimagename> .
 
 **Note for Mac users** Mac OS has a very, very small ulimit size. This will negatively impact RustScan by a significant amount. Please use the Docker container, or tell RustScan to up the ulimit size on every run.
 
-Tap the brew:
-
-```bash
-brew tap brandonskerritt/rustscan
 ```
-
-Install it:
-
-```bash
 brew install rustscan
 ```
 
