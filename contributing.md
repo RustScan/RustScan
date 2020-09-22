@@ -11,7 +11,7 @@ RustScan has 2 major labels for GitHub issues you should look at:
 These are issues for newcomers to open source!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 * Help wanted
-These are issues that aren't really for newcomers, but we could still do wiht help!
+These are issues that aren't really for newcomers, but we could still do with help!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
 
 If you want to, solve the issue or comment on the issue for help.

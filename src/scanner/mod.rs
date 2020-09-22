@@ -26,8 +26,9 @@ pub struct Scanner {
     ips: Vec<IpAddr>,
     batch_size: u16,
     timeout: Duration,
-    quiet: bool,
+    greppable: bool,
     port_strategy: PortStrategy,
+    accessible: bool,
 }
 
 impl Scanner {
@@ -35,15 +36,17 @@ impl Scanner {
         ips: &[IpAddr],
         batch_size: u16,
         timeout: Duration,
-        quiet: bool,
+        greppable: bool,
         port_strategy: PortStrategy,
+        accessible: bool,
     ) -> Self {
         Self {
             batch_size,
             timeout,
-            quiet,
+            greppable,
             port_strategy,
             ips: ips.iter().map(|ip| ip.to_owned()).collect(),
+            accessible,
         }
     }
 
@@ -107,8 +110,12 @@ impl Scanner {
                     Err(e) => debug!("Shutdown stream error {}", &e),
                     _ => {}
                 }
-                if !self.quiet {
-                    println!("Open {}", socket.to_string().purple());
+                if !self.greppable {
+                    if self.accessible {
+                        println!("Open {}", socket.to_string());
+                    } else {
+                        println!("Open {}", socket.to_string().purple());
+                    }
                 }
 
                 Ok(socket)
@@ -167,7 +174,7 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -181,7 +188,7 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -194,7 +201,7 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -206,7 +213,7 @@ mod tests {
             end: 445,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -221,7 +228,7 @@ mod tests {
             end: 600,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
         block_on(scanner.run());
         assert_eq!(1, 1);
     }

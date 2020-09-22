@@ -1,7 +1,8 @@
 use serde_derive::Deserialize;
+use std::collections::HashMap;
 use std::fs;
-use structopt::{clap::arg_enum, StructOpt};
 use std::path::PathBuf;
+use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
@@ -24,6 +25,7 @@ pub struct PortRange {
     pub end: u16,
 }
 
+#[cfg(not(tarpaulin_include))]
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let range = input
         .split("-")
@@ -45,15 +47,6 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
             "the range format must be 'start-end'. Example: 1-1000.",
         )),
     }
-}
-
-/// Parses an input file of IPs and uses those
-fn read_ips_from_file(config: Opts) -> (){
-    let path = Some(config.input);
-    if path == None{
-        return None;
-    }
-
 }
 
 #[derive(StructOpt, Debug)]
@@ -80,9 +73,9 @@ pub struct Opts {
     #[structopt(short, long)]
     pub no_config: bool,
 
-    /// Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
+    /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
-    pub quiet: bool,
+    pub greppable: bool,
 
     /// Accessible mode. Turns off features which negatively affect screen readers.
     #[structopt(long)]
@@ -124,8 +117,13 @@ pub struct Opts {
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
     #[structopt(last = true)]
     pub command: Vec<String>,
+
+    /// Use the top 1000 ports.
+    #[structopt(long)]
+    pub top: bool,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Opts {
     pub fn read() -> Self {
         let mut opts = Opts::from_args();
@@ -160,7 +158,7 @@ impl Opts {
             }
         }
 
-        merge_required!(addresses, quiet, accessible, batch_size, timeout, scan_order, command);
+        merge_required!(addresses, greppable, accessible, batch_size, timeout, scan_order, command);
     }
 
     fn merge_optional(&mut self, config: &Config) {
@@ -174,19 +172,31 @@ impl Opts {
             }
         }
 
-        merge_optional!(ports, range, ulimit);
+        // Only use top ports when the user asks for them
+        if self.top {
+            if config.ports.is_some() {
+                let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
+                for entry in config.ports.clone().unwrap().keys() {
+                    ports.push(entry.parse().unwrap())
+                }
+                self.ports = Some(ports);
+            }
+        }
+
+        merge_optional!(range, ulimit);
     }
 }
 
 /// Struct used to deserialize the options specified within our config file.
 /// These will be further merged with our command line arguments in order to
 /// generate the final Opts struct.
+#[cfg(not(tarpaulin_include))]
 #[derive(Debug, Deserialize)]
 pub struct Config {
     addresses: Option<Vec<String>>,
-    ports: Option<Vec<u16>>,
+    ports: Option<HashMap<String, u16>>,
     range: Option<PortRange>,
-    quiet: Option<bool>,
+    greppable: Option<bool>,
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
@@ -197,6 +207,7 @@ pub struct Config {
     command: Option<Vec<String>>,
 }
 
+#[cfg(not(tarpaulin_include))]
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.
@@ -209,40 +220,21 @@ impl Config {
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {
-        let mut paths = Vec::new();
-        paths.push(match dirs::home_dir() {
-            Some(mut path) => {
-                path.push(".rustscan.toml");
-                path
-            }
+        let mut home_dir = match dirs::home_dir() {
+            Some(dir) => dir,
             None => panic!("Could not infer config file path."),
-        });
+        };
+        home_dir.push(".rustscan.toml");
 
-        paths.push(match dirs::config_dir() {
-            Some(mut path) => {
-                path.push("rustscan");
-                path.push("config.toml");
-                path
+        let mut content = String::new();
+        if home_dir.exists() {
+            content = match fs::read_to_string(home_dir) {
+                Ok(content) => content,
+                Err(_) => String::new(),
             }
-            None => panic!("Could not infer config file path."),
-        });
-
-        let mut contents: Option<String> = None;
-        for path in paths.iter().rev() {
-            contents = match fs::read_to_string(path) {
-                Ok(content) => {
-                    contents = Some(content);
-                    break;
-                }
-                Err(_) => None,
-            };
         }
 
-        if contents.is_none() {
-            contents = Some(String::new());
-        }
-
-        let config: Config = match toml::from_str(&contents.unwrap()) {
+        let config: Config = match toml::from_str(&content) {
             Ok(config) => config,
             Err(e) => {
                 println!("Found {} in configuration file.\nAborting scan.\n", e);
@@ -257,42 +249,53 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::{Config, Opts, PortRange, ScanOrder};
+    impl Config {
+        fn default() -> Self {
+            Self {
+                addresses: Some(vec!["127.0.0.1".to_owned()]),
+                ports: None,
+                range: None,
+                greppable: Some(true),
+                batch_size: Some(25_000),
+                timeout: Some(1_000),
+                ulimit: None,
+                no_nmap: Some(false),
+                command: Some(vec!["-A".to_owned()]),
+                accessible: Some(true),
+                scan_order: Some(ScanOrder::Random),
+            }
+        }
+    }
+
+    impl Opts {
+        pub fn default() -> Self {
+            Self {
+                addresses: vec![],
+                ports: None,
+                range: None,
+                greppable: true,
+                batch_size: 0,
+                timeout: 0,
+                ulimit: None,
+                command: vec![],
+                accessible: false,
+                no_nmap: false,
+                scan_order: ScanOrder::Serial,
+                no_config: true,
+                top: false,
+            }
+        }
+    }
 
     #[test]
     fn opts_no_merge_when_config_is_ignored() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            quiet: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            no_nmap: false,
-            scan_order: ScanOrder::Serial,
-            no_config: true,
-        };
-
-        let config = Config {
-            addresses: Some(vec!["127.0.0.1".to_owned()]),
-            ports: None,
-            range: None,
-            quiet: Some(true),
-            batch_size: Some(25_000),
-            timeout: Some(1_000),
-            ulimit: None,
-            no_nmap: Some(false),
-            command: Some(vec!["-A".to_owned()]),
-            accessible: Some(true),
-            scan_order: Some(ScanOrder::Random),
-        };
+        let mut opts = Opts::default();
+        let config = Config::default();
 
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.quiet, false);
+        assert_eq!(opts.greppable, true);
         assert_eq!(opts.accessible, false);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
@@ -301,39 +304,13 @@ mod tests {
 
     #[test]
     fn opts_merge_required_arguments() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            quiet: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_nmap: false,
-            no_config: false,
-        };
-
-        let config = Config {
-            addresses: Some(vec!["127.0.0.1".to_owned()]),
-            ports: None,
-            no_nmap: Some(false),
-            range: None,
-            quiet: Some(true),
-            batch_size: Some(25_000),
-            timeout: Some(1_000),
-            ulimit: None,
-            command: Some(vec!["-A".to_owned()]),
-            accessible: Some(true),
-            scan_order: Some(ScanOrder::Random),
-        };
+        let mut opts = Opts::default();
+        let config = Config::default();
 
         opts.merge_required(&config);
 
         assert_eq!(opts.addresses, config.addresses.unwrap());
-        assert_eq!(opts.quiet, config.quiet.unwrap());
+        assert_eq!(opts.greppable, config.greppable.unwrap());
         assert_eq!(opts.timeout, config.timeout.unwrap());
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
@@ -342,41 +319,16 @@ mod tests {
 
     #[test]
     fn opts_merge_optional_arguments() {
-        let mut opts = Opts {
-            addresses: vec![],
-            ports: None,
-            range: None,
-            quiet: false,
-            batch_size: 0,
-            timeout: 0,
-            ulimit: None,
-            command: vec![],
-            accessible: false,
-            scan_order: ScanOrder::Serial,
-            no_nmap: false,
-            no_config: false,
-        };
-
-        let config = Config {
-            addresses: None,
-            ports: Some(vec![80, 403]),
-            range: Some(PortRange {
-                start: 1,
-                end: 1_000,
-            }),
-            quiet: None,
-            batch_size: None,
-            timeout: None,
-            no_nmap: Some(false),
-            ulimit: Some(1_000),
-            command: None,
-            accessible: None,
-            scan_order: None,
-        };
+        let mut opts = Opts::default();
+        let mut config = Config::default();
+        config.range = Some(PortRange {
+            start: 1,
+            end: 1_000,
+        });
+        config.ulimit = Some(1_000);
 
         opts.merge_optional(&config);
 
-        assert_eq!(opts.ports, config.ports);
         assert_eq!(opts.range, config.range);
         assert_eq!(opts.ulimit, config.ulimit);
     }
