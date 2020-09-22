@@ -21,8 +21,12 @@ use futures::executor::block_on;
 use rlimit::Resource;
 use rlimit::{getrlimit, setrlimit};
 use std::collections::HashMap;
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::BufReader;
 use std::net::ToSocketAddrs;
 use std::process::Command;
+use std::str::FromStr;
 use std::{net::IpAddr, time::Duration};
 
 extern crate colorful;
@@ -204,6 +208,24 @@ fn build_nmap_arguments<'a>(
     arguments
 }
 
+#[cfg(not(tarpaulin_include))]
+/// Parses an input file of IPs and uses those
+fn read_ips_from_file(ips: String) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+    // if we cannot open it as a file, it is not a file so move on
+    let file = File::open(ips)?;
+    let reader = BufReader::new(file);
+
+    let mut ips: Vec<std::net::IpAddr> = Vec::new();
+
+    for str_ip in reader.lines() {
+        match IpAddr::from_str(&str_ip.unwrap()) {
+            Ok(x) => ips.push(x),
+            Err(y) => panic!("File does not contain valid IP address. Error at {}", y),
+        }
+    }
+    Ok(ips)
+}
+
 fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
@@ -212,13 +234,16 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
             Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
             _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
                 Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-                _ => {
-                    warning!(
-                        format!("Host {:?} could not be resolved.", ip_or_host),
-                        opts.greppable,
-                        opts.accessible
-                    );
-                }
+                _ => match read_ips_from_file(ip_or_host.to_owned()) {
+                    Ok(x) => ips.extend(x),
+                    _ => {
+                        warning!(
+                            format!("Host {:?} could not be resolved.", ip_or_host),
+                            opts.greppable,
+                            opts.accessible
+                        );
+                    }
+                },
             },
         }
     }
