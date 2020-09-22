@@ -26,7 +26,7 @@ pub struct Scanner {
     ips: Vec<IpAddr>,
     batch_size: u16,
     timeout: Duration,
-    quiet: bool,
+    greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
 }
@@ -36,14 +36,14 @@ impl Scanner {
         ips: &[IpAddr],
         batch_size: u16,
         timeout: Duration,
-        quiet: bool,
+        greppable: bool,
         port_strategy: PortStrategy,
         accessible: bool,
     ) -> Self {
         Self {
             batch_size,
             timeout,
-            quiet,
+            greppable,
             port_strategy,
             ips: ips.iter().map(|ip| ip.to_owned()).collect(),
             accessible,
@@ -110,7 +110,7 @@ impl Scanner {
                     Err(e) => debug!("Shutdown stream error {}", &e),
                     _ => {}
                 }
-                if !self.quiet {
+                if !self.greppable {
                     if self.accessible {
                         println!("Open {}", socket.to_string());
                     } else {
