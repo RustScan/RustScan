@@ -212,7 +212,6 @@ fn build_nmap_arguments<'a>(
 /// Goes through all possible IP inputs (files or via argparsing)
 /// Parses the string(s) into IPs
 fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
-    // Construct a new Resolver with default configuration options, DNS.
     let mut ips: Vec<IpAddr> = Vec::new();
 
     for ip_or_host in &opts.addresses {
@@ -235,9 +234,11 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn get_ips_from_host(ip_or_host: &String) -> Result<Vec<IpAddr>, std::io::Error> {
+fn get_ips_from_host(
+    ip_or_host: &String,
+    resolver: Resolver,
+) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
-    let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default()).unwrap();
 
     match resolver.lookup_ip(&ip_or_host) {
         Ok(x) => {
@@ -271,11 +272,13 @@ fn read_ips_from_file(ips: String) -> Result<Vec<std::net::IpAddr>, std::io::Err
 /// Call this everytime you have a possible IP_or_host
 fn parse_single_ip_or_host(ip_or_host: String) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<IpAddr> = Vec::new();
+    let resolver = Resolver::new(ResolverConfig::default(), ResolverOpts::default()).unwrap();
+
     match IpCidr::from_str(&ip_or_host) {
         Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
         _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
             Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-            _ => match get_ips_from_host(&ip_or_host) {
+            _ => match get_ips_from_host(&ip_or_host, resolver) {
                 Ok(hosts) => ips.extend(hosts),
                 _ => (),
             },
