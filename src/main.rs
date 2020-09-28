@@ -26,8 +26,9 @@ use std::io::prelude::*;
 use std::io::BufReader;
 use std::net::ToSocketAddrs;
 use std::process::Command;
-use std::str::FromStr;
 use std::{net::IpAddr, time::Duration};
+use trust_dns_resolver::config::*;
+use trust_dns_resolver::Resolver;
 
 extern crate colorful;
 extern crate dirs;
@@ -208,9 +209,54 @@ fn build_nmap_arguments<'a>(
     arguments
 }
 
+/// Goes through all possible IP inputs (files or via argparsing)
+/// Parses the string(s) into IPs
+fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
+    let mut ips: Vec<IpAddr> = Vec::new();
+    let resolver = &Resolver::new(ResolverConfig::default(), ResolverOpts::default()).unwrap();
+
+    for ip_or_host in &opts.addresses {
+        match read_ips_from_file(ip_or_host.to_owned(), &resolver) {
+            Ok(x) => ips.extend(x),
+            _ => match parse_to_ip(ip_or_host.to_owned(), &resolver) {
+                Ok(x) => ips.extend(x),
+                _ => {
+                    warning!(
+                        format!("Host {:?} could not be resolved.", ip_or_host),
+                        opts.greppable,
+                        opts.accessible
+                    );
+                }
+            },
+        }
+    }
+    ips
+}
+
+/// Uses DNS to get the IPS assiocated with host
+fn resolve_ips_from_host(
+    source: &String,
+    resolver: &Resolver,
+) -> Result<Vec<IpAddr>, std::io::Error> {
+    let mut ips: Vec<std::net::IpAddr> = Vec::new();
+
+    match resolver.lookup_ip(&source) {
+        Ok(x) => {
+            for ip in x.iter() {
+                ips.push(ip);
+            }
+        }
+        _ => (),
+    };
+    return Ok(ips);
+}
+
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
-fn read_ips_from_file(ips: String) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+fn read_ips_from_file(
+    ips: String,
+    resolver: &Resolver,
+) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     // if we cannot open it as a file, it is not a file so move on
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
@@ -218,37 +264,39 @@ fn read_ips_from_file(ips: String) -> Result<Vec<std::net::IpAddr>, std::io::Err
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     for str_ip in reader.lines() {
-        match IpAddr::from_str(&str_ip.unwrap()) {
-            Ok(x) => ips.push(x),
-            Err(y) => panic!("File does not contain valid IP address. Error at {}", y),
+        match str_ip {
+            Ok(x) => match parse_to_ip(x, resolver) {
+                Ok(result) => ips.extend(result),
+                Err(e) => {
+                    debug!("{} is not a valid IP or host", e);
+                }
+            },
+            Err(_) => {
+                debug!("Line in file is not valid");
+            }
         }
     }
     Ok(ips)
 }
 
-fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
+/// Given a string, parse it as an host, IP address, or CIDR.
+/// This allows us to pass files as hosts or cidr or IPs easily
+/// Call this everytime you have a possible IP_or_host
+fn parse_to_ip(address: String, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
-    for ip_or_host in &opts.addresses {
-        match IpCidr::from_str(ip_or_host) {
-            Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
-            _ => match format!("{}:{}", &ip_or_host, 80).to_socket_addrs() {
-                Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-                _ => match read_ips_from_file(ip_or_host.to_owned()) {
-                    Ok(x) => ips.extend(x),
-                    _ => {
-                        warning!(
-                            format!("Host {:?} could not be resolved.", ip_or_host),
-                            opts.greppable,
-                            opts.accessible
-                        );
-                    }
-                },
+    match IpCidr::from_str(&address) {
+        Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
+        _ => match format!("{}:{}", &address, 80).to_socket_addrs() {
+            Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
+            _ => match resolve_ips_from_host(&address, resolver) {
+                Ok(hosts) => ips.extend(hosts),
+                _ => (),
             },
-        }
-    }
+        },
+    };
 
-    ips
+    Ok(ips)
 }
 
 fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
@@ -418,5 +466,13 @@ mod tests {
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips.is_empty(), true);
+    }
+    #[test]
+    fn parse_hosts_file_and_incorrect_hosts() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let mut opts = Opts::default();
+        opts.addresses = vec!["fixtures/hosts.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 3);
     }
 }
