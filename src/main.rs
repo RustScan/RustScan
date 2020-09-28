@@ -471,6 +471,8 @@ mod tests {
     fn parse_hosts_file_and_incorrect_hosts() {
         // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
         let mut opts = Opts::default();
-        opts.addresses = vec!["../fixtures/hosts.txt".to_owned()];
+        opts.addresses = vec!["fixtures/hosts.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 3);
     }
 }
