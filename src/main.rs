@@ -213,7 +213,8 @@ fn build_nmap_arguments<'a>(
 /// Parses the string(s) into IPs
 fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
-    let resolver = &Resolver::new(ResolverConfig::default(), ResolverOpts::default()).unwrap();
+    let resolver =
+        &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for ip_or_host in &opts.addresses {
         match read_ips_from_file(ip_or_host.to_owned(), &resolver) {
