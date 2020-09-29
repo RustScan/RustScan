@@ -1,0 +1,19 @@
+name: Bump
+
+on:
+    push:
+      tags:
+        - '*'
+
+jobs:
+  bump:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Bump formulae
+        uses: dawidd6/action-homebrew-bump-formula@v3
+        continue-on-error: true
+        with:
+          token: ${{secrets.brew}}
+          formula: rustscan
