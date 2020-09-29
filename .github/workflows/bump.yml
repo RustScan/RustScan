@@ -1,10 +1,9 @@
 name: Bump
 
 on:
-  schedule:
-    # Every 6 hours
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+    push:
+      tags:
+        - '*'
 
 jobs:
   bump:
