@@ -476,4 +476,22 @@ mod tests {
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 3);
     }
+
+    #[test]
+    fn parse_empty_hosts_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let mut opts = Opts::default();
+        opts.addresses = vec!["fixtures/empty_hosts.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn parse_naughty_host_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let mut opts = Opts::default();
+        opts.addresses = vec!["fixtures/naughty_string.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 0);
+    }
 }
