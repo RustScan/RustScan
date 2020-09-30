@@ -1,19 +1,15 @@
-name: Bump
-
 on:
-    push:
-      tags:
-        - '*'
+  push:
+    tags: '*'
 
 jobs:
-  bump:
-    runs-on: macos-latest
+  homebrew:
+    name: Bump Homebrew formula
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Bump formulae
-        uses: dawidd6/action-homebrew-bump-formula@v3
-        continue-on-error: true
+      - uses: mislav/bump-homebrew-formula-action@v1
         with:
-          token: ${{secrets.brew}}
-          formula: rustscan
+          # A PR will be sent to github.com/Homebrew/homebrew-core to update this formula:
+          formula-name: rustscan
+        env:
+          COMMITTER_TOKEN: ${{secrets.brew}}
