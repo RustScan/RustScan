@@ -36,33 +36,57 @@ mod timelimits {
     #[ignore]
     fn scan_localhost() {
         let timeout = super::Duration::from_secs(3);
-        super::run_rustscan_with_timeout(
-            &["--greppable", "--no-nmap", "127.0.0.1"],
-            timeout,
-        );
+        super::run_rustscan_with_timeout(&["--greppable", "--no-nmap", "127.0.0.1"], timeout);
     }
 
     #[test]
     #[ignore]
     fn scan_google_com() {
         super::run_rustscan_with_timeout(
-            &["--greppable", "--no-nmap", "-u", "5000", "-b", "2500", "google.com"],
-            super::Duration::from_secs(28));
+            &[
+                "--greppable",
+                "--no-nmap",
+                "-u",
+                "5000",
+                "-b",
+                "2500",
+                "google.com",
+            ],
+            super::Duration::from_secs(28),
+        );
     }
 
     #[test]
     #[ignore]
     fn scan_example_com() {
         super::run_rustscan_with_timeout(
-            &["--greppable", "--no-nmap", "-u", "5000", "-b", "2500", "example.com"],
-            super::Duration::from_secs(28));
+            &[
+                "--greppable",
+                "--no-nmap",
+                "-u",
+                "5000",
+                "-b",
+                "2500",
+                "example.com",
+            ],
+            super::Duration::from_secs(28),
+        );
     }
 
     #[test]
     #[ignore]
     fn scan_rustscan_cmnatic_co_uk() {
         super::run_rustscan_with_timeout(
-            &["--greppable", "--no-nmap", "-u", "5000", "-b", "2500", "rustscan.cmnatic.co.uk"],
-            super::Duration::from_secs(26));
+            &[
+                "--greppable",
+                "--no-nmap",
+                "-u",
+                "5000",
+                "-b",
+                "2500",
+                "rustscan.cmnatic.co.uk",
+            ],
+            super::Duration::from_secs(26),
+        );
     }
 }
