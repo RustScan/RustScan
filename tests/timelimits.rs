@@ -11,6 +11,9 @@ use std::process::Command;
 use std::time::Duration;
 use wait_timeout::ChildExt;
 
+const TIMEOUT_MULTIPLIER: f32 = 2.0;
+const TIMEOUT_MARGIN_SECONDS: Duration = Duration::from_secs(3);
+
 fn run_rustscan_with_timeout(args: &[&str], timeout: Duration) {
     println!("Running: target/debug/rustscan: {}", args.join(" "));
 
@@ -18,6 +21,8 @@ fn run_rustscan_with_timeout(args: &[&str], timeout: Duration) {
         .args(args)
         .spawn()
         .unwrap();
+
+    let timeout = timeout * ((TIMEOUT_MULTIPLIER * 10.0) as u32) / 10 + TIMEOUT_MARGIN_SECONDS;
 
     let _status_code = match child.wait_timeout(timeout).unwrap() {
         Some(status) => status.code(),
