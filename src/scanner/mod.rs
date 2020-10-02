@@ -19,7 +19,7 @@ use std::{
 /// start & end is where the port scan starts and ends
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
-/// Quiet is whether or not RustScan should print things, or wait until the end to print only open ports.
+/// greppable is whether or not RustScan should print things, or wait until the end to print only the ip and open ports.
 #[cfg(not(tarpaulin_include))]
 #[derive(Debug)]
 pub struct Scanner {
