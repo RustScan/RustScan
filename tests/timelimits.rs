@@ -11,28 +11,39 @@ use std::process::Command;
 use std::time::Duration;
 use wait_timeout::ChildExt;
 
-const TIMEOUT_MULTIPLIER: f32 = 2.0;
-const TIMEOUT_MARGIN_SECONDS: Duration = Duration::from_secs(3);
+const TIMEOUT_MARGIN: u32 = 3;
 
 fn run_rustscan_with_timeout(args: &[&str], timeout: Duration) {
     println!("Running: target/debug/rustscan: {}", args.join(" "));
+
+    use std::time::Instant;
+
+    let start = Instant::now();
 
     let mut child = Command::new("target/debug/rustscan")
         .args(args)
         .spawn()
         .unwrap();
 
-    let timeout = timeout * ((TIMEOUT_MULTIPLIER * 10.0) as u32) / 10 + TIMEOUT_MARGIN_SECONDS;
-
-    let _status_code = match child.wait_timeout(timeout).unwrap() {
-        Some(status) => status.code(),
-        None => {
-            // child hasn't exited yet
-            child.kill().unwrap();
-            child.wait().unwrap().code();
-            panic!("Timeout while running command");
+    let mut tries = TIMEOUT_MARGIN;
+    loop {
+        match child.wait_timeout(timeout).unwrap() {
+            Some(_status) => break,
+            None => {
+                tries -= 1;
+                if tries == 0 {
+                    // child hasn't exited yet
+                    child.kill().unwrap();
+                    child.wait().unwrap().code();
+                    panic!("Timeout while running command");
+                }
+            }
         }
-    };
+    }
+    let end = Instant::now();
+    let duration = end.saturating_duration_since(start).as_secs_f32();
+
+    println!("time: {:1.1}s", duration);
 }
 
 mod timelimits {
@@ -40,7 +51,7 @@ mod timelimits {
     #[test]
     #[ignore]
     fn scan_localhost() {
-        let timeout = super::Duration::from_secs(3);
+        let timeout = super::Duration::from_secs(25);
         super::run_rustscan_with_timeout(&["--greppable", "--no-nmap", "127.0.0.1"], timeout);
     }
 
