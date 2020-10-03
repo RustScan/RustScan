@@ -232,4 +232,49 @@ mod tests {
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
+    #[test]
+    fn scanner_runs_serial() {
+        let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
+
+        let range = PortRange {
+            start: 400,
+            end: 600,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Serial);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn scanner_doesnt_run_no_range() {
+        let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
+
+        let range = PortRange { start: 0, end: 0 };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Serial);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn scanner_doesnt_run_high_range() {
+        let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+
+        let range = PortRange {
+            start: 1,
+            end: 65535,
+        };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Serial);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn scanner_doesnt_run_backwards_range() {
+        let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+        let range = PortRange { start: 10, end: 1 };
+        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Serial);
+        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
 }
