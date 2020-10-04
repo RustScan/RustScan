@@ -211,6 +211,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "mattcorbin",
+      "name": "Matt Corbin",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/6537765?v=4",
+      "profile": "https://github.com/mattcorbin",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
