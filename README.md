@@ -24,7 +24,7 @@
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                 | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p>                     |
 | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/rust.png?raw=true" /></p> |
-| `docker pull rustscan/rustscan:v1.9.0` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/Rustscan/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali)     | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
+| `docker pull rustscan/rustscan:1.10.0` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale)              | [Read the install guide](https://github.com/Rustscan/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali)     | `yay -S rustscan`                                                                                               | `cargo install rustscan`                                                                                        |
 
 <hr>
 
@@ -103,7 +103,7 @@ The easiest way to install RustScan is to use one of the packages provided for y
 
 The most universal way is to use `cargo`, Rust's built in package manager (think Pip but for Rust). [Follow this guide to installing Rust & Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html).
 
-If you face any issues at all, please leave a GitHub issue. I have only tested this on Linux, so there may be issues for Mac OS or Windows.
+If you face any issues at all, please leave a GitHub issue. We have only tested this on Linux, so there may be issues for Mac OS or Windows.
 
 Note: sometimes Rust doesn't add Cargo to the path. Please see [this issue](https://github.com/rust-lang/rustup/issues/2436) for how to fix that.
 
@@ -130,22 +130,22 @@ To install Docker, [follow their guide](https://docs.docker.com/engine/install/)
 
 **Once Docker is installed, you can either build your own image using the `Dockerfile` (alpine) provided in the repo, or alternatively, use the published Docker image like below (most convenient)**
 
-Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further our published versions. However, we recommend using our latest release [v1.9.0](https://github.com/RustScan/RustScan/releases/tag/1.9.0)
+Please see our [DockerHub](https://hub.docker.com/repository/docker/rustscan/rustscan) for further our published versions. However, we recommend using our latest **major** release [1.10.0](https://github.com/RustScan/RustScan/releases/tag/1.10.0)
 
 ```
-Stable and supported: rustscan/rustscan:v1.9.0
+Stable and supported: rustscan/rustscan:1.10.0
 
 Bleeding edge (run at your own risk!): rustscan/rustscan:latest
 ```
 
-We strongly recommend using the `v1.9.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `v1.9.0` image by default, however, note that the `latest` image is considered experimental.
+We strongly recommend using the `1.10.0` tag, as this is the latest major - stable - release of RustScan. This README uses the `1.10.0` image by default, however, note that the `latest` image is considered experimental. You can use all releases of Docker by visiting the [DockerHub Tags](https://hub.docker.com/r/rustscan/rustscan/tags) and replacing the command with the tag you desire. i.e. `docker pull rustscan/rustscan:1.10.0` can be `docker pull rustscan/rustscan:1.6.0`
 
 #### To get started:
 
 Simply run this command against the IP you want to target:
 
 ```bash
-docker run -it --rm --name rustscan rustscan/rustscan:v1.9.0 <rustscan arguments here> <ip address to scan>
+docker run -it --rm --name rustscan rustscan/rustscan:1.10.0 <rustscan arguments here> <ip address to scan>
 ```
 
 Note: this will scan the Docker's localhost, not your own.
@@ -155,7 +155,7 @@ Once done, you will no longer need to re-download the image (except when RustSca
 You will have to run this command every time, so we suggest aliasing it to something memorable.
 
 ```bash
-alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:v1.9.0'
+alias rustscan='docker run -it --rm --name rustscan rustscan/rustscan:1.10.0'
 ```
 
 Then we can scan:
@@ -195,7 +195,7 @@ brew install rustscan
 ## 🔧 Building it yourself
 
 1. Git clone the repo.
-2. Install Rust. You can do this with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` which I took from the Rust website https://www.rust-lang.org/tools/install
+2. Install Rust. You can do this with `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh` which we took from the Rust website https://www.rust-lang.org/tools/install
 3. cd into the Git repo, and run `cargo build --release`
 4. The binary is located at `target/release/rustscan`
 5. Symlink to the binary or something. Whatever you want!
@@ -225,15 +225,16 @@ USAGE:
 
 FLAGS:
         --accessible    Accessible mode. Turns off features which negatively affect screen readers
+    -g, --greppable     Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
     -h, --help          Prints help information
     -n, --no-config     Whether to ignore the configuration file or not
         --no-nmap       Turns off Nmap
-    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+        --top           Use the top 1000 ports
     -V, --version       Prints version information
 
 OPTIONS:
-    -b, --batch-size <batch-size>    The batch size for port scanning, it increases or slows the speed of scanning.
-                                     Depends on the open file limit of your OS.  If you do 65535 it will do every port
+    -b, --batch-size <batch-size>    The batch size for port scanning, it increases or decreases the speed of scanning.
+                                     Depends on the open file limit of your OS.  If you use 65535 it will scan every port
                                      at the same time. Although, your OS may not support this [default: 4500]
     -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080
     -r, --range <range>              A range of ports with format start-end. Example: 1-1000
@@ -246,7 +247,7 @@ OPTIONS:
 ARGS:
     <addresses>...    A list of comma separated CIDRs, IPs, or hosts to be scanned
     <command>...      The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
-                      'rustscan -t 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                      'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
                       nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
                       vuln)'\"")
 ```
@@ -255,7 +256,7 @@ The format is `rustscan -b 500 -t 1500 192.168.0.1` to scan 192.168.0.1 with 500
 
 The batch size determines how fast RustScan is. Set it to 65k, and it will scan all 65k ports at the same time. This means at at 65k batch size, RustScan will take TIMEOUT long to scan all ports. Essentially, if timeout is 1000ms, **RustScan can scan in 1 second**.
 
-Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly I will be releasing a dockerised version with a much larger open file limit, so this will be possible.
+Your operating system may not support this, but it is worth it to play around and see where your open file limit is. Shortly we will be releasing a dockerised version with a much larger open file limit, so this will be possible.
 
 ## Configuration file
 
@@ -268,7 +269,7 @@ and accepts the following fields:
 - `scan_order`
 - `command`
 - `accessible`
-- `quiet`
+- `greppable`
 - `batch-size`
 - `timeout`
 - `ulimit`
@@ -280,7 +281,7 @@ addresses = ["127.0.0.1", "192.168.0.0/30", "www.google.com"]
 command = ["-A"]
 ports = [80, 443, 8080]
 range = { start = 1, end = 10 }
-quiet = false
+greppable = false
 accessible = true
 scan_order = "Serial"
 batch_size = 1000
@@ -347,11 +348,11 @@ ulimit -n 5000
 ```
 
 **Mac OS**
-Mac OS has, from what I can tell, a naturally very low open file descriptor limit. The limit for Ubuntu is 8800. The limit for Mac OS is 255!
+Mac OS has, from what we can tell, a naturally very low open file descriptor limit. The limit for Ubuntu is 8800. The limit for Mac OS is 255!
 
-In this case, I would say it is safe to increase the open file limit. As most Linux based OS' have limits in the thousands.
+In this case, we would say it is safe to increase the open file limit. As most Linux based OS' have limits in the thousands.
 
-Although, if this breaks anything, please don't blame me.
+Although, if this breaks anything, please don't blame us.
 
 **Windows Subsystem for Linux**
 Windows Subsystem for Linux does not support ulimit (see issue #39).
@@ -373,7 +374,7 @@ If you want to run commands such as `--script (vuln and safe)`, you will need to
 
 - Batch size
 
-This increases speed, by allowing us to process more at once. Something experimental I am working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-b 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
+This increases speed, by allowing us to process more at once. Something experimental we are working on is changing the open file limit. You can do this manually with `ulimit -n 70000` and then running rustscan with `-b 65535`. This _should_ scan all 65535 ports at the exact same time. But this is extremely experimental.
 
 For non-experimental speed increases, slowly increase the batch size until it no longer gets open ports, or it breaks.
 
@@ -381,7 +382,7 @@ For non-experimental speed increases, slowly increase the batch size until it no
 
 To increase accuracy, the easiest way is to increase the timeout. The default is 1.5 seconds, by setting it to 4 seconds (4000) we are telling RustScan "if we do not hear back from a port in 4 seconds, assume it is closed".
 
-Decreasing accuracy gives some speed bonus, but my testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
+Decreasing accuracy gives some speed bonus, but our testing found that batch size dramatically changed the speed whereas timeout did, but not so much.
 
 # 🎪 Community
 
@@ -420,14 +421,14 @@ We communicate over Discord. [Click here](https://discord.gg/GFrQsGy) to join ou
 
 ## Rewarding you
 
-I cannot pay you :-( But, I can place your GitHub profile on the README under `#Contributors` as a thank you! :)
+We cannot pay you :-( But, We can place your GitHub profile on the README under `#Contributors` as a thank you! :)
 
 Please read the [contributing.md file](contributing.md)
 
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-20-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-21-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -461,6 +462,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/buermarc"><img src="https://avatars2.githubusercontent.com/u/44375277?v=4" width="100px;" alt=""/><br /><sub><b>buermarc</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=buermarc" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/bergabman"><img src="https://avatars1.githubusercontent.com/u/44554109?v=4" width="100px;" alt=""/><br /><sub><b>bergabman</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=bergabman" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/issues?q=author%3Abergabman" title="Bug reports">🐛</a> <a href="#design-bergabman" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/dmitris"><img src="https://avatars0.githubusercontent.com/u/31205?v=4" width="100px;" alt=""/><br /><sub><b>Dmitry Savintsev</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=dmitris" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/bofh69"><img src="https://avatars3.githubusercontent.com/u/1444315?v=4" width="100px;" alt=""/><br /><sub><b>Sebastian Andersson</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=bofh69" title="Code">💻</a></td>
   </tr>
 </table>
 

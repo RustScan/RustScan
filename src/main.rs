@@ -121,7 +121,7 @@ fn main() {
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
-        // if quiet mode is on nmap should not be spawned
+        // if greppable mode is on nmap should not be spawned
         if opts.greppable || opts.no_nmap {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
@@ -475,5 +475,23 @@ mod tests {
         opts.addresses = vec!["fixtures/hosts.txt".to_owned()];
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 3);
+    }
+
+    #[test]
+    fn parse_empty_hosts_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let mut opts = Opts::default();
+        opts.addresses = vec!["fixtures/empty_hosts.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn parse_naughty_host_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let mut opts = Opts::default();
+        opts.addresses = vec!["fixtures/naughty_string.txt".to_owned()];
+        let ips = parse_addresses(&opts);
+        assert_eq!(ips.len(), 0);
     }
 }
