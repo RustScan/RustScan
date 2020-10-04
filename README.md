@@ -145,7 +145,7 @@ We strongly recommend using the `1.10.0` tag, as this is the latest major - stab
 Simply run this command against the IP you want to target:
 
 ```bash
-docker run -it --rm --name rustscan rustscan/rustscan:1.10.0 <rustscan arguments here> <ip address to scan>
+docker run -it --rm --name rustscan rustscan/rustscan:1.10.0 <ip address to scan> <rustscan arguments here>
 ```
 
 Note: this will scan the Docker's localhost, not your own.
