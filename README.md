@@ -225,10 +225,11 @@ USAGE:
 
 FLAGS:
         --accessible    Accessible mode. Turns off features which negatively affect screen readers
+    -g, --greppable     Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
     -h, --help          Prints help information
     -n, --no-config     Whether to ignore the configuration file or not
         --no-nmap       Turns off Nmap
-    -q, --quiet         Quiet mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
+        --top           Use the top 1000 ports
     -V, --version       Prints version information
 
 OPTIONS:
@@ -246,7 +247,7 @@ OPTIONS:
 ARGS:
     <addresses>...    A list of comma separated CIDRs, IPs, or hosts to be scanned
     <command>...      The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
-                      'rustscan -t 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                      'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
                       nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
                       vuln)'\"")
 ```
@@ -268,7 +269,7 @@ and accepts the following fields:
 - `scan_order`
 - `command`
 - `accessible`
-- `quiet`
+- `greppable`
 - `batch-size`
 - `timeout`
 - `ulimit`
@@ -280,7 +281,7 @@ addresses = ["127.0.0.1", "192.168.0.0/30", "www.google.com"]
 command = ["-A"]
 ports = [80, 443, 8080]
 range = { start = 1, end = 10 }
-quiet = false
+greppable = false
 accessible = true
 scan_order = "Serial"
 batch_size = 1000

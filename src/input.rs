@@ -210,7 +210,7 @@ impl Config {
     ///
     /// addresses = ["127.0.0.1", "127.0.0.1"]
     /// ports = [80, 443, 8080]
-    /// quiet = true
+    /// greppable = true
     /// scan_order: "Serial"
     ///
     pub fn read() -> Self {

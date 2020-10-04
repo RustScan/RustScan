@@ -121,7 +121,7 @@ fn main() {
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = nmap_str_ports.join(",");
 
-        // if quiet mode is on nmap should not be spawned
+        // if greppable mode is on nmap should not be spawned
         if opts.greppable || opts.no_nmap {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
