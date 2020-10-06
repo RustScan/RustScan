@@ -231,9 +231,7 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(
-    source: &String,
-) -> Result<Vec<IpAddr>, std::io::Error> {
+fn resolve_ips_from_host(source: &String) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     match source.to_socket_addrs() {
@@ -249,9 +247,7 @@ fn resolve_ips_from_host(
 
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
-fn read_ips_from_file(
-    ips: String,
-) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+fn read_ips_from_file(ips: String) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     // if we cannot open it as a file, it is not a file so move on
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
