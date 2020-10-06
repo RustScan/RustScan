@@ -242,6 +242,8 @@ OPTIONS:
                                      ascending order while the "random" option will scan ports randomly [default:
                                      serial]  [possible values: Serial, Random]
     -t, --timeout <timeout>          The timeout in milliseconds before a port is assumed to be closed [default: 1500]
+        --tries <tries>              The number of tries before a port is assumed to be closed. If set to 0, rustscan
+                                     will correct it to 1 [default: 1]
     -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
 
 ARGS:
@@ -260,7 +262,7 @@ Your operating system may not support this, but it is worth it to play around an
 
 ## Configuration file
 
-This binary accepts a configuration file that is read from the home directory of the user. It follows the TOML format
+This binary accepts a configuration file, named `.rustscan.toml`, that is read from the home directory of the user. It follows the TOML format
 and accepts the following fields:
 
 - `addresses`
@@ -272,6 +274,7 @@ and accepts the following fields:
 - `greppable`
 - `batch-size`
 - `timeout`
+- `tries`
 - `ulimit`
 
 ### Format example
@@ -286,6 +289,7 @@ accessible = true
 scan_order = "Serial"
 batch_size = 1000
 timeout = 1000
+tries = 3
 ulimit = 1000
 ```
 
