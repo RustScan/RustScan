@@ -106,9 +106,9 @@ fn main() {
         let x = format!("Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
         \n*I used {} batch size, consider lowering it with {} or a comfortable number for your system.
         \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 milliseconds (2s) timeout.\n",
-                        ip,
-                        opts.batch_size,
-                        "'rustscan -b <batch_size> <ip address>'");
+        ip,
+        opts.batch_size,
+        "'rustscan -b <batch_size> <ip address>'");
         warning!(x, opts.greppable, opts.accessible);
     }
 
