@@ -27,8 +27,6 @@ use std::io::BufReader;
 use std::net::ToSocketAddrs;
 use std::process::Command;
 use std::{net::IpAddr, time::Duration};
-use trust_dns_resolver::config::*;
-use trust_dns_resolver::Resolver;
 
 extern crate colorful;
 extern crate dirs;
@@ -108,9 +106,9 @@ fn main() {
         let x = format!("Looks like I didn't find any open ports for {:?}. This is usually caused by a high batch size.
         \n*I used {} batch size, consider lowering it with {} or a comfortable number for your system.
         \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 milliseconds (2s) timeout.\n",
-        ip,
-        opts.batch_size,
-        "'rustscan -b <batch_size> <ip address>'");
+                        ip,
+                        opts.batch_size,
+                        "'rustscan -b <batch_size> <ip address>'");
         warning!(x, opts.greppable, opts.accessible);
     }
 
@@ -213,13 +211,11 @@ fn build_nmap_arguments<'a>(
 /// Parses the string(s) into IPs
 fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
-    let resolver =
-        &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for ip_or_host in &opts.addresses {
-        match read_ips_from_file(ip_or_host.to_owned(), &resolver) {
+        match read_ips_from_file(ip_or_host.to_owned()) {
             Ok(x) => ips.extend(x),
-            _ => match parse_to_ip(ip_or_host.to_owned(), &resolver) {
+            _ => match parse_to_ip(ip_or_host.to_owned()) {
                 Ok(x) => ips.extend(x),
                 _ => {
                     warning!(
@@ -237,14 +233,13 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
 /// Uses DNS to get the IPS assiocated with host
 fn resolve_ips_from_host(
     source: &String,
-    resolver: &Resolver,
 ) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
-    match resolver.lookup_ip(&source) {
+    match source.to_socket_addrs() {
         Ok(x) => {
-            for ip in x.iter() {
-                ips.push(ip);
+            for ip in x.into_iter() {
+                ips.push(ip.ip())
             }
         }
         _ => (),
@@ -256,7 +251,6 @@ fn resolve_ips_from_host(
 /// Parses an input file of IPs and uses those
 fn read_ips_from_file(
     ips: String,
-    resolver: &Resolver,
 ) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     // if we cannot open it as a file, it is not a file so move on
     let file = File::open(ips)?;
@@ -266,7 +260,7 @@ fn read_ips_from_file(
 
     for str_ip in reader.lines() {
         match str_ip {
-            Ok(x) => match parse_to_ip(x, resolver) {
+            Ok(x) => match parse_to_ip(x) {
                 Ok(result) => ips.extend(result),
                 Err(e) => {
                     debug!("{} is not a valid IP or host", e);
@@ -283,14 +277,14 @@ fn read_ips_from_file(
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
-fn parse_to_ip(address: String, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
+fn parse_to_ip(address: String) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
     match IpCidr::from_str(&address) {
         Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
         _ => match format!("{}:{}", &address, 80).to_socket_addrs() {
             Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-            _ => match resolve_ips_from_host(&address, resolver) {
+            _ => match resolve_ips_from_host(&address) {
                 Ok(hosts) => ips.extend(hosts),
                 _ => (),
             },
