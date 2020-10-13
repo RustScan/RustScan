@@ -220,6 +220,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "rootsploit",
+      "name": "RootSploit",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67270834?v=4",
+      "profile": "http://rootsploit.com",
+      "contributions": [
+        "blog"
+      ]
     }
   ],
   "contributorsPerLine": 7,
