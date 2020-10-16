@@ -74,6 +74,7 @@ fn main() {
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
+        opts.tries,
         opts.greppable,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
         opts.accessible,
