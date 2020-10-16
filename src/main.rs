@@ -3,7 +3,7 @@ extern crate shell_words;
 mod tui;
 
 mod input;
-use input::{Config, Opts, PortRange, ScanOrder};
+use input::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
 
 mod scanner;
 use scanner::Scanner;
@@ -14,6 +14,9 @@ use port_strategy::PortStrategy;
 mod benchmark;
 use benchmark::{Benchmark, NamedTimer};
 
+mod scripts;
+use scripts::{init_scripts, Script, ScriptFile};
+
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
@@ -23,7 +26,6 @@ use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
 use std::path::Path;
-use std::process::Command;
 use std::time::Duration;
 use trust_dns_resolver::{config::*, Resolver};
 
@@ -51,6 +53,10 @@ fn main() {
     opts.merge(&config);
 
     debug!("Main() `opts` arguments are {:?}", opts);
+
+    let scripts_to_run: Vec<ScriptFile> =
+        init_scripts(opts.scripts).expect("could not initiate scripting part.");
+    debug!("Scripts initialized {:?}", &scripts_to_run);
 
     if !opts.greppable && !opts.accessible {
         print_opening(&opts);
@@ -112,46 +118,71 @@ fn main() {
         warning!(x, opts.greppable, opts.accessible);
     }
 
-    let mut nmap_bench = NamedTimer::start("Nmap");
+    let mut script_bench = NamedTimer::start("Scripts");
     for (ip, ports) in ports_per_ip.iter_mut() {
-        let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
+        let vec_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
 
         // nmap port style is 80,443. Comma separated with no spaces.
-        let ports_str = nmap_str_ports.join(",");
+        let ports_str = vec_str_ports.join(",");
 
-        // if greppable mode is on nmap should not be spawned
-        if opts.greppable || opts.no_nmap {
+        // if option scripts is none, no script will be spawned
+        if opts.greppable || opts.scripts.clone() == ScriptsRequired::None {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
-        detail!("Starting Nmap", opts.greppable, opts.accessible);
+        detail!("Starting Script(s)", opts.greppable, opts.accessible);
 
-        let addr = ip.to_string();
-        let user_nmap_args =
-            shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-        let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+        // Run all the scripts we found and parsed based on the script config file tags field.
+        for mut script_f in scripts_to_run.clone() {
+            output!(
+                format!("Script to be run {:?}\n", script_f.call_format,),
+                opts.greppable.clone(),
+                opts.accessible.clone()
+            );
 
-        output!(
-            format!(
-                "The Nmap command to be run is nmap {}\n",
-                &nmap_args.join(" ")
-            ),
-            opts.greppable.clone(),
-            opts.accessible.clone()
-        );
+            // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
+            if opts.command.len() > 0 {
+                let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
+                    .expect("Failed to parse extra user commandline arguments");
+                if script_f.call_format.is_some() {
+                    let mut call_f = script_f.call_format.unwrap();
+                    call_f.push_str(&format!(" {}", &user_extra_args.join(" ")));
+                    script_f.call_format = Some(call_f);
+                }
+            }
 
-        // Runs the nmap command and spawns it as a process.
-        let mut child = Command::new("nmap")
-            .args(&nmap_args)
-            .spawn()
-            .expect("failed to execute nmap process");
-
-        child.wait().expect("failed to wait on nmap process");
+            // Building the script with the arguments from the ScriptFile, and ip-ports.
+            let script = Script::build(
+                script_f.path,
+                *ip,
+                ports.to_vec(),
+                script_f.port,
+                script_f.ports_separator,
+                script_f.tags,
+                script_f.call_format,
+            );
+            match script.run() {
+                Ok(script_result) => {
+                    detail!(
+                        format!("{}", script_result),
+                        opts.greppable,
+                        opts.accessible
+                    );
+                }
+                Err(e) => {
+                    warning!(
+                        &format!("Error {}", e.to_string()),
+                        opts.greppable,
+                        opts.accessible
+                    );
+                }
+            }
+        }
     }
 
     // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
-    nmap_bench.end();
-    benchmarks.push(nmap_bench);
+    script_bench.end();
+    benchmarks.push(script_bench);
     rustscan_bench.end();
     benchmarks.push(rustscan_bench);
     debug!("Benchmarks raw {:?}", benchmarks);
@@ -165,7 +196,7 @@ fn print_opening(opts: &Opts) {
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
 `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-Faster Nmap scanning with Rust."#;
+The Modern Day Port Scanner."#;
     println!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
 : https://discord.gg/GFrQsGy           :
@@ -296,27 +327,6 @@ fn read_ips_from_file(
         }
     }
     Ok(ips)
-}
-
-#[cfg(not(tarpaulin_include))]
-fn build_nmap_arguments<'a>(
-    addr: &'a str,
-    ports: &'a str,
-    user_args: &'a Vec<String>,
-    is_ipv6: bool,
-) -> Vec<&'a str> {
-    let mut arguments: Vec<&str> = user_args.iter().map(AsRef::as_ref).collect();
-    arguments.push("-vvv");
-
-    if is_ipv6 {
-        arguments.push("-6");
-    }
-
-    arguments.push("-p");
-    arguments.push(ports);
-    arguments.push(addr);
-
-    arguments
 }
 
 fn adjust_ulimit_size(opts: &Opts) -> RawRlim {

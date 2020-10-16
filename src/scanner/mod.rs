@@ -106,11 +106,7 @@ impl Scanner {
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         let tries = self.tries.get();
 
-        debug!("self.tries: {}", tries);
-
         for nr_try in 1..=tries {
-            debug!("Try number: {}", nr_try);
-
             match self.connect(socket).await {
                 Ok(x) => {
                     debug!(
