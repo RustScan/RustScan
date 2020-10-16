@@ -17,7 +17,7 @@ use benchmark::{Benchmark, NamedTimer};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use rlimit::{getrlimit, setrlimit, Resource};
+use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
@@ -31,9 +31,9 @@ extern crate colorful;
 extern crate dirs;
 
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: RawRlim = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
+const AVERAGE_BATCH_SIZE: RawRlim = 3000;
 
 #[macro_use]
 extern crate log;
@@ -67,7 +67,7 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
+    let ulimit: RawRlim = adjust_ulimit_size(&opts);
     let batch_size: u16 = infer_batch_size(&opts, ulimit);
 
     let scanner = Scanner::new(
@@ -319,9 +319,9 @@ fn build_nmap_arguments<'a>(
     arguments
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
+fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
     if opts.ulimit.is_some() {
-        let limit: rlimit::rlim = opts.ulimit.unwrap();
+        let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
@@ -343,11 +343,11 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
     let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
 
-    rlim
+    rlim.as_raw()
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
-    let mut batch_size: rlimit::rlim = opts.batch_size.into();
+fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
+    let mut batch_size: RawRlim = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
