@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -57,7 +58,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - GitHub https://github.com/RustScan/RustScan
 pub struct Opts {
     /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
-    #[structopt(use_delimiter = true)]
+    #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
     /// A list of comma separed ports to be scanned. Example: 80,443,8080.
