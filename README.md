@@ -221,37 +221,44 @@ server may not be able to handle this many socket connections at once. - Discord
 https://github.com/RustScan/RustScan
 
 USAGE:
-    rustscan [FLAGS] [OPTIONS] [addresses]... [-- <command>...]
+    rustscan [FLAGS] [OPTIONS] [-- <command>...]
 
 FLAGS:
         --accessible    Accessible mode. Turns off features which negatively affect screen readers
     -g, --greppable     Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file
     -h, --help          Prints help information
     -n, --no-config     Whether to ignore the configuration file or not
-        --no-nmap       Turns off Nmap
         --top           Use the top 1000 ports
     -V, --version       Prints version information
 
 OPTIONS:
-    -b, --batch-size <batch-size>    The batch size for port scanning, it increases or decreases the speed of scanning.
-                                     Depends on the open file limit of your OS.  If you use 65535 it will scan every port
-                                     at the same time. Although, your OS may not support this [default: 4500]
-    -p, --ports <ports>...           A list of comma separed ports to be scanned. Example: 80,443,8080
-    -r, --range <range>              A range of ports with format start-end. Example: 1-1000
-        --scan-order <scan-order>    The order of scanning to be performed. The "serial" option will scan ports in
-                                     ascending order while the "random" option will scan ports randomly [default:
-                                     serial]  [possible values: Serial, Random]
-    -t, --timeout <timeout>          The timeout in milliseconds before a port is assumed to be closed [default: 1500]
-        --tries <tries>              The number of tries before a port is assumed to be closed. If set to 0, rustscan
-                                     will correct it to 1 [default: 1]
-    -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
+    -a, --addresses <addresses>...     A list of comma separated CIDRs, IPs, or hosts to be scanned
+    -b, --batch-size <batch-size>      The batch size for port scanning, it increases or slows the speed of scanning.
+                                       Depends on the open file limit of your OS. If you do 65535 it will do every port
+                                       at the same time. Although, your OS may not support this [default: 4500]
+        --format <format>              Output format of the scan. Note that this only includes the port scan result that
+                                       is produced by rustscan, not the output of Nmap [default: text]  [possible
+                                       values: Text, Json]
+    -o, --output-file <output-file>    Path to a file where the port scan result will be written to. The output will be
+                                       formatted according to the --format flag. If not specified, formatted output will
+                                       be printed to stdout
+    -p, --ports <ports>...             A list of comma separed ports to be scanned. Example: 80,443,8080
+    -r, --range <range>                A range of ports with format start-end. Example: 1-1000
+        --scan-order <scan-order>      The order of scanning to be performed. The "serial" option will scan ports in
+                                       ascending order while the "random" option will scan ports randomly [default:
+                                       serial]  [possible values: Serial, Random]
+        --scripts <scripts>            Level of scripting required for the run [default: default]  [possible values:
+                                       None, Default, Custom]
+    -t, --timeout <timeout>            The timeout in milliseconds before a port is assumed to be closed [default: 1500]
+        --tries <tries>                The number of tries before a port is assumed to be closed. If set to 0, rustscan
+                                       will correct it to 1 [default: 1]
+    -u, --ulimit <ulimit>              Automatically ups the ULIMIT with the value you provided
 
 ARGS:
-    <addresses>...    A list of comma separated CIDRs, IPs, or hosts to be scanned
-    <command>...      The Nmap arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
-                      'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
-                      nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
-                      vuln)'\"")
+    <command>...    The Script arguments to run. To use the argument -A, end RustScan's args with '-- -A'. Example:
+                    'rustscan -T 1500 127.0.0.1 -- -A -sC'. This command adds -Pn -vvv -p $PORTS automatically to
+                    nmap. For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and
+                    vuln)'\"")
 ```
 
 The format is `rustscan -b 500 -t 1500 192.168.0.1` to scan 192.168.0.1 with 500 batch size with a timeout of 1500ms. The timeout is how long RustScan waits for a response until it assumes the port is closed.

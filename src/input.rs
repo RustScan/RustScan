@@ -30,6 +30,15 @@ arg_enum! {
     }
 }
 
+arg_enum! {
+    /// Specifies how to format the scan result output.
+    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq)]
+    pub enum OutputFormat {
+        Text,
+        Json,
+    }
+}
+
 /// Represents the range of ports to be scanned.
 #[derive(Deserialize, Debug, Clone, PartialEq)]
 pub struct PortRange {
@@ -94,8 +103,19 @@ pub struct Opts {
     #[structopt(long)]
     pub accessible: bool,
 
+    /// Output format of the scan. Note that this only includes the port scan result that is
+    /// produced by rustscan, not the output of Nmap.
+    #[structopt(long, default_value = "text", possible_values = &OutputFormat::variants(), case_insensitive = true)]
+    pub format: OutputFormat,
+
+    /// Path to a file where the port scan result will be written to. The output will be formatted
+    /// according to the --format flag. If not specified, formatted output will be printed to
+    /// stdout.
+    #[structopt(short, long)]
+    pub output_file: Option<String>,
+
     /// The batch size for port scanning, it increases or slows the speed of
-    /// scanning. Depends on the open file limit of your OS.  If you do 65535
+    /// scanning. Depends on the open file limit of your OS. If you do 65535
     /// it will do every port at the same time. Although, your OS may not
     /// support this.
     #[structopt(short, long, default_value = "4500")]
@@ -173,8 +193,8 @@ impl Opts {
         }
 
         merge_required!(
-            addresses, greppable, accessible, batch_size, timeout, tries, scan_order, scripts,
-            command
+            addresses, greppable, accessible, batch_size, timeout, tries, format, scan_order,
+            scripts, command
         );
     }
 
@@ -198,7 +218,7 @@ impl Opts {
             self.ports = Some(ports);
         }
 
-        merge_optional!(range, ulimit);
+        merge_optional!(range, output_file, ulimit);
     }
 }
 
@@ -216,6 +236,8 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
+    format: Option<OutputFormat>,
+    output_file: Option<String>,
     ulimit: Option<rlimit::RawRlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
@@ -263,7 +285,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+    use super::{Config, Opts, OutputFormat, PortRange, ScanOrder, ScriptsRequired};
     impl Config {
         fn default() -> Self {
             Self {
@@ -275,6 +297,8 @@ mod tests {
                 timeout: Some(1_000),
                 tries: Some(1),
                 ulimit: None,
+                format: None,
+                output_file: None,
                 command: Some(vec!["-A".to_owned()]),
                 accessible: Some(true),
                 scan_order: Some(ScanOrder::Random),
@@ -296,6 +320,8 @@ mod tests {
                 ulimit: None,
                 command: vec![],
                 accessible: false,
+                format: OutputFormat::Text,
+                output_file: None,
                 scan_order: ScanOrder::Serial,
                 no_config: true,
                 top: false,

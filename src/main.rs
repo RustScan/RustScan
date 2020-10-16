@@ -7,7 +7,7 @@ extern crate shell_words;
 mod tui;
 
 mod input;
-use input::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+use input::{Config, Opts, OutputFormat, PortRange, ScanOrder, ScriptsRequired};
 
 mod scanner;
 use scanner::Scanner;
@@ -24,10 +24,11 @@ use scripts::{init_scripts, Script, ScriptFile};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
+use itertools::Itertools;
 use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
 use std::convert::TryInto;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
 use std::path::Path;
@@ -128,67 +129,78 @@ fn main() {
         warning!(x, opts.greppable, opts.accessible);
     }
 
-    let mut script_bench = NamedTimer::start("Scripts");
-    for (ip, ports) in &ports_per_ip {
-        let vec_str_ports: Vec<String> = ports.iter().map(ToString::to_string).collect();
+    if opts.greppable
+        || opts.scripts == ScriptsRequired::None
+        || opts.format != OutputFormat::Text
+        || opts.output_file.is_some()
+    {
+        let output_string = format_summary(&ports_per_ip, opts.format);
 
-        // nmap port style is 80,443. Comma separated with no spaces.
-        let ports_str = vec_str_ports.join(",");
-
-        // if option scripts is none, no script will be spawned
-        if opts.greppable || opts.scripts == ScriptsRequired::None {
-            println!("{} -> [{}]", &ip, ports_str);
-            continue;
-        }
-        detail!("Starting Script(s)", opts.greppable, opts.accessible);
-
-        // Run all the scripts we found and parsed based on the script config file tags field.
-        for mut script_f in scripts_to_run.clone() {
-            output!(
-                format!("Script to be run {:?}\n", script_f.call_format,),
-                opts.greppable,
-                opts.accessible
-            );
-
-            // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
-            if !opts.command.is_empty() {
-                let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
-                    .expect("Failed to parse extra user commandline arguments");
-                if script_f.call_format.is_some() {
-                    let mut call_f = script_f.call_format.unwrap();
-                    call_f.push_str(&format!(" {}", &user_extra_args.join(" ")));
-                    script_f.call_format = Some(call_f);
-                }
+        if let Some(ref path) = opts.output_file {
+            if let Err(e) = fs::write(path, &output_string) {
+                eprintln!("Failed to write output to file at '{}': {}", path, e);
+                println!("Have your output anyway:\n{}", output_string);
+                return;
             }
-
-            // Building the script with the arguments from the ScriptFile, and ip-ports.
-            let script = Script::build(
-                script_f.path,
-                *ip,
-                ports.to_vec(),
-                script_f.port,
-                script_f.ports_separator,
-                script_f.tags,
-                script_f.call_format,
-            );
-            match script.run() {
-                Ok(script_result) => {
-                    detail!(script_result.to_string(), opts.greppable, opts.accessible);
-                }
-                Err(e) => {
-                    warning!(
-                        &format!("Error {}", e.to_string()),
-                        opts.greppable,
-                        opts.accessible
-                    );
-                }
-            }
+        } else {
+            println!("{}", output_string);
         }
     }
 
-    // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
-    script_bench.end();
-    benchmarks.push(script_bench);
+    if !opts.greppable && opts.scripts != ScriptsRequired::None {
+        let mut script_bench = NamedTimer::start("Scripts");
+        for (ip, ports) in &ports_per_ip {
+            detail!("Starting Script(s)", opts.greppable, opts.accessible);
+
+            // Run all the scripts we found and parsed based on the script config file tags field.
+            for mut script_f in scripts_to_run.clone() {
+                output!(
+                    format!("Script to be run {:?}\n", script_f.call_format,),
+                    opts.greppable,
+                    opts.accessible
+                );
+
+                // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
+                if !opts.command.is_empty() {
+                    let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
+                        .expect("Failed to parse extra user commandline arguments");
+                    if script_f.call_format.is_some() {
+                        let mut call_f = script_f.call_format.unwrap();
+                        call_f.push_str(&format!(" {}", &user_extra_args.join(" ")));
+                        script_f.call_format = Some(call_f);
+                    }
+                }
+
+                // Building the script with the arguments from the ScriptFile, and ip-ports.
+                let script = Script::build(
+                    script_f.path,
+                    *ip,
+                    ports.to_vec(),
+                    script_f.port,
+                    script_f.ports_separator,
+                    script_f.tags,
+                    script_f.call_format,
+                );
+                match script.run() {
+                    Ok(script_result) => {
+                        detail!(script_result.to_string(), opts.greppable, opts.accessible);
+                    }
+                    Err(e) => {
+                        warning!(
+                            &format!("Error {}", e.to_string()),
+                            opts.greppable,
+                            opts.accessible
+                        );
+                    }
+                }
+            }
+        }
+
+        // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
+        script_bench.end();
+        benchmarks.push(script_bench);
+    }
+
     rustscan_bench.end();
     benchmarks.push(rustscan_bench);
     debug!("Benchmarks raw {:?}", benchmarks);
@@ -267,6 +279,25 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     ips
 }
 
+/// Generates a summary in the given format.
+fn format_summary(ports_per_ip: &HashMap<IpAddr, Vec<u16>>, out_format: OutputFormat) -> String {
+    match out_format {
+        OutputFormat::Text => ports_per_ip
+            .iter()
+            .map(|(ip, ports)| {
+                format!(
+                    "{} -> [{}]",
+                    ip,
+                    ports.iter().map(ToString::to_string).join(",")
+                )
+            })
+            .join("\n"),
+        OutputFormat::Json => {
+            serde_json::to_string(&ports_per_ip).expect("Failed to serialize results as JSON.")
+        }
+    }
+}
+
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
@@ -343,8 +374,8 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
         warning!("File limit is lower than default batch size. Consider upping with --ulimit. May cause harm to sensitive servers",
-            opts.greppable, opts.accessible
-        );
+                opts.greppable, opts.accessible
+            );
 
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
@@ -367,7 +398,7 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
         detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100),
-        opts.greppable, opts.accessible);
+            opts.greppable, opts.accessible);
     }
 
     batch_size
