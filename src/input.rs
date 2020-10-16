@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -57,7 +58,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - GitHub https://github.com/RustScan/RustScan
 pub struct Opts {
     /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
-    #[structopt(use_delimiter = true)]
+    #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
     /// A list of comma separed ports to be scanned. Example: 80,443,8080.
@@ -94,6 +95,11 @@ pub struct Opts {
     /// The timeout in milliseconds before a port is assumed to be closed.
     #[structopt(short, long, default_value = "1500")]
     pub timeout: u32,
+
+    /// The number of tries before a port is assumed to be closed.
+    /// If set to 0, rustscan will correct it to 1.
+    #[structopt(long, default_value = "1")]
+    pub tries: u8,
 
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
@@ -153,7 +159,9 @@ impl Opts {
             }
         }
 
-        merge_required!(addresses, greppable, accessible, batch_size, timeout, scan_order, command);
+        merge_required!(
+            addresses, greppable, accessible, batch_size, timeout, tries, scan_order, command
+        );
     }
 
     fn merge_optional(&mut self, config: &Config) {
@@ -195,6 +203,7 @@ pub struct Config {
     accessible: Option<bool>,
     batch_size: Option<u16>,
     timeout: Option<u32>,
+    tries: Option<u8>,
     no_nmap: Option<bool>,
     ulimit: Option<rlimit::rlim>,
     scan_order: Option<ScanOrder>,
@@ -252,6 +261,7 @@ mod tests {
                 greppable: Some(true),
                 batch_size: Some(25_000),
                 timeout: Some(1_000),
+                tries: Some(1),
                 ulimit: None,
                 no_nmap: Some(false),
                 command: Some(vec!["-A".to_owned()]),
@@ -270,6 +280,7 @@ mod tests {
                 greppable: true,
                 batch_size: 0,
                 timeout: 0,
+                tries: 0,
                 ulimit: None,
                 command: vec![],
                 accessible: false,

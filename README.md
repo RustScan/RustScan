@@ -242,6 +242,8 @@ OPTIONS:
                                      ascending order while the "random" option will scan ports randomly [default:
                                      serial]  [possible values: Serial, Random]
     -t, --timeout <timeout>          The timeout in milliseconds before a port is assumed to be closed [default: 1500]
+        --tries <tries>              The number of tries before a port is assumed to be closed. If set to 0, rustscan
+                                     will correct it to 1 [default: 1]
     -u, --ulimit <ulimit>            Automatically ups the ULIMIT with the value you provided
 
 ARGS:
@@ -260,7 +262,7 @@ Your operating system may not support this, but it is worth it to play around an
 
 ## Configuration file
 
-This binary accepts a configuration file that is read from the home directory of the user. It follows the TOML format
+This binary accepts a configuration file, named `.rustscan.toml`, that is read from the home directory of the user. It follows the TOML format
 and accepts the following fields:
 
 - `addresses`
@@ -272,6 +274,7 @@ and accepts the following fields:
 - `greppable`
 - `batch-size`
 - `timeout`
+- `tries`
 - `ulimit`
 
 ### Format example
@@ -286,6 +289,7 @@ accessible = true
 scan_order = "Serial"
 batch_size = 1000
 timeout = 1000
+tries = 3
 ulimit = 1000
 ```
 
@@ -428,7 +432,7 @@ Please read the [contributing.md file](contributing.md)
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-23-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-24-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -457,7 +461,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://swag.lgbt"><img src="https://avatars2.githubusercontent.com/u/25358963?v=4" width="100px;" alt=""/><br /><sub><b>Cass</b></sub></a><br /><a href="#platform-caass" title="Packaging/porting to new platform">📦</a> <a href="https://github.com/RustScan/RustScan/commits?author=caass" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/issues?q=author%3Acaass" title="Bug reports">🐛</a></td>
-    <td align="center"><a href="https://github.com/niklasmohrin"><img src="https://avatars0.githubusercontent.com/u/47574893?v=4" width="100px;" alt=""/><br /><sub><b>Niklas Mohrin</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=niklasmohrin" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/niklasmohrin"><img src="https://avatars0.githubusercontent.com/u/47574893?v=4" width="100px;" alt=""/><br /><sub><b>Niklas Mohrin</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=niklasmohrin" title="Documentation">📖</a> <a href="https://github.com/RustScan/RustScan/commits?author=niklasmohrin" title="Code">💻</a></td>
     <td align="center"><a href="https://liberapay.com/Artem4/"><img src="https://avatars0.githubusercontent.com/u/5614476?v=4" width="100px;" alt=""/><br /><sub><b>Artem Polishchuk</b></sub></a><br /><a href="#platform-tim77" title="Packaging/porting to new platform">📦</a></td>
     <td align="center"><a href="https://github.com/buermarc"><img src="https://avatars2.githubusercontent.com/u/44375277?v=4" width="100px;" alt=""/><br /><sub><b>buermarc</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=buermarc" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/bergabman"><img src="https://avatars1.githubusercontent.com/u/44554109?v=4" width="100px;" alt=""/><br /><sub><b>bergabman</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=bergabman" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/issues?q=author%3Abergabman" title="Bug reports">🐛</a> <a href="#design-bergabman" title="Design">🎨</a></td>
@@ -467,6 +471,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/mattcorbin"><img src="https://avatars3.githubusercontent.com/u/6537765?v=4" width="100px;" alt=""/><br /><sub><b>Matt Corbin</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=mattcorbin" title="Code">💻</a></td>
     <td align="center"><a href="http://rootsploit.com"><img src="https://avatars2.githubusercontent.com/u/67270834?v=4" width="100px;" alt=""/><br /><sub><b>RootSploit</b></sub></a><br /><a href="#blog-rootsploit" title="Blogposts">📝</a></td>
+    <td align="center"><a href="https://github.com/eiffel-fl"><img src="https://avatars2.githubusercontent.com/u/12171754?v=4" width="100px;" alt=""/><br /><sub><b>eiffel-fl</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=eiffel-fl" title="Code">💻</a></td>
   </tr>
 </table>
 

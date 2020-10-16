@@ -11,6 +11,7 @@ use futures::stream::FuturesUnordered;
 use std::{
     io::ErrorKind,
     net::{IpAddr, Shutdown, SocketAddr},
+    num::NonZeroU8,
     time::Duration,
 };
 
@@ -26,6 +27,7 @@ pub struct Scanner {
     ips: Vec<IpAddr>,
     batch_size: u16,
     timeout: Duration,
+    tries: NonZeroU8,
     greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
@@ -36,6 +38,7 @@ impl Scanner {
         ips: &[IpAddr],
         batch_size: u16,
         timeout: Duration,
+        tries: u8,
         greppable: bool,
         port_strategy: PortStrategy,
         accessible: bool,
@@ -43,6 +46,7 @@ impl Scanner {
         Self {
             batch_size,
             timeout,
+            tries: NonZeroU8::new(std::cmp::max(tries, 1)).unwrap(),
             greppable,
             port_strategy,
             ips: ips.iter().map(|ip| ip.to_owned()).collect(),
@@ -87,54 +91,66 @@ impl Scanner {
         open_sockets
     }
 
-    /// Given a port, scan it.
+    /// Given a socket, scan it self.tries times.
     /// Turns the address into a SocketAddr
     /// Deals with the <result> type
     /// If it experiences error ErrorKind::Other then too many files are open and it Panics!
-    /// ese any other error, it returns the error in Result as a string
-    /// If no  errors occur, it returns the port number in Result to signify the port is open.
+    /// Else any other error, it returns the error in Result as a string
+    /// If no errors occur, it returns the port number in Result to signify the port is open.
     /// This function mainly deals with the logic of Results handling.
     /// # Example
     ///
-    ///     self.scan_port(10:u16)
+    ///     self.scan_socket(socket)
     ///
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
-        match self.connect(socket).await {
-            Ok(x) => {
-                debug!(
-                    "Connection was successful, shutting down stream {}",
-                    &socket
-                );
-                match x.shutdown(Shutdown::Both) {
-                    Err(e) => debug!("Shutdown stream error {}", &e),
-                    _ => {}
-                }
-                if !self.greppable {
-                    if self.accessible {
-                        println!("Open {}", socket.to_string());
-                    } else {
-                        println!("Open {}", socket.to_string().purple());
-                    }
-                }
+        let tries = self.tries.get();
 
-                Ok(socket)
-            }
-            Err(e) => match e.kind() {
-                ErrorKind::Other => {
-                    if e.to_string().contains("No route to host")
-                        || e.to_string().contains("Network is unreachable")
-                    {
-                        debug!("Socket connect error: {} {}", &e.to_string(), &socket);
-                        Err(io::Error::new(io::ErrorKind::Other, e.to_string()))
-                    } else {
-                        debug!("Socket connect error: {} {}", &e.to_string(), &socket);
-                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+        debug!("self.tries: {}", tries);
+
+        for nr_try in 1..=tries {
+            debug!("Try number: {}", nr_try);
+
+            match self.connect(socket).await {
+                Ok(x) => {
+                    debug!(
+                        "Connection was successful, shutting down stream {}",
+                        &socket
+                    );
+                    if let Err(e) = x.shutdown(Shutdown::Both) {
+                        debug!("Shutdown stream error {}", &e);
+                    }
+                    if !self.greppable {
+                        if self.accessible {
+                            println!("Open {}", socket.to_string());
+                        } else {
+                            println!("Open {}", socket.to_string().purple());
+                        }
+                    }
+
+                    debug!("Return Ok after {} tries", nr_try);
+                    return Ok(socket);
+                }
+                Err(e) => {
+                    let error_string = e.to_string();
+
+                    if e.kind() == ErrorKind::Other {
+                        debug!("Socket connect error: {} {}", &error_string, &socket);
+
+                        if !error_string.contains("No route to host")
+                            && !error_string.contains("Network is unreachable")
+                        {
+                            panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
+                        }
+                    }
+
+                    if nr_try == tries {
+                        return Err(io::Error::new(io::ErrorKind::Other, error_string));
                     }
                 }
-                _ => Err(io::Error::new(io::ErrorKind::Other, e.to_string())),
-            },
+            };
         }
+        unreachable!();
     }
 
     /// Performs the connection to the socket with timeout
@@ -174,7 +190,15 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+        );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -188,7 +212,15 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+        );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
         assert_eq!(1, 1);
@@ -201,7 +233,15 @@ mod tests {
             end: 1_000,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+        );
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -213,7 +253,15 @@ mod tests {
             end: 445,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+        );
         block_on(scanner.run());
         assert_eq!(1, 1);
     }
@@ -228,7 +276,15 @@ mod tests {
             end: 600,
         };
         let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
-        let scanner = Scanner::new(&addrs, 10, Duration::from_millis(100), true, strategy, true);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+        );
         block_on(scanner.run());
         assert_eq!(1, 1);
     }

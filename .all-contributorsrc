@@ -162,7 +162,8 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/47574893?v=4",
       "profile": "https://github.com/niklasmohrin",
       "contributions": [
-        "doc"
+        "doc",
+        "code"
       ]
     },
     {
@@ -228,6 +229,15 @@
       "profile": "http://rootsploit.com",
       "contributions": [
         "blog"
+      ]
+    },
+    {
+      "login": "eiffel-fl",
+      "name": "eiffel-fl",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/12171754?v=4",
+      "profile": "https://github.com/eiffel-fl",
+      "contributions": [
+        "code"
       ]
     }
   ],
