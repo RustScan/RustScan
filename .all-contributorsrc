@@ -229,6 +229,15 @@
       "contributions": [
         "blog"
       ]
+    },
+    {
+      "login": "eiffel-fl",
+      "name": "eiffel-fl",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/12171754?v=4",
+      "profile": "https://github.com/eiffel-fl",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
