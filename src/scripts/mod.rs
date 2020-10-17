@@ -60,6 +60,7 @@ ports_separator = ","
 call_format = "nmap -vvv -p {{port}} {{ip}}"
 "#;
 
+#[cfg(not(tarpaulin_include))]
 pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
@@ -356,10 +357,18 @@ impl ScriptConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::{Script, ScriptFile};
+    use super::{find_scripts, parse_scripts, Script, ScriptFile};
     #[test]
-    fn parse_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.txt".into()).unwrap();
+    fn find_and_parse_scripts() {
+        let scripts = find_scripts("fixtures/".into()).unwrap();
+        let scripts = parse_scripts(scripts);
+        assert_eq!(scripts.len(), 4);
+    }
+
+    #[test]
+    fn parse_txt_script() {
+        let script_f =
+            ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
         assert_eq!(
             script_f.tags,
             Some(vec!["core_approved".to_string(), "example".to_string()])
@@ -380,7 +389,7 @@ mod tests {
 
     #[test]
     fn run_bash_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.sh".into()).unwrap();
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.sh".into()).unwrap();
         let script = Script::build(
             script_f.path,
             "127.0.0.1".parse().unwrap(),
@@ -397,7 +406,7 @@ mod tests {
 
     #[test]
     fn run_python_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.py".into()).unwrap();
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.py".into()).unwrap();
         let script = Script::build(
             script_f.path,
             "127.0.0.1".parse().unwrap(),
@@ -411,13 +420,13 @@ mod tests {
         // output has a newline at the end by default, .trim() trims it
         assert_eq!(
             output.trim(),
-            "Python script ran with arguments ['fixtures/test_script.py', '127.0.0.1', '80,8080']"
+            "Python script ran with arguments ['fixtures/.rustscan_scripts/test_script.py', '127.0.0.1', '80,8080']"
         );
     }
 
     #[test]
     fn run_perl_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.pl".into()).unwrap();
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.pl".into()).unwrap();
         let script = Script::build(
             script_f.path,
             "127.0.0.1".parse().unwrap(),
@@ -429,6 +438,6 @@ mod tests {
         );
         let output = script.run().unwrap();
         // output has a newline at the end by default, .trim() trims it
-        assert_eq!(output.trim(), "Total args passed to fixtures/test_script.pl : 2\nArg # 1 : 127.0.0.1\nArg # 2 : 80,8080");
+        assert_eq!(output.trim(), "Total args passed to fixtures/.rustscan_scripts/test_script.pl : 2\nArg # 1 : 127.0.0.1\nArg # 2 : 80,8080");
     }
 }
