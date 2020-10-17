@@ -432,7 +432,7 @@ Please read the [contributing.md file](contributing.md)
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-25-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-26-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -473,6 +473,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="http://rootsploit.com"><img src="https://avatars2.githubusercontent.com/u/67270834?v=4" width="100px;" alt=""/><br /><sub><b>RootSploit</b></sub></a><br /><a href="#blog-rootsploit" title="Blogposts">📝</a></td>
     <td align="center"><a href="https://github.com/eiffel-fl"><img src="https://avatars2.githubusercontent.com/u/12171754?v=4" width="100px;" alt=""/><br /><sub><b>eiffel-fl</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=eiffel-fl" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/u5surf"><img src="https://avatars1.githubusercontent.com/u/14180225?v=4" width="100px;" alt=""/><br /><sub><b>Y.Horie</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=u5surf" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/okrplay"><img src="https://avatars3.githubusercontent.com/u/32576280?v=4" width="100px;" alt=""/><br /><sub><b>Oskar</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=okrplay" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/commits?author=okrplay" title="Tests">⚠️</a></td>
   </tr>
 </table>
 
