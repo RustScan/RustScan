@@ -120,13 +120,13 @@ fn main() {
 
     let mut script_bench = NamedTimer::start("Scripts");
     for (ip, ports) in ports_per_ip.iter_mut() {
-        let vec_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
+        let vec_str_ports: Vec<String> = ports.iter().map(|port| port.to_string()).collect();
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = vec_str_ports.join(",");
 
         // if option scripts is none, no script will be spawned
-        if opts.greppable || opts.scripts.clone() == ScriptsRequired::None {
+        if opts.greppable || opts.scripts == ScriptsRequired::None {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
@@ -136,12 +136,12 @@ fn main() {
         for mut script_f in scripts_to_run.clone() {
             output!(
                 format!("Script to be run {:?}\n", script_f.call_format,),
-                opts.greppable.clone(),
-                opts.accessible.clone()
+                opts.greppable,
+                opts.accessible
             );
 
             // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
-            if opts.command.len() > 0 {
+            if !opts.command.is_empty() {
                 let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
                     .expect("Failed to parse extra user commandline arguments");
                 if script_f.call_format.is_some() {
@@ -163,11 +163,7 @@ fn main() {
             );
             match script.run() {
                 Ok(script_result) => {
-                    detail!(
-                        format!("{}", script_result),
-                        opts.greppable,
-                        opts.accessible
-                    );
+                    detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
                     warning!(
@@ -205,14 +201,12 @@ The Modern Day Port Scanner."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let mut home_dir = match dirs::home_dir() {
-        Some(dir) => dir,
-        None => panic!("Could not infer config file path."),
-    };
-    home_dir.push(".rustscan.toml");
+    let config_path = dirs::home_dir()
+        .expect("Could not infer config file path.")
+        .join(".rustscan.toml");
 
     detail!(
-        format!("The config file is expected to be at {:?}", home_dir),
+        format!("The config file is expected to be at {:?}", config_path),
         opts.greppable,
         opts.accessible
     );
@@ -227,21 +221,11 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for address in &input.addresses {
-        match parse_address(address, resolver) {
-            Ok(parsed_ips) => {
-                if !parsed_ips.is_empty() {
-                    ips.extend(parsed_ips);
-                } else {
-                    unresolved_addresses.push(address);
-                }
-            }
-            _ => {
-                warning!(
-                    format!("Host {:?} could not be resolved.", address),
-                    input.greppable,
-                    input.accessible
-                );
-            }
+        let parsed_ips = parse_address(address, resolver);
+        if !parsed_ips.is_empty() {
+            ips.extend(parsed_ips);
+        } else {
+            unresolved_addresses.push(address);
         }
     }
 
@@ -259,15 +243,14 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        match read_ips_from_file(file_path, &resolver) {
-            Ok(x) => ips.extend(x),
-            _ => {
-                warning!(
-                    format!("Host {:?} could not be resolved.", file_path),
-                    input.greppable,
-                    input.accessible
-                );
-            }
+        if let Ok(x) = read_ips_from_file(file_path, &resolver) {
+            ips.extend(x);
+        } else {
+            warning!(
+                format!("Host {:?} could not be resolved.", file_path),
+                input.greppable,
+                input.accessible
+            );
         }
     }
 
@@ -277,29 +260,25 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
-fn parse_address(address: &str, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
-    let mut ips: Vec<IpAddr> = Vec::new();
-
-    match IpCidr::from_str(&address) {
-        Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
-        _ => match format!("{}:{}", &address, 80).to_socket_addrs() {
-            Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-            _ => match resolve_ips_from_host(address, resolver) {
-                Ok(hosts) => ips.extend(hosts),
-                _ => (),
-            },
-        },
-    };
-
-    Ok(ips)
+fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
+    IpCidr::from_str(&address)
+        .map(|cidr| cidr.iter().collect())
+        .ok()
+        .or_else(|| {
+            format!("{}:{}", &address, 80)
+                .to_socket_addrs()
+                .ok()
+                .map(|mut iter| vec![iter.next().unwrap().ip()])
+        })
+        .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
-    match resolver.lookup_ip(&source) {
-        Ok(x) => Ok(x.iter().collect()),
-        _ => Ok(Vec::new()),
-    }
+fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Vec<IpAddr> {
+    resolver
+        .lookup_ip(source)
+        .map(|x| x.iter().collect())
+        .unwrap_or_default()
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -314,18 +293,13 @@ fn read_ips_from_file(
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     for address_line in reader.lines() {
-        match address_line {
-            Ok(address) => match parse_address(&address, resolver) {
-                Ok(result) => ips.extend(result),
-                Err(e) => {
-                    debug!("{} is not a valid IP or host", e);
-                }
-            },
-            Err(_) => {
-                debug!("Line in file is not valid");
-            }
+        if let Ok(address) = address_line {
+            ips.extend(parse_address(&address, resolver));
+        } else {
+            debug!("Line in file is not valid");
         }
     }
+
     Ok(ips)
 }
 
@@ -385,8 +359,8 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100), 
-            opts.greppable, opts.accessible);
+        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100),
+        opts.greppable, opts.accessible);
     }
 
     batch_size as u16

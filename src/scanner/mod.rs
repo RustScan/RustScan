@@ -75,16 +75,15 @@ impl Scanner {
             self.batch_size,
             self.ips.len(),
             &ports.len(),
-            (self.ips.len() * &ports.len()));
+            (self.ips.len() * ports.len()));
 
         while let Some(result) = ftrs.next().await {
             if let Some(socket) = socket_iterator.next() {
                 ftrs.push(self.scan_socket(socket));
             }
 
-            match result {
-                Ok(socket) => open_sockets.push(socket),
-                _ => {}
+            if let Ok(socket) = result {
+                open_sockets.push(socket);
             }
         }
         debug!("Open Sockets found: {:?}", &open_sockets);
