@@ -54,7 +54,7 @@ use std::path::PathBuf;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
 
-static DEFAULT: &'static str = r#"tags = ["core_approved", "RustScan", "default"]
+static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
 call_format = "nmap -vvv -p {{port}} {{ip}}"
@@ -176,13 +176,13 @@ impl Script {
         call_format: Option<String>,
     ) -> Self {
         Self {
-            path: path,
-            ip: ip,
-            open_ports: open_ports,
-            trigger_port: trigger_port,
-            ports_separator: ports_separator,
-            tags: tags,
-            call_format: call_format,
+            path,
+            ip,
+            open_ports,
+            trigger_port,
+            ports_separator,
+            tags,
+            call_format,
         }
     }
 
@@ -191,7 +191,7 @@ impl Script {
     pub fn run(self) -> Result<String> {
         debug!("run self {:?}", &self);
 
-        let separator = self.ports_separator.unwrap_or(",".into());
+        let separator = self.ports_separator.unwrap_or_else(|| ",".into());
 
         let mut ports_str = self
             .open_ports
@@ -231,17 +231,14 @@ impl Script {
 
         let arguments = shell_words::split(
             &to_run
-                .split(" ")
+                .split(' ')
                 .map(|arg| arg.to_string())
                 .collect::<Vec<String>>()
                 .join(" "),
         )
         .expect("Failed to parse script arguments");
 
-        match execute_script(arguments) {
-            Ok(result) => return Ok(result),
-            Err(e) => return Err(e),
-        }
+        execute_script(arguments)
     }
 }
 
@@ -264,7 +261,7 @@ fn execute_script(mut arguments: Vec<String>) -> Result<String> {
         }
         Err(error) => {
             debug!("Command error {}", error.to_string());
-            return Err(anyhow!(error.to_string()));
+            Err(anyhow!(error.to_string()))
         }
     }
 }
@@ -278,9 +275,9 @@ pub fn find_scripts(mut path: PathBuf) -> Result<Vec<PathBuf>> {
             let entry = entry?;
             files_vec.push(entry.path());
         }
-        return Ok(files_vec);
+        Ok(files_vec)
     } else {
-        return Err(anyhow!("Can't find scripts folder"));
+        Err(anyhow!("Can't find scripts folder"))
     }
 }
 
@@ -301,7 +298,7 @@ impl ScriptFile {
         if let Ok(file) = File::open(script) {
             for line in io::BufReader::new(file).lines().skip(1) {
                 if let Ok(mut line) = line {
-                    if line.starts_with("#") {
+                    if line.starts_with('#') {
                         line.retain(|c| c != '#');
                         line = line.trim().to_string();
                         line.push_str("\n");
@@ -322,11 +319,11 @@ impl ScriptFile {
                 debug!("Parsed ScriptFile{} \n{:?}", &real_path.display(), &parsed);
                 parsed.path = Some(real_path);
                 // parsed_scripts.push(parsed);
-                return Some(parsed);
+                Some(parsed)
             }
             Err(e) => {
                 debug!("Failed to parse ScriptFile headers {}", e.to_string());
-                return None;
+                None
             }
         }
     }
