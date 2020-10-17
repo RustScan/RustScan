@@ -353,3 +353,82 @@ impl ScriptConfig {
         Ok(config)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::{Script, ScriptFile};
+    #[test]
+    fn parse_script() {
+        let script_f = ScriptFile::new("fixtures/test_script.txt".into()).unwrap();
+        assert_eq!(
+            script_f.tags,
+            Some(vec!["core_approved".to_string(), "example".to_string()])
+        );
+        assert_eq!(
+            script_f.developer,
+            Some(vec![
+                "example".to_string(),
+                "https://example.org".to_string()
+            ])
+        );
+        assert_eq!(script_f.ports_separator, Some(",".to_string()));
+        assert_eq!(
+            script_f.call_format,
+            Some("nmap -vvv -p {{port}} {{ip}}".to_string())
+        );
+    }
+
+    #[test]
+    fn run_bash_script() {
+        let script_f = ScriptFile::new("fixtures/test_script.sh".into()).unwrap();
+        let script = Script::build(
+            script_f.path,
+            "127.0.0.1".parse().unwrap(),
+            vec![80, 8080],
+            script_f.port,
+            script_f.ports_separator,
+            script_f.tags,
+            script_f.call_format,
+        );
+        let output = script.run().unwrap();
+        // output has a newline at the end by default, .trim() trims it
+        assert_eq!(output.trim(), "127.0.0.1 80,8080");
+    }
+
+    #[test]
+    fn run_python_script() {
+        let script_f = ScriptFile::new("fixtures/test_script.py".into()).unwrap();
+        let script = Script::build(
+            script_f.path,
+            "127.0.0.1".parse().unwrap(),
+            vec![80, 8080],
+            script_f.port,
+            script_f.ports_separator,
+            script_f.tags,
+            script_f.call_format,
+        );
+        let output = script.run().unwrap();
+        // output has a newline at the end by default, .trim() trims it
+        assert_eq!(
+            output.trim(),
+            "Python script ran with arguments ['fixtures/test_script.py', '127.0.0.1', '80,8080']"
+        );
+    }
+
+    #[test]
+    fn run_perl_script() {
+        let script_f = ScriptFile::new("fixtures/test_script.pl".into()).unwrap();
+        let script = Script::build(
+            script_f.path,
+            "127.0.0.1".parse().unwrap(),
+            vec![80, 8080],
+            script_f.port,
+            script_f.ports_separator,
+            script_f.tags,
+            script_f.call_format,
+        );
+        let output = script.run().unwrap();
+        // output has a newline at the end by default, .trim() trims it
+        assert_eq!(output.trim(), "Total args passed to fixtures/test_script.pl : 2\nArg # 1 : 127.0.0.1\nArg # 2 : 80,8080");
+    }
+}
