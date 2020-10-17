@@ -238,10 +238,7 @@ impl Script {
         )
         .expect("Failed to parse script arguments");
 
-        match execute_script(arguments) {
-            Ok(result) => return Ok(result),
-            Err(e) => return Err(e),
-        }
+        execute_script(arguments)
     }
 }
 
@@ -264,7 +261,7 @@ fn execute_script(mut arguments: Vec<String>) -> Result<String> {
         }
         Err(error) => {
             debug!("Command error {}", error.to_string());
-            return Err(anyhow!(error.to_string()));
+            Err(anyhow!(error.to_string()))
         }
     }
 }
@@ -278,9 +275,9 @@ pub fn find_scripts(mut path: PathBuf) -> Result<Vec<PathBuf>> {
             let entry = entry?;
             files_vec.push(entry.path());
         }
-        return Ok(files_vec);
+        Ok(files_vec)
     } else {
-        return Err(anyhow!("Can't find scripts folder"));
+        Err(anyhow!("Can't find scripts folder"))
     }
 }
 
@@ -322,11 +319,11 @@ impl ScriptFile {
                 debug!("Parsed ScriptFile{} \n{:?}", &real_path.display(), &parsed);
                 parsed.path = Some(real_path);
                 // parsed_scripts.push(parsed);
-                return Some(parsed);
+                Some(parsed)
             }
             Err(e) => {
                 debug!("Failed to parse ScriptFile headers {}", e.to_string());
-                return None;
+                None
             }
         }
     }
