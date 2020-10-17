@@ -191,7 +191,7 @@ impl Script {
     pub fn run(self) -> Result<String> {
         debug!("run self {:?}", &self);
 
-        let separator = self.ports_separator.unwrap_or(",".into());
+        let separator = self.ports_separator.unwrap_or_else(|| ",".into());
 
         let mut ports_str = self
             .open_ports

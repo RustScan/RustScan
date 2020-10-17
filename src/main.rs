@@ -120,13 +120,13 @@ fn main() {
 
     let mut script_bench = NamedTimer::start("Scripts");
     for (ip, ports) in ports_per_ip.iter_mut() {
-        let vec_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
+        let vec_str_ports: Vec<String> = ports.iter().map(|port| port.to_string()).collect();
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = vec_str_ports.join(",");
 
         // if option scripts is none, no script will be spawned
-        if opts.greppable || opts.scripts.clone() == ScriptsRequired::None {
+        if opts.greppable || opts.scripts == ScriptsRequired::None {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
@@ -136,12 +136,12 @@ fn main() {
         for mut script_f in scripts_to_run.clone() {
             output!(
                 format!("Script to be run {:?}\n", script_f.call_format,),
-                opts.greppable.clone(),
-                opts.accessible.clone()
+                opts.greppable,
+                opts.accessible
             );
 
             // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
-            if opts.command.len() > 0 {
+            if !opts.command.is_empty() {
                 let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
                     .expect("Failed to parse extra user commandline arguments");
                 if script_f.call_format.is_some() {
@@ -163,11 +163,7 @@ fn main() {
             );
             match script.run() {
                 Ok(script_result) => {
-                    detail!(
-                        format!("{}", script_result),
-                        opts.greppable,
-                        opts.accessible
-                    );
+                    detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
                     warning!(
