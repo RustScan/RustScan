@@ -201,14 +201,12 @@ The Modern Day Port Scanner."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let mut home_dir = match dirs::home_dir() {
-        Some(dir) => dir,
-        None => panic!("Could not infer config file path."),
-    };
-    home_dir.push(".rustscan.toml");
+    let config_path = dirs::home_dir()
+        .expect("Could not infer config file path.")
+        .join(".rustscan.toml");
 
     detail!(
-        format!("The config file is expected to be at {:?}", home_dir),
+        format!("The config file is expected to be at {:?}", config_path),
         opts.greppable,
         opts.accessible
     );
@@ -245,15 +243,14 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        match read_ips_from_file(file_path, &resolver) {
-            Ok(x) => ips.extend(x),
-            _ => {
-                warning!(
-                    format!("Host {:?} could not be resolved.", file_path),
-                    input.greppable,
-                    input.accessible
-                );
-            }
+        if let Ok(x) = read_ips_from_file(file_path, &resolver) {
+            ips.extend(x);
+        } else {
+            warning!(
+                format!("Host {:?} could not be resolved.", file_path),
+                input.greppable,
+                input.accessible
+            );
         }
     }
 
@@ -279,7 +276,7 @@ fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
 /// Uses DNS to get the IPS assiocated with host
 fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Vec<IpAddr> {
     resolver
-        .lookup_ip(&source)
+        .lookup_ip(source)
         .map(|x| x.iter().collect())
         .unwrap_or_default()
 }
@@ -296,13 +293,13 @@ fn read_ips_from_file(
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     for address_line in reader.lines() {
-        match address_line {
-            Ok(address) => ips.extend(parse_address(&address, resolver)),
-            Err(_) => {
-                debug!("Line in file is not valid");
-            }
+        if let Ok(address) = address_line {
+            ips.extend(parse_address(&address, resolver));
+        } else {
+            debug!("Line in file is not valid");
         }
     }
+
     Ok(ips)
 }
 
