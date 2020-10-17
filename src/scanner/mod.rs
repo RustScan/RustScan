@@ -82,9 +82,8 @@ impl Scanner {
                 ftrs.push(self.scan_socket(socket));
             }
 
-            match result {
-                Ok(socket) => open_sockets.push(socket),
-                _ => {}
+            if let Ok(socket) = result {
+                open_sockets.push(socket);
             }
         }
         debug!("Open Sockets found: {:?}", &open_sockets);

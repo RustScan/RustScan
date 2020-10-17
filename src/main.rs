@@ -227,21 +227,11 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for address in &input.addresses {
-        match parse_address(address, resolver) {
-            Ok(parsed_ips) => {
-                if !parsed_ips.is_empty() {
-                    ips.extend(parsed_ips);
-                } else {
-                    unresolved_addresses.push(address);
-                }
-            }
-            _ => {
-                warning!(
-                    format!("Host {:?} could not be resolved.", address),
-                    input.greppable,
-                    input.accessible
-                );
-            }
+        let parsed_ips = parse_address(address, resolver);
+        if !parsed_ips.is_empty() {
+            ips.extend(parsed_ips);
+        } else {
+            unresolved_addresses.push(address);
         }
     }
 
@@ -277,29 +267,25 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
-fn parse_address(address: &str, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
-    let mut ips: Vec<IpAddr> = Vec::new();
-
-    match IpCidr::from_str(&address) {
-        Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
-        _ => match format!("{}:{}", &address, 80).to_socket_addrs() {
-            Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-            _ => match resolve_ips_from_host(address, resolver) {
-                Ok(hosts) => ips.extend(hosts),
-                _ => (),
-            },
-        },
-    };
-
-    Ok(ips)
+fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
+    IpCidr::from_str(&address)
+        .map(|cidr| cidr.iter().collect())
+        .ok()
+        .or_else(|| {
+            format!("{}:{}", &address, 80)
+                .to_socket_addrs()
+                .ok()
+                .map(|mut iter| vec![iter.next().unwrap().ip()])
+        })
+        .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
-    match resolver.lookup_ip(&source) {
-        Ok(x) => Ok(x.iter().collect()),
-        _ => Ok(Vec::new()),
-    }
+fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Vec<IpAddr> {
+    resolver
+        .lookup_ip(&source)
+        .map(|x| x.iter().collect())
+        .unwrap_or_default()
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -315,12 +301,7 @@ fn read_ips_from_file(
 
     for address_line in reader.lines() {
         match address_line {
-            Ok(address) => match parse_address(&address, resolver) {
-                Ok(result) => ips.extend(result),
-                Err(e) => {
-                    debug!("{} is not a valid IP or host", e);
-                }
-            },
+            Ok(address) => ips.extend(parse_address(&address, resolver)),
             Err(_) => {
                 debug!("Line in file is not valid");
             }
@@ -385,8 +366,8 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100), 
-            opts.greppable, opts.accessible);
+        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100),
+        opts.greppable, opts.accessible);
     }
 
     batch_size as u16
