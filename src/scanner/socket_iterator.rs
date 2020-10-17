@@ -21,8 +21,8 @@ pub struct SocketIterator<'s> {
 /// generating a vector containing all these combinations.
 impl<'s> SocketIterator<'s> {
     pub fn new(ips: &'s [IpAddr], ports: &'s [u16]) -> Self {
-        let ports_it = Box::new(ports.into_iter());
-        let ips_it = Box::new(ips.into_iter());
+        let ports_it = Box::new(ports.iter());
+        let ips_it = Box::new(ips.iter());
         Self {
             product_it: iproduct!(ports_it, ips_it),
         }
