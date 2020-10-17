@@ -64,7 +64,7 @@ pub struct NamedTimer {
 impl NamedTimer {
     pub fn start(name: &'static str) -> Self {
         Self {
-            name: name,
+            name,
             start: Some(Instant::now()),
             end: None,
         }

@@ -54,7 +54,7 @@ use std::path::PathBuf;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
 
-static DEFAULT: &'static str = r#"tags = ["core_approved", "RustScan", "default"]
+static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
 call_format = "nmap -vvv -p {{port}} {{ip}}"
@@ -176,13 +176,13 @@ impl Script {
         call_format: Option<String>,
     ) -> Self {
         Self {
-            path: path,
-            ip: ip,
-            open_ports: open_ports,
-            trigger_port: trigger_port,
-            ports_separator: ports_separator,
-            tags: tags,
-            call_format: call_format,
+            path,
+            ip,
+            open_ports,
+            trigger_port,
+            ports_separator,
+            tags,
+            call_format,
         }
     }
 
@@ -231,7 +231,7 @@ impl Script {
 
         let arguments = shell_words::split(
             &to_run
-                .split(" ")
+                .split(' ')
                 .map(|arg| arg.to_string())
                 .collect::<Vec<String>>()
                 .join(" "),
@@ -301,7 +301,7 @@ impl ScriptFile {
         if let Ok(file) = File::open(script) {
             for line in io::BufReader::new(file).lines().skip(1) {
                 if let Ok(mut line) = line {
-                    if line.starts_with("#") {
+                    if line.starts_with('#') {
                         line.retain(|c| c != '#');
                         line = line.trim().to_string();
                         line.push_str("\n");
