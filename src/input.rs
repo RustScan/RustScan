@@ -1,7 +1,6 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
-
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -15,6 +14,19 @@ arg_enum! {
     pub enum ScanOrder {
         Serial,
         Random,
+    }
+}
+
+arg_enum! {
+    /// Represents the scripts variant.
+    ///   - none will avoid running any script, only portscan results will be shown.
+    ///   - default will run the default embedded nmap script, that's part of RustScan since the beginning.
+    ///   - custom will read the ScriptConfig file and the available scripts in the predefined folders
+    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Copy)]
+    pub enum ScriptsRequired {
+        None,
+        Default,
+        Custom,
     }
 }
 
@@ -49,7 +61,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
     }
 }
 
-#[derive(StructOpt, Debug)]
+#[derive(StructOpt, Debug, Clone)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
@@ -81,10 +93,6 @@ pub struct Opts {
     #[structopt(long)]
     pub accessible: bool,
 
-    /// Turns off Nmap.
-    #[structopt(long)]
-    pub no_nmap: bool,
-
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
@@ -111,17 +119,21 @@ pub struct Opts {
     #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
     pub scan_order: ScanOrder,
 
-    /// The Nmap arguments to run.
+    /// Level of scripting required for the run.
+    #[structopt(long, possible_values = &ScriptsRequired::variants(), case_insensitive = true, default_value = "default")]
+    pub scripts: ScriptsRequired,
+
+    /// Use the top 1000 ports.
+    #[structopt(long)]
+    pub top: bool,
+
+    /// The Script arguments to run.
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -T 1500 127.0.0.1 -- -A -sC'.
     /// This command adds -Pn -vvv -p $PORTS automatically to nmap.
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
     #[structopt(last = true)]
     pub command: Vec<String>,
-
-    /// Use the top 1000 ports.
-    #[structopt(long)]
-    pub top: bool,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -160,7 +172,8 @@ impl Opts {
         }
 
         merge_required!(
-            addresses, greppable, accessible, batch_size, timeout, tries, scan_order, command
+            addresses, greppable, accessible, batch_size, timeout, tries, scan_order, scripts,
+            command
         );
     }
 
@@ -204,10 +217,10 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
-    no_nmap: Option<bool>,
     ulimit: Option<rlimit::RawRlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
+    scripts: Option<ScriptsRequired>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -251,7 +264,7 @@ impl Config {
 
 #[cfg(test)]
 mod tests {
-    use super::{Config, Opts, PortRange, ScanOrder};
+    use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
     impl Config {
         fn default() -> Self {
             Self {
@@ -263,10 +276,10 @@ mod tests {
                 timeout: Some(1_000),
                 tries: Some(1),
                 ulimit: None,
-                no_nmap: Some(false),
                 command: Some(vec!["-A".to_owned()]),
                 accessible: Some(true),
                 scan_order: Some(ScanOrder::Random),
+                scripts: None,
             }
         }
     }
@@ -284,10 +297,10 @@ mod tests {
                 ulimit: None,
                 command: vec![],
                 accessible: false,
-                no_nmap: false,
                 scan_order: ScanOrder::Serial,
                 no_config: true,
                 top: false,
+                scripts: ScriptsRequired::Default,
             }
         }
     }
@@ -320,6 +333,7 @@ mod tests {
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
         assert_eq!(opts.scan_order, config.scan_order.unwrap());
+        assert_eq!(opts.scripts, ScriptsRequired::Default)
     }
 
     #[test]
