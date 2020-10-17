@@ -40,7 +40,7 @@ pub struct PortRange {
 #[cfg(not(tarpaulin_include))]
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let range = input
-        .split("-")
+        .split('-')
         .map(|x| x.parse::<u16>())
         .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
 
@@ -189,14 +189,12 @@ impl Opts {
         }
 
         // Only use top ports when the user asks for them
-        if self.top {
-            if config.ports.is_some() {
-                let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
-                for entry in config.ports.clone().unwrap().keys() {
-                    ports.push(entry.parse().unwrap())
-                }
-                self.ports = Some(ports);
+        if self.top && config.ports.is_some() {
+            let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
+            for entry in config.ports.clone().unwrap().keys() {
+                ports.push(entry.parse().unwrap())
             }
+            self.ports = Some(ports);
         }
 
         merge_optional!(range, ulimit);
