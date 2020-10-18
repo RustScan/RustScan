@@ -249,6 +249,16 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "okrplay",
+      "name": "Oskar",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/32576280?v=4",
+      "profile": "https://github.com/okrplay",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,

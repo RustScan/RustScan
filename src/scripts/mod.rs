@@ -60,6 +60,7 @@ ports_separator = ","
 call_format = "nmap -vvv -p {{port}} {{ip}}"
 "#;
 
+#[cfg(not(tarpaulin_include))]
 pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
@@ -353,10 +354,72 @@ impl ScriptConfig {
 
 #[cfg(test)]
 mod tests {
-    use super::{Script, ScriptFile};
+    use super::{find_scripts, parse_scripts, Script, ScriptFile};
+
+    // Function for testing only, it inserts static values into ip and open_ports
+    // Doesn't use impl in case it's implemented in the super module at some point
+    fn into_script(script_f: ScriptFile) -> Script {
+        Script::build(
+            script_f.path,
+            "127.0.0.1".parse().unwrap(),
+            vec![80, 8080],
+            script_f.port,
+            script_f.ports_separator,
+            script_f.tags,
+            script_f.call_format,
+        )
+    }
+
     #[test]
-    fn parse_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.txt".into()).unwrap();
+    fn find_and_parse_scripts() {
+        let scripts = find_scripts("fixtures/".into()).unwrap();
+        let scripts = parse_scripts(scripts);
+        assert_eq!(scripts.len(), 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn find_invalid_folder() {
+        let scripts = find_scripts("Cargo.toml".into()).unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn open_script_file_invalid_headers() {
+        ScriptFile::new("fixtures/.rustscan_scripts/test_script_invalid_headers.txt".into())
+            .unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn open_script_file_invalid_call_format() {
+        let mut script_f =
+            ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
+        script_f.call_format = Some("qwertyuiop".to_string());
+        let script: Script = into_script(script_f);
+        let output = script.run().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn open_script_file_missing_call_format() {
+        let mut script_f =
+            ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
+        script_f.call_format = None;
+        let script: Script = into_script(script_f);
+        let output = script.run().unwrap();
+    }
+
+    #[test]
+    #[should_panic]
+    fn open_nonexisting_script_file() {
+        ScriptFile::new("qwertyuiop.txt".into()).unwrap();
+    }
+
+    #[test]
+    fn parse_txt_script() {
+        let script_f =
+            ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
         assert_eq!(
             script_f.tags,
             Some(vec!["core_approved".to_string(), "example".to_string()])
@@ -377,16 +440,8 @@ mod tests {
 
     #[test]
     fn run_bash_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.sh".into()).unwrap();
-        let script = Script::build(
-            script_f.path,
-            "127.0.0.1".parse().unwrap(),
-            vec![80, 8080],
-            script_f.port,
-            script_f.ports_separator,
-            script_f.tags,
-            script_f.call_format,
-        );
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.sh".into()).unwrap();
+        let script: Script = into_script(script_f);
         let output = script.run().unwrap();
         // output has a newline at the end by default, .trim() trims it
         assert_eq!(output.trim(), "127.0.0.1 80,8080");
@@ -394,38 +449,22 @@ mod tests {
 
     #[test]
     fn run_python_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.py".into()).unwrap();
-        let script = Script::build(
-            script_f.path,
-            "127.0.0.1".parse().unwrap(),
-            vec![80, 8080],
-            script_f.port,
-            script_f.ports_separator,
-            script_f.tags,
-            script_f.call_format,
-        );
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.py".into()).unwrap();
+        let script: Script = into_script(script_f);
         let output = script.run().unwrap();
         // output has a newline at the end by default, .trim() trims it
         assert_eq!(
             output.trim(),
-            "Python script ran with arguments ['fixtures/test_script.py', '127.0.0.1', '80,8080']"
+            "Python script ran with arguments ['fixtures/.rustscan_scripts/test_script.py', '127.0.0.1', '80,8080']"
         );
     }
 
     #[test]
     fn run_perl_script() {
-        let script_f = ScriptFile::new("fixtures/test_script.pl".into()).unwrap();
-        let script = Script::build(
-            script_f.path,
-            "127.0.0.1".parse().unwrap(),
-            vec![80, 8080],
-            script_f.port,
-            script_f.ports_separator,
-            script_f.tags,
-            script_f.call_format,
-        );
+        let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.pl".into()).unwrap();
+        let script: Script = into_script(script_f);
         let output = script.run().unwrap();
         // output has a newline at the end by default, .trim() trims it
-        assert_eq!(output.trim(), "Total args passed to fixtures/test_script.pl : 2\nArg # 1 : 127.0.0.1\nArg # 2 : 80,8080");
+        assert_eq!(output.trim(), "Total args passed to fixtures/.rustscan_scripts/test_script.pl : 2\nArg # 1 : 127.0.0.1\nArg # 2 : 80,8080");
     }
 }
