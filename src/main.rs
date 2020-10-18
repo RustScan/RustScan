@@ -1,3 +1,7 @@
+#![deny(clippy::all)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::doc_markdown)]
+
 extern crate shell_words;
 
 mod tui;

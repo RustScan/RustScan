@@ -1,3 +1,5 @@
+#![allow(clippy::non_ascii_literal)]
+
 /// Terminal User Interface Module for RustScan
 /// Defines macros to use
 
