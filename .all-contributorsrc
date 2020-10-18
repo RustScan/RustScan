@@ -162,7 +162,9 @@
       "avatar_url": "https://avatars0.githubusercontent.com/u/47574893?v=4",
       "profile": "https://github.com/niklasmohrin",
       "contributions": [
-        "doc"
+        "doc",
+        "code",
+        "bug"
       ]
     },
     {
@@ -219,6 +221,43 @@
       "profile": "https://github.com/mattcorbin",
       "contributions": [
         "code"
+      ]
+    },
+    {
+      "login": "rootsploit",
+      "name": "RootSploit",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67270834?v=4",
+      "profile": "http://rootsploit.com",
+      "contributions": [
+        "blog"
+      ]
+    },
+    {
+      "login": "eiffel-fl",
+      "name": "eiffel-fl",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/12171754?v=4",
+      "profile": "https://github.com/eiffel-fl",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "u5surf",
+      "name": "Y.Horie",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/14180225?v=4",
+      "profile": "https://github.com/u5surf",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "okrplay",
+      "name": "Oskar",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/32576280?v=4",
+      "profile": "https://github.com/okrplay",
+      "contributions": [
+        "code",
+        "test"
       ]
     }
   ],

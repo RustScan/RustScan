@@ -1,0 +1,7 @@
+#!intentional_blank_line
+#tags = "core_approved"
+#developer = [ "example", "https://example.org" ]
+#ports_separator = ","
+#call_format = "nmap -vvv -p {{port}} {{ip}}"
+
+# tags has to be an array, thus this file won't be parsed

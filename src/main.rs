@@ -3,7 +3,7 @@ extern crate shell_words;
 mod tui;
 
 mod input;
-use input::{Config, Opts, PortRange, ScanOrder};
+use input::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
 
 mod scanner;
 use scanner::Scanner;
@@ -14,29 +14,28 @@ use port_strategy::PortStrategy;
 mod benchmark;
 use benchmark::{Benchmark, NamedTimer};
 
+mod scripts;
+use scripts::{init_scripts, Script, ScriptFile};
+
 use cidr_utils::cidr::IpCidr;
-use colorful::Color;
-use colorful::Colorful;
+use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use rlimit::Resource;
-use rlimit::{getrlimit, setrlimit};
+use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::prelude::*;
-use std::io::BufReader;
-use std::net::ToSocketAddrs;
-use std::process::Command;
-use std::{net::IpAddr, time::Duration};
-use trust_dns_resolver::config::*;
-use trust_dns_resolver::Resolver;
+use std::io::{prelude::*, BufReader};
+use std::net::{IpAddr, ToSocketAddrs};
+use std::path::Path;
+use std::time::Duration;
+use trust_dns_resolver::{config::*, Resolver};
 
 extern crate colorful;
 extern crate dirs;
 
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: rlimit::rlim = 8000;
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: RawRlim = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: rlimit::rlim = 3000;
+const AVERAGE_BATCH_SIZE: RawRlim = 3000;
 
 #[macro_use]
 extern crate log;
@@ -55,6 +54,10 @@ fn main() {
 
     debug!("Main() `opts` arguments are {:?}", opts);
 
+    let scripts_to_run: Vec<ScriptFile> =
+        init_scripts(opts.scripts).expect("could not initiate scripting part.");
+    debug!("Scripts initialized {:?}", &scripts_to_run);
+
     if !opts.greppable && !opts.accessible {
         print_opening(&opts);
     }
@@ -70,13 +73,14 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: rlimit::rlim = adjust_ulimit_size(&opts);
+    let ulimit: RawRlim = adjust_ulimit_size(&opts);
     let batch_size: u16 = infer_batch_size(&opts, ulimit);
 
     let scanner = Scanner::new(
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
+        opts.tries,
         opts.greppable,
         PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
         opts.accessible,
@@ -114,46 +118,67 @@ fn main() {
         warning!(x, opts.greppable, opts.accessible);
     }
 
-    let mut nmap_bench = NamedTimer::start("Nmap");
+    let mut script_bench = NamedTimer::start("Scripts");
     for (ip, ports) in ports_per_ip.iter_mut() {
-        let nmap_str_ports: Vec<String> = ports.into_iter().map(|port| port.to_string()).collect();
+        let vec_str_ports: Vec<String> = ports.iter().map(|port| port.to_string()).collect();
 
         // nmap port style is 80,443. Comma separated with no spaces.
-        let ports_str = nmap_str_ports.join(",");
+        let ports_str = vec_str_ports.join(",");
 
-        // if greppable mode is on nmap should not be spawned
-        if opts.greppable || opts.no_nmap {
+        // if option scripts is none, no script will be spawned
+        if opts.greppable || opts.scripts == ScriptsRequired::None {
             println!("{} -> [{}]", &ip, ports_str);
             continue;
         }
-        detail!("Starting Nmap", opts.greppable, opts.accessible);
+        detail!("Starting Script(s)", opts.greppable, opts.accessible);
 
-        let addr = ip.to_string();
-        let user_nmap_args =
-            shell_words::split(&opts.command.join(" ")).expect("failed to parse nmap arguments");
-        let nmap_args = build_nmap_arguments(&addr, &ports_str, &user_nmap_args, ip.is_ipv6());
+        // Run all the scripts we found and parsed based on the script config file tags field.
+        for mut script_f in scripts_to_run.clone() {
+            output!(
+                format!("Script to be run {:?}\n", script_f.call_format,),
+                opts.greppable,
+                opts.accessible
+            );
 
-        output!(
-            format!(
-                "The Nmap command to be run is nmap {}\n",
-                &nmap_args.join(" ")
-            ),
-            opts.greppable.clone(),
-            opts.accessible.clone()
-        );
+            // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
+            if !opts.command.is_empty() {
+                let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
+                    .expect("Failed to parse extra user commandline arguments");
+                if script_f.call_format.is_some() {
+                    let mut call_f = script_f.call_format.unwrap();
+                    call_f.push_str(&format!(" {}", &user_extra_args.join(" ")));
+                    script_f.call_format = Some(call_f);
+                }
+            }
 
-        // Runs the nmap command and spawns it as a process.
-        let mut child = Command::new("nmap")
-            .args(&nmap_args)
-            .spawn()
-            .expect("failed to execute nmap process");
-
-        child.wait().expect("failed to wait on nmap process");
+            // Building the script with the arguments from the ScriptFile, and ip-ports.
+            let script = Script::build(
+                script_f.path,
+                *ip,
+                ports.to_vec(),
+                script_f.port,
+                script_f.ports_separator,
+                script_f.tags,
+                script_f.call_format,
+            );
+            match script.run() {
+                Ok(script_result) => {
+                    detail!(script_result.to_string(), opts.greppable, opts.accessible);
+                }
+                Err(e) => {
+                    warning!(
+                        &format!("Error {}", e.to_string()),
+                        opts.greppable,
+                        opts.accessible
+                    );
+                }
+            }
+        }
     }
 
     // To use the runtime benchmark, run the process as: RUST_LOG=info ./rustscan
-    nmap_bench.end();
-    benchmarks.push(nmap_bench);
+    script_bench.end();
+    benchmarks.push(script_bench);
     rustscan_bench.end();
     benchmarks.push(rustscan_bench);
     debug!("Benchmarks raw {:?}", benchmarks);
@@ -167,7 +192,7 @@ fn print_opening(opts: &Opts) {
 | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
 `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-Faster Nmap scanning with Rust."#;
+The Modern Day Port Scanner."#;
     println!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
 : https://discord.gg/GFrQsGy           :
@@ -176,51 +201,56 @@ Faster Nmap scanning with Rust."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let mut home_dir = match dirs::home_dir() {
-        Some(dir) => dir,
-        None => panic!("Could not infer config file path."),
-    };
-    home_dir.push(".rustscan.toml");
+    let config_path = dirs::home_dir()
+        .expect("Could not infer config file path.")
+        .join(".rustscan.toml");
 
     detail!(
-        format!("The config file is expected to be at {:?}", home_dir),
+        format!("The config file is expected to be at {:?}", config_path),
         opts.greppable,
         opts.accessible
     );
 }
-#[cfg(not(tarpaulin_include))]
-fn build_nmap_arguments<'a>(
-    addr: &'a str,
-    ports: &'a str,
-    user_args: &'a Vec<String>,
-    is_ipv6: bool,
-) -> Vec<&'a str> {
-    let mut arguments: Vec<&str> = user_args.iter().map(AsRef::as_ref).collect();
-    arguments.push("-vvv");
-
-    if is_ipv6 {
-        arguments.push("-6");
-    }
-
-    arguments.push("-p");
-    arguments.push(ports);
-    arguments.push(addr);
-
-    arguments
-}
 
 /// Goes through all possible IP inputs (files or via argparsing)
 /// Parses the string(s) into IPs
-fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
+fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
+    let mut unresolved_addresses: Vec<&str> = Vec::new();
     let backup_resolver =
         &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
-    for ip_or_host in &opts.addresses {
-        if let Ok(x) = read_ips_from_file(ip_or_host.to_owned(), &backup_resolver) {
+    for address in &input.addresses {
+        let parsed_ips = parse_address(address, backup_resolver);
+        if !parsed_ips.is_empty() {
+            ips.extend(parsed_ips);
+        } else {
+            unresolved_addresses.push(address);
+        }
+    }
+
+    // If we got to this point this can only be a file path or the wrong input.
+    for file_path in unresolved_addresses {
+        let file_path = Path::new(file_path);
+
+        if !file_path.is_file() {
+            warning!(
+                format!("Host {:?} could not be resolved.", file_path),
+                input.greppable,
+                input.accessible
+            );
+
+            continue;
+        }
+
+        if let Ok(x) = read_ips_from_file(file_path, &resolver) {
             ips.extend(x);
         } else {
-            ips.extend(parse_to_ip(&ip_or_host.to_owned(), &backup_resolver));
+            warning!(
+                format!("Host {:?} could not be resolved.", file_path),
+                input.greppable,
+                input.accessible
+            );
         }
     }
 
@@ -258,12 +288,12 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
     }
 
     return ips;
-}
+
 
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
 fn read_ips_from_file(
-    ips: String,
+    ips: &std::path::Path,
     backup_resolver: &Resolver,
 ) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     let file = File::open(ips)?;
@@ -299,9 +329,9 @@ fn parse_to_ip(address: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
     ips
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
+fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
     if opts.ulimit.is_some() {
-        let limit: rlimit::rlim = opts.ulimit.unwrap();
+        let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
 
         match setrlimit(Resource::NOFILE, limit, limit) {
             Ok(_) => {
@@ -323,11 +353,11 @@ fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
 
     let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
 
-    rlim
+    rlim.as_raw()
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
-    let mut batch_size: rlimit::rlim = opts.batch_size.into();
+fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
+    let mut batch_size: RawRlim = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
@@ -355,8 +385,8 @@ fn infer_batch_size(opts: &Opts, ulimit: rlimit::rlim) -> u16 {
     // When the ulimit is higher than the batch size let the user know that the
     // batch size can be increased unless they specified the ulimit themselves.
     else if ulimit + 2 > batch_size && (opts.ulimit.is_none()) {
-        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100), 
-            opts.greppable, opts.accessible);
+        detail!(format!("File limit higher than batch size. Can increase speed by increasing batch size '-b {}'.", ulimit - 100),
+        opts.greppable, opts.accessible);
     }
 
     batch_size as u16

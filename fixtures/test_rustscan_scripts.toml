@@ -1,0 +1,14 @@
+# Test/Example ScriptConfig file
+
+# Tags to filter on scripts. Only scripts containing all these tags will run.
+tags = ["core_approved", "example"]
+
+# If it's present then only those scripts will run which has a tag ports = "80". Not yet implemented.
+#
+# ex.:
+# ports = ["80"]
+# ports = ["80","81","8080"]
+ports = ["80"]
+
+# Only this developer(s) scripts to run. Not yet implemented.
+developer = ["example"]
