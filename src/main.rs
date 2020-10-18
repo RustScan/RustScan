@@ -14,6 +14,7 @@ use port_strategy::PortStrategy;
 mod benchmark;
 use benchmark::{Benchmark, NamedTimer};
 
+use async_std::net::ToSocketAddrs;
 use cidr_utils::cidr::IpCidr;
 use colorful::Color;
 use colorful::Colorful;
@@ -235,27 +236,19 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(
-    source: &String,
-    backup_resolver: &Resolver,
-) -> Result<Vec<IpAddr>, std::io::Error> {
+fn resolve_ips_from_host(source: &String, backup_resolver: &Resolver) -> Vec<IpAddr> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
-    match source.to_socket_addrs() {
-        Ok(x) => {
-            for ip in x.into_iter() {
-                ips.push(ip.ip())
-            }
+    if let Ok(addrs) = source.to_socket_addrs() {
+        for ip in x.into_iter() {
+            ips.push(ip.ip());
         }
-        _ => match backup_resolver.lookup_ip(&source) {
-            Ok(x) => {
-                for ip in x.iter() {
-                    ips.push(ip);
-                }
-            }
-            _ => (),
-        },
-    };
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+        for ip in x.iter() {
+            ips.push(ip);
+        }
+    }
+
     return Ok(ips);
 }
 
@@ -290,19 +283,16 @@ fn read_ips_from_file(
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
-fn parse_to_ip(address: String, backup_resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
+fn parse_to_ip(address: &str, backup_resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
-    match IpCidr::from_str(&address) {
-        Ok(cidr) => cidr.iter().for_each(|ip| ips.push(ip)),
-        _ => match format!("{}:{}", &address, 80).to_socket_addrs() {
-            Ok(mut iter) => ips.push(iter.nth(0).unwrap().ip()),
-            _ => match resolve_ips_from_host(&address, backup_resolver) {
-                Ok(hosts) => ips.extend(hosts),
-                _ => (),
-            },
-        },
-    };
+    if let Ok(cidr) = IpCidr::from_str(&address) {
+        cidr.iter().for_each(|ip| ips.push(ip));
+    } else if let Ok(iter) = format!("{}:{}", &address, 80).to_socket_addrs() {
+        ips.push(iter.nth(0)).unwrap.ip();
+    } else {
+        ips.extend(resolve_ips_from_host(&address, backup_resolver));
+    }
 
     Ok(ips)
 }
