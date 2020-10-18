@@ -243,7 +243,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        if let Ok(x) = read_ips_from_file(file_path, &resolver) {
+        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver) {
             ips.extend(x);
         } else {
             warning!(
@@ -288,7 +288,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
     }
 
     return ips;
-
+}
 
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
@@ -310,23 +310,6 @@ fn read_ips_from_file(
     }
 
     Ok(ips)
-}
-
-/// Given a string, parse it as an host, IP address, or CIDR.
-/// This allows us to pass files as hosts or cidr or IPs easily
-/// Call this everytime you have a possible IP_or_host
-fn parse_to_ip(address: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
-    let mut ips: Vec<IpAddr> = Vec::new();
-
-    if let Ok(cidr) = IpCidr::from_str(&address) {
-        cidr.iter().for_each(|ip| ips.push(ip));
-    } else if let Ok(mut iter) = format!("{}:{}", &address, 80).to_socket_addrs() {
-        ips.push(iter.nth(0).unwrap().ip());
-    } else {
-        ips.extend(resolve_ips_from_host(address, backup_resolver));
-    }
-
-    ips
 }
 
 fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
