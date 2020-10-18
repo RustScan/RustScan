@@ -14,7 +14,6 @@ use port_strategy::PortStrategy;
 mod benchmark;
 use benchmark::{Benchmark, NamedTimer};
 
-use async_std::net::ToSocketAddrs;
 use cidr_utils::cidr::IpCidr;
 use colorful::Color;
 use colorful::Colorful;
@@ -218,38 +217,47 @@ fn parse_addresses(opts: &Opts) -> Vec<IpAddr> {
         &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for ip_or_host in &opts.addresses {
-        match read_ips_from_file(ip_or_host.to_owned(), &backup_resolver) {
-            Ok(x) => ips.extend(x),
-            _ => match parse_to_ip(ip_or_host.to_owned(), &backup_resolver) {
-                Ok(x) => ips.extend(x),
-                _ => {
-                    warning!(
-                        format!("Host {:?} could not be resolved.", ip_or_host),
-                        opts.greppable,
-                        opts.accessible
-                    );
-                }
-            },
+        if let Ok(x) = read_ips_from_file(ip_or_host.to_owned(), &backup_resolver) {
+            ips.extend(x);
+        } else {
+            ips.extend(parse_to_ip(&ip_or_host.to_owned(), &backup_resolver));
         }
     }
+
     ips
 }
 
+/// Given a string, parse it as an host, IP address, or CIDR.
+/// This allows us to pass files as hosts or cidr or IPs easily
+/// Call this everytime you have a possible IP_or_host
+fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
+    IpCidr::from_str(&address)
+        .map(|cidr| cidr.iter().collect())
+        .ok()
+        .or_else(|| {
+            format!("{}:{}", &address, 80)
+                .to_socket_addrs()
+                .ok()
+                .map(|mut iter| vec![iter.next().unwrap().ip()])
+        })
+        .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
+}
+
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(source: &String, backup_resolver: &Resolver) -> Vec<IpAddr> {
+fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     if let Ok(addrs) = source.to_socket_addrs() {
-        for ip in x.into_iter() {
+        for ip in addrs.into_iter() {
             ips.push(ip.ip());
         }
     } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
-        for ip in x.iter() {
+        for ip in addrs.iter() {
             ips.push(ip);
         }
     }
 
-    return Ok(ips);
+    return ips;
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -258,43 +266,37 @@ fn read_ips_from_file(
     ips: String,
     backup_resolver: &Resolver,
 ) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
-    // if we cannot open it as a file, it is not a file so move on
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
 
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
-    for str_ip in reader.lines() {
-        match str_ip {
-            Ok(x) => match parse_to_ip(x, backup_resolver) {
-                Ok(result) => ips.extend(result),
-                Err(e) => {
-                    debug!("{} is not a valid IP or host", e);
-                }
-            },
-            Err(_) => {
-                debug!("Line in file is not valid");
-            }
+    for address_line in reader.lines() {
+        if let Ok(address) = address_line {
+            ips.extend(parse_address(&address, backup_resolver));
+        } else {
+            debug!("Line in file is not valid");
         }
     }
+
     Ok(ips)
 }
 
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
-fn parse_to_ip(address: &str, backup_resolver: &Resolver) -> Result<Vec<IpAddr>, std::io::Error> {
+fn parse_to_ip(address: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
 
     if let Ok(cidr) = IpCidr::from_str(&address) {
         cidr.iter().for_each(|ip| ips.push(ip));
-    } else if let Ok(iter) = format!("{}:{}", &address, 80).to_socket_addrs() {
-        ips.push(iter.nth(0)).unwrap.ip();
+    } else if let Ok(mut iter) = format!("{}:{}", &address, 80).to_socket_addrs() {
+        ips.push(iter.nth(0).unwrap().ip());
     } else {
-        ips.extend(resolve_ips_from_host(&address, backup_resolver));
+        ips.extend(resolve_ips_from_host(address, backup_resolver));
     }
 
-    Ok(ips)
+    ips
 }
 
 fn adjust_ulimit_size(opts: &Opts) -> rlimit::rlim {
