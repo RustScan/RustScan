@@ -12,7 +12,7 @@ use std::{
     io::ErrorKind,
     net::{IpAddr, Shutdown, SocketAddr},
     num::NonZeroU8,
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 /// The class for the scanner
@@ -28,6 +28,7 @@ pub struct Scanner {
     batch_size: u16,
     timeout: Duration,
     tries: NonZeroU8,
+    time_interval: u64,
     greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
@@ -39,6 +40,7 @@ impl Scanner {
         batch_size: u16,
         timeout: Duration,
         tries: u8,
+        time_interval: u64,
         greppable: bool,
         port_strategy: PortStrategy,
         accessible: bool,
@@ -47,6 +49,7 @@ impl Scanner {
             batch_size,
             timeout,
             tries: NonZeroU8::new(std::cmp::max(tries, 1)).unwrap(),
+            time_interval,
             greppable,
             port_strategy,
             ips: ips.iter().map(ToOwned::to_owned).collect(),
@@ -62,6 +65,8 @@ impl Scanner {
         let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
+        let begin = Instant::now();
+        let mut last_time = begin;
 
         for _ in 0..self.batch_size {
             if let Some(socket) = socket_iterator.next() {
@@ -84,6 +89,21 @@ impl Scanner {
 
             if let Ok(socket) = result {
                 open_sockets.push(socket);
+            }
+
+            if self.time_interval != 0 {
+                let now = Instant::now();
+
+                if let Some(duration) = now.checked_duration_since(last_time) {
+                    if duration.as_secs() >= self.time_interval {
+                        println!(
+                            "[{}s] {} open port(s) found",
+                            begin.elapsed().as_secs(),
+                            open_sockets.len()
+                        );
+                        last_time = now;
+                    }
+                }
             }
         }
         debug!("Open Sockets found: {:?}", &open_sockets);
@@ -190,6 +210,7 @@ mod tests {
             10,
             Duration::from_millis(100),
             1,
+            60,
             true,
             strategy,
             true,
@@ -212,6 +233,7 @@ mod tests {
             10,
             Duration::from_millis(100),
             1,
+            60,
             true,
             strategy,
             true,
@@ -233,6 +255,7 @@ mod tests {
             10,
             Duration::from_millis(100),
             1,
+            60,
             true,
             strategy,
             true,
@@ -253,6 +276,7 @@ mod tests {
             10,
             Duration::from_millis(100),
             1,
+            60,
             true,
             strategy,
             true,
@@ -276,6 +300,7 @@ mod tests {
             10,
             Duration::from_millis(100),
             1,
+            60,
             true,
             strategy,
             true,
