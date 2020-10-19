@@ -59,17 +59,17 @@ RustScan is a modern take on the port scanner. Sleek & fast. All while providing
 
 Not to mention RustScan uses Adaptive Learning to improve itself over time, making it the best port scanner for **you**.
 
-## Speed
+## 🧋 Speed
 
-Speed is guranteed via RustScan. However, if you want to run a slow scan that stealth reasons that is possible too.
+Speed is guaranteed via RustScan. However, if you want to run a slow scan due to stealth that is possible too.
 
 Firstly, let's talk code.
 
-We have tests that check to see if RustScan is significantly lower than the previous version. If it is, the continuous integration fails and we can't commit code to master unless we make it faster.
+We have tests that check to see if RustScan is significantly slower than the previous version. If it is, the continuous integration fails and we can't commit code to master unless we make it faster.
 
 [HyperFine](https://github.com/sharkdp/hyperfine) is used to monitor RustScan's performance over time to answer the question "Are we getting faster? Are we getting slower?".
 
-Every pull request is reviewed by 1 person, but more often than not 2 people review it. We test it manually and make sure the code doesn't effect performance negatively.
+Every pull request is reviewed by 1 person, but more often than not 2 people review it. We test it manually and make sure the code doesn't affect performance negatively.
 
 [Read more here](https://github.com/RustScan/RustScan/wiki/Increasing-Speed-&-Accuracy).
 
@@ -93,7 +93,7 @@ This is an umbrella term we use for any feature that fits this criteria. The lis
 
 RustScan is one of the first penetration testing tools that aims to be entirely accessible. 
 
-[Most penetration testing tools are not accessible](https://bees.substack.com/p/making-hacking-accessible), which negatively effects the whole industry.
+[Most penetration testing tools are not accessible](https://bees.substack.com/p/making-hacking-accessible), which negatively affects the whole industry.
 
 RustScan has continuous integration testing that aims to make sure it is accessible, and we are constantly working on ways to improve our accessibility and make sure _everyone_ can use RustScan.
 
@@ -116,7 +116,7 @@ If you maintain a community distribution and want it listed here, leave an issue
 
 We have 2 usage guides. [Basic Usage](https://github.com/RustScan/RustScan/wiki/Usage) and [Things you may want to do](https://github.com/RustScan/RustScan/wiki/Things-you-may-want-to-do-with-RustScan-but-don't-understand-how).
 
-We also have documentation on our config file [here](https://github.com/RustScan/RustScan/wiki/Config-File).
+We also have documentation about our config file [here](https://github.com/RustScan/RustScan/wiki/Config-File).
 
 # 🎪 Community
 
