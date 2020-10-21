@@ -5,7 +5,7 @@
 macro_rules! warning {
     ($name:expr) => {
         use ansi_term::Colour::Red;
-        println!("{} {}", Red.bold().paint("[!]"), $name);
+        eprintln!("{} {}", Red.bold().paint("[!]"), $name);
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
         use ansi_term::Colour::Red;
@@ -13,9 +13,9 @@ macro_rules! warning {
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
-                println!("{}", $name);
+                eprintln!("{}", $name);
             } else {
-                println!("{} {}", Red.bold().paint("[!]"), $name);
+                eprintln!("{} {}", Red.bold().paint("[!]"), $name);
             }
         }
     };
@@ -25,7 +25,7 @@ macro_rules! warning {
 macro_rules! detail {
     ($name:expr) => {
         use ansi_term::Colour::Blue;
-        println!("{} {}", Blue.bold().paint("[~]"), $name);
+        eprintln!("{} {}", Blue.bold().paint("[~]"), $name);
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
         use ansi_term::Colour::Blue;
@@ -33,9 +33,9 @@ macro_rules! detail {
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
-                println!("{}", $name);
+                eprintln!("{}", $name);
             } else {
-                println!("{} {}", Blue.bold().paint("[~]"), $name);
+                eprintln!("{} {}", Blue.bold().paint("[~]"), $name);
             }
         }
     };
@@ -75,7 +75,7 @@ macro_rules! funny_opening {
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 
-        println!("{}\n", random_quote);
+        eprintln!("{}\n", random_quote);
         // println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
     };
 }

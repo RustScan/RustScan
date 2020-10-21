@@ -7,7 +7,7 @@ extern crate shell_words;
 mod tui;
 
 mod input;
-use input::{Config, Opts, OutputFormat, PortRange, ScanOrder, ScriptsRequired};
+use input::{Config, Opts, PortRange, ScanOrder, SummaryFormat};
 
 mod scanner;
 use scanner::Scanner;
@@ -28,7 +28,7 @@ use itertools::Itertools;
 use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
 use std::convert::TryInto;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
 use std::path::Path;
@@ -129,25 +129,13 @@ fn main() {
         warning!(x, opts.greppable, opts.accessible);
     }
 
-    if opts.greppable
-        || opts.scripts == ScriptsRequired::None
-        || opts.format != OutputFormat::Text
-        || opts.output_file.is_some()
-    {
-        let output_string = format_summary(&ports_per_ip, opts.format);
-
-        if let Some(ref path) = opts.output_file {
-            if let Err(e) = fs::write(path, &output_string) {
-                eprintln!("Failed to write output to file at '{}': {}", path, e);
-                println!("Have your output anyway:\n{}", output_string);
-                return;
-            }
-        } else {
-            println!("{}", output_string);
-        }
-    }
-
-    if !opts.greppable && opts.scripts != ScriptsRequired::None {
+    if let Some(summary_format) = opts.summary {
+        let summary = generate_summary(&ports_per_ip, summary_format);
+        std::io::stdout()
+            .lock()
+            .write_all(summary.as_bytes())
+            .expect("Could not write summary to stdout.");
+    } else {
         let mut script_bench = NamedTimer::start("Scripts");
         for (ip, ports) in &ports_per_ip {
             detail!("Starting Script(s)", opts.greppable, opts.accessible);
@@ -215,12 +203,12 @@ fn print_opening(opts: &Opts) {
 | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
 `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
 The Modern Day Port Scanner."#;
-    println!("{}", s.gradient(Color::Green).bold());
+    eprintln!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
 : https://discord.gg/GFrQsGy           :
 : https://github.com/RustScan/RustScan :
  --------------------------------------"#;
-    println!("{}", info.gradient(Color::Yellow).bold());
+    eprintln!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
     let config_path = dirs::home_dir()
@@ -280,9 +268,9 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 }
 
 /// Generates a summary in the given format.
-fn format_summary(ports_per_ip: &HashMap<IpAddr, Vec<u16>>, out_format: OutputFormat) -> String {
+fn generate_summary(ports_per_ip: &HashMap<IpAddr, Vec<u16>>, out_format: SummaryFormat) -> String {
     match out_format {
-        OutputFormat::Text => ports_per_ip
+        SummaryFormat::Text => ports_per_ip
             .iter()
             .map(|(ip, ports)| {
                 format!(
@@ -292,7 +280,7 @@ fn format_summary(ports_per_ip: &HashMap<IpAddr, Vec<u16>>, out_format: OutputFo
                 )
             })
             .join("\n"),
-        OutputFormat::Json => {
+        SummaryFormat::Json => {
             serde_json::to_string(&ports_per_ip).expect("Failed to serialize results as JSON.")
         }
     }
