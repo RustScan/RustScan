@@ -1,3 +1,7 @@
+#![deny(clippy::all)]
+#![warn(clippy::pedantic)]
+#![allow(clippy::doc_markdown, clippy::if_not_else, clippy::non_ascii_literal)]
+
 extern crate shell_words;
 
 mod tui;
@@ -22,12 +26,17 @@ use colorful::{Color, Colorful};
 use futures::executor::block_on;
 use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
+use std::convert::TryInto;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
 use std::path::Path;
+use std::string::ToString;
 use std::time::Duration;
-use trust_dns_resolver::{config::*, Resolver};
+use trust_dns_resolver::{
+    config::{ResolverConfig, ResolverOpts},
+    Resolver,
+};
 
 extern crate colorful;
 extern crate dirs;
@@ -41,6 +50,7 @@ const AVERAGE_BATCH_SIZE: RawRlim = 3000;
 extern crate log;
 
 #[cfg(not(tarpaulin_include))]
+#[allow(clippy::too_many_lines)]
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
@@ -82,7 +92,7 @@ fn main() {
         Duration::from_millis(opts.timeout.into()),
         opts.tries,
         opts.greppable,
-        PortStrategy::pick(opts.range, opts.ports, opts.scan_order),
+        PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
     );
     debug!("Scanner finished building: {:?}", scanner);
@@ -119,8 +129,8 @@ fn main() {
     }
 
     let mut script_bench = NamedTimer::start("Scripts");
-    for (ip, ports) in ports_per_ip.iter_mut() {
-        let vec_str_ports: Vec<String> = ports.iter().map(|port| port.to_string()).collect();
+    for (ip, ports) in &ports_per_ip {
+        let vec_str_ports: Vec<String> = ports.iter().map(ToString::to_string).collect();
 
         // nmap port style is 80,443. Comma separated with no spaces.
         let ports_str = vec_str_ports.join(",");
@@ -307,21 +317,18 @@ fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
     if opts.ulimit.is_some() {
         let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
 
-        match setrlimit(Resource::NOFILE, limit, limit) {
-            Ok(_) => {
-                detail!(
-                    format!("Automatically increasing ulimit value to {}.", limit),
-                    opts.greppable,
-                    opts.accessible
-                );
-            }
-            Err(_) => {
-                warning!(
-                    "ERROR. Failed to set ulimit value.",
-                    opts.greppable,
-                    opts.accessible
-                );
-            }
+        if setrlimit(Resource::NOFILE, limit, limit).is_ok() {
+            detail!(
+                format!("Automatically increasing ulimit value to {}.", limit),
+                opts.greppable,
+                opts.accessible
+            );
+        } else {
+            warning!(
+                "ERROR. Failed to set ulimit value.",
+                opts.greppable,
+                opts.accessible
+            );
         }
     }
 
@@ -363,7 +370,9 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
         opts.greppable, opts.accessible);
     }
 
-    batch_size as u16
+    batch_size
+        .try_into()
+        .expect("Couldn't fit the batch size into a u16.")
 }
 
 #[cfg(test)]
@@ -414,8 +423,8 @@ mod tests {
         opts.ulimit = Some(2_000);
         // print opening should not panic
         print_opening(&opts);
-        assert!(1 == 1);
     }
+
     #[test]
     fn test_high_ulimit_no_greppable_mode() {
         let mut opts = Opts::default();

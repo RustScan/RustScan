@@ -10,7 +10,7 @@ arg_enum! {
     /// Represents the strategy in which the port scanning will run.
     ///   - Serial will run from start to end, for example 1 to 1_000.
     ///   - Random will randomize the order in which ports will be scanned.
-    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq)]
+    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq)]
     pub enum ScanOrder {
         Serial,
         Random,
@@ -41,7 +41,7 @@ pub struct PortRange {
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let range = input
         .split('-')
-        .map(|x| x.parse::<u16>())
+        .map(str::parse)
         .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
 
     if range.is_err() {
@@ -63,6 +63,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 
 #[derive(StructOpt, Debug, Clone)]
 #[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
+#[allow(clippy::struct_excessive_bools)]
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
