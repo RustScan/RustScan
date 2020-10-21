@@ -43,14 +43,18 @@
 //!
 //! If the format is different, the script will be silently discarded and will not run. With the Debug option it's possible to see where it goes wrong.
 
+#![allow(clippy::module_name_repetitions)]
+
 use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
+use std::convert::TryInto;
 use std::fs::{self, File};
 use std::io::{self, prelude::*};
 use std::net::IpAddr;
 use std::path::PathBuf;
+use std::string::ToString;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
 
@@ -197,7 +201,7 @@ impl Script {
         let mut ports_str = self
             .open_ports
             .iter()
-            .map(|port| port.to_string())
+            .map(ToString::to_string)
             .collect::<Vec<String>>()
             .join(&separator);
         if let Some(port) = self.trigger_port {
@@ -233,7 +237,7 @@ impl Script {
         let arguments = shell_words::split(
             &to_run
                 .split(' ')
-                .map(|arg| arg.to_string())
+                .map(ToString::to_string)
                 .collect::<Vec<String>>()
                 .join(" "),
         )
@@ -250,10 +254,10 @@ fn execute_script(mut arguments: Vec<String>) -> Result<String> {
     match process.capture() {
         Ok(c) => {
             let es = match c.exit_status {
-                ExitStatus::Exited(c) => c as i32,
-                ExitStatus::Signaled(c) => c as i32,
+                ExitStatus::Exited(c) => c.try_into().unwrap(),
+                ExitStatus::Signaled(c) => c.into(),
                 ExitStatus::Other(c) => c,
-                _ => -1,
+                ExitStatus::Undetermined => -1,
             };
             if es != 0 {
                 return Err(anyhow!("Exit code = {}", es));
@@ -302,7 +306,7 @@ impl ScriptFile {
                     if line.starts_with('#') {
                         line.retain(|c| c != '#');
                         line = line.trim().to_string();
-                        line.push_str("\n");
+                        line.push('\n');
                         lines_buf.push_str(&line);
                     } else {
                         break;
@@ -380,7 +384,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn find_invalid_folder() {
-        let scripts = find_scripts("Cargo.toml".into()).unwrap();
+        let _scripts = find_scripts("Cargo.toml".into()).unwrap();
     }
 
     #[test]
@@ -397,7 +401,7 @@ mod tests {
             ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
         script_f.call_format = Some("qwertyuiop".to_string());
         let script: Script = into_script(script_f);
-        let output = script.run().unwrap();
+        let _output = script.run().unwrap();
     }
 
     #[test]
@@ -407,7 +411,7 @@ mod tests {
             ScriptFile::new("fixtures/.rustscan_scripts/test_script.txt".into()).unwrap();
         script_f.call_format = None;
         let script: Script = into_script(script_f);
-        let output = script.run().unwrap();
+        let _output = script.run().unwrap();
     }
 
     #[test]
