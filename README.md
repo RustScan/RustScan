@@ -89,6 +89,10 @@ The possibilities are endless -- and you can write scripts in whatever language 
 
 ## 🌊 Adaptive
 
+![adaptive](pictures/adaptive.gif)
+
+_RustScan automatically fine-tuning itself to match the host OS_.
+
 RustScan has a cool set of features called "Adaptive Learning". These features "learn" about the environment you are scanning and how _you_ use RustScan to **improve itself over time**.
 
 This is an umbrella term we use for any feature that fits this criteria. The list is constantly changing, so [check out our wiki for more information](https://github.com/RustScan/RustScan/wiki/Adaptive-Learning).
