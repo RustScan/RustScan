@@ -64,8 +64,18 @@ fn main() {
 
     debug!("Main() `opts` arguments are {:?}", opts);
 
-    let scripts_to_run: Vec<ScriptFile> =
-        init_scripts(opts.scripts).expect("could not initiate scripting part.");
+    let scripts_to_run: Vec<ScriptFile> = match init_scripts(opts.scripts) {
+        Ok(scripts_to_run) => scripts_to_run,
+        Err(e) => {
+            warning!(
+                format!("Initiating scripts failed!\n{}", e.to_string()),
+                opts.greppable,
+                opts.accessible
+            );
+            std::process::exit(1);
+        }
+    };
+
     debug!("Scripts initialized {:?}", &scripts_to_run);
 
     if !opts.greppable && !opts.accessible {
