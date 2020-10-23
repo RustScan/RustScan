@@ -29,6 +29,8 @@
 
 # 🤔 What is this?
 
+![fast](pictures/fast.gif)
+
 The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run scripts through our scripting engine (Python, Lua, Shell supported).
 
 # ✨ Features
@@ -61,6 +63,8 @@ Not to mention RustScan uses Adaptive Learning to improve itself over time, maki
 
 ## 🧋 Speed
 
+![fast](pictures/fast.gif)
+
 Speed is guaranteed via RustScan. However, if you want to run a slow scan due to stealth that is possible too.
 
 Firstly, let's talk code.
@@ -90,6 +94,8 @@ RustScan has a cool set of features called "Adaptive Learning". These features "
 This is an umbrella term we use for any feature that fits this criteria. The list is constantly changing, so [check out our wiki for more information](https://github.com/RustScan/RustScan/wiki/Adaptive-Learning).
 
 ## 👩‍🦯 Accessible
+
+![fast](pictures/accessible.gif)
 
 RustScan is one of the first penetration testing tools that aims to be entirely accessible. 
 
