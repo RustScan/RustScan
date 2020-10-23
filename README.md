@@ -79,6 +79,8 @@ Every pull request is reviewed by 1 person, but more often than not 2 people rev
 
 ## ⚙️ Extensible 
 
+![scripts](pictures/scripts.gif)
+
 RustScan has a new scripting engine which allows anyone to write scripts in most languages. Python, Lua, Shell are all supported.
 
 Want to take your found ports and pipe them into Nmap for further analysis? That's possible. Want to run `smb-enum` if SMB is found open? Possible.
