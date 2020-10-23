@@ -218,10 +218,10 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
     let backup_resolver =
-        &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
+        Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for address in &input.addresses {
-        let parsed_ips = parse_address(address, backup_resolver);
+        let parsed_ips = parse_address(address, &backup_resolver);
         if !parsed_ips.is_empty() {
             ips.extend(parsed_ips);
         } else {
@@ -278,16 +278,14 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
     if let Ok(addrs) = source.to_socket_addrs() {
-        for ip in addrs.into_iter() {
+        for ip in addrs {
             ips.push(ip.ip());
         }
     } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
-        for ip in addrs.iter() {
-            ips.push(ip);
-        }
+        ips.extend(addrs.iter());
     }
 
-    return ips;
+    ips
 }
 
 #[cfg(not(tarpaulin_include))]
