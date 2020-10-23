@@ -6,7 +6,7 @@ use socket_iterator::SocketIterator;
 use async_std::io;
 use async_std::net::TcpStream;
 use async_std::prelude::*;
-use colored::*;
+use colored::Colorize;
 use futures::stream::FuturesUnordered;
 use std::{
     io::ErrorKind,
@@ -49,7 +49,7 @@ impl Scanner {
             tries: NonZeroU8::new(std::cmp::max(tries, 1)).unwrap(),
             greppable,
             port_strategy,
-            ips: ips.iter().map(|ip| ip.to_owned()).collect(),
+            ips: ips.iter().map(ToOwned::to_owned).collect(),
             accessible,
         }
     }
@@ -184,7 +184,7 @@ mod tests {
             start: 1,
             end: 1_000,
         };
-        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
             &addrs,
             10,
@@ -206,7 +206,7 @@ mod tests {
             start: 1,
             end: 1_000,
         };
-        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
             &addrs,
             10,
@@ -227,7 +227,7 @@ mod tests {
             start: 1,
             end: 1_000,
         };
-        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
             &addrs,
             10,
@@ -247,7 +247,7 @@ mod tests {
             start: 400,
             end: 445,
         };
-        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
             &addrs,
             10,
@@ -270,7 +270,7 @@ mod tests {
             start: 400,
             end: 600,
         };
-        let strategy = PortStrategy::pick(Some(range), None, ScanOrder::Random);
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
             &addrs,
             10,
