@@ -237,11 +237,11 @@ The Modern Day Port Scanner."#;
 fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
-    let resolver =
-        &Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
+    let backup_resolver =
+        Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     for address in &input.addresses {
-        let parsed_ips = parse_address(address, resolver);
+        let parsed_ips = parse_address(address, &backup_resolver);
         if !parsed_ips.is_empty() {
             ips.extend(parsed_ips);
         } else {
@@ -263,7 +263,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        if let Ok(x) = read_ips_from_file(file_path, &resolver) {
+        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver) {
             ips.extend(x);
         } else {
             warning!(
@@ -294,18 +294,25 @@ fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
 }
 
 /// Uses DNS to get the IPS assiocated with host
-fn resolve_ips_from_host(source: &str, resolver: &Resolver) -> Vec<IpAddr> {
-    resolver
-        .lookup_ip(source)
-        .map(|x| x.iter().collect())
-        .unwrap_or_default()
+fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
+    let mut ips: Vec<std::net::IpAddr> = Vec::new();
+
+    if let Ok(addrs) = source.to_socket_addrs() {
+        for ip in addrs {
+            ips.push(ip.ip());
+        }
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+        ips.extend(addrs.iter());
+    }
+
+    ips
 }
 
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
 fn read_ips_from_file(
     ips: &std::path::Path,
-    resolver: &Resolver,
+    backup_resolver: &Resolver,
 ) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
@@ -314,7 +321,7 @@ fn read_ips_from_file(
 
     for address_line in reader.lines() {
         if let Ok(address) = address_line {
-            ips.extend(parse_address(&address, resolver));
+            ips.extend(parse_address(&address, backup_resolver));
         } else {
             debug!("Line in file is not valid");
         }
