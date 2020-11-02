@@ -282,7 +282,7 @@ pub fn find_scripts(mut path: PathBuf) -> Result<Vec<PathBuf>> {
         }
         Ok(files_vec)
     } else {
-        Err(anyhow!("Can't find scripts folder"))
+        Err(anyhow!("Can't find scripts folder {}", path.display()))
     }
 }
 
