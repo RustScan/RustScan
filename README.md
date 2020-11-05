@@ -81,7 +81,7 @@ Every pull request is reviewed by 1 person, but more often than not 2 people rev
 
 ![scripts](pictures/scripts.gif)
 
-_RustScan piping results into Nmap, the default script currently_
+_RustScan piping results into the custom Python script_
 
 RustScan has a new scripting engine which allows anyone to write scripts in most languages. Python, Lua, Shell are all supported.
 
