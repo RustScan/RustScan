@@ -8,3 +8,36 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - uses: gaurav-nelson/github-action-markdown-link-check@v1
+
+  benchmark-test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+
+    - name: Install hyperfine
+      run: |
+        wget https://github.com/sharkdp/hyperfine/releases/download/v1.11.0/hyperfine_1.11.0_amd64.deb
+        sudo dpkg -i hyperfine_1.11.0_amd64.deb
+
+    - name: build RustScan
+      run: |
+        cargo build --release
+
+    - name: generate output
+      run: |
+        hyperfine --export-json result.json --warmup 1 'target/release/rustscan -a rustscan.cmnatic.co.uk -b 5000 -u 10000 --scripts none'
+
+    - name: run scripts
+      env:
+        private_key: ${{ secrets.SHEETS_PRIVATE_KEY }}
+        client_email: ${{ secrets.SHEETS_CLIENT_EMAIL }}
+      run: |
+        pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib pygsheets
+        echo "$private_key" > private_key
+        python generate_benchmark.py "$client_email" private_key
+
