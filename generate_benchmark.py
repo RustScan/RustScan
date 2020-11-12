@@ -27,8 +27,6 @@ my_credentials = service_account.Credentials.from_service_account_info(service_i
 
 gc = pygsheets.authorize(custom_credentials=my_credentials)
 
-print("auth success")
-
 # need create file on googlesheets and share with this servive account
 sh = gc.open("benchmark")
 
