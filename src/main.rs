@@ -101,6 +101,7 @@ fn main() {
         batch_size,
         Duration::from_millis(opts.timeout.into()),
         opts.tries,
+        opts.time_interval,
         opts.greppable,
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,

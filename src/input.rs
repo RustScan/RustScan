@@ -110,6 +110,11 @@ pub struct Opts {
     #[structopt(long, default_value = "1")]
     pub tries: u8,
 
+    /// The period at which rustscan informs about ports during scanning.
+    /// If set to 0, rustscan will not inform about ports during scanning.
+    #[structopt(long, default_value = "60")]
+    pub time_interval: u64,
+
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
     pub ulimit: Option<rlimit::RawRlim>,
@@ -216,6 +221,7 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
+    time_interval: Option<u64>,
     ulimit: Option<rlimit::RawRlim>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
@@ -274,6 +280,7 @@ mod tests {
                 batch_size: Some(25_000),
                 timeout: Some(1_000),
                 tries: Some(1),
+                time_interval: Some(60),
                 ulimit: None,
                 command: Some(vec!["-A".to_owned()]),
                 accessible: Some(true),
@@ -293,6 +300,7 @@ mod tests {
                 batch_size: 0,
                 timeout: 0,
                 tries: 0,
+                time_interval: 0,
                 ulimit: None,
                 command: vec![],
                 accessible: false,
