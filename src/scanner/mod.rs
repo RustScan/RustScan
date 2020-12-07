@@ -9,7 +9,7 @@ use async_std::prelude::*;
 use colored::Colorize;
 use futures::stream::FuturesUnordered;
 use std::{
-    io::ErrorKind,
+    collections::HashSet,
     net::{IpAddr, Shutdown, SocketAddr},
     num::NonZeroU8,
     time::Duration,
@@ -62,6 +62,7 @@ impl Scanner {
         let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
+        let mut errors: HashSet<String> = HashSet::with_capacity(self.ips.len() * 1000);
 
         for _ in 0..self.batch_size {
             if let Some(socket) = socket_iterator.next() {
@@ -82,10 +83,17 @@ impl Scanner {
                 ftrs.push(self.scan_socket(socket));
             }
 
-            if let Ok(socket) = result {
-                open_sockets.push(socket);
+            match result {
+                Ok(socket) => open_sockets.push(socket),
+                Err(e) => {
+                    let error_string = e.to_string();
+                    if errors.len() < self.ips.len() * 1000 {
+                        errors.insert(error_string);
+                    }
+                }
             }
         }
+        debug!("Typical socket connection errors {:?}", errors);
         debug!("Open Sockets found: {:?}", &open_sockets);
         open_sockets
     }
@@ -127,19 +135,15 @@ impl Scanner {
                     return Ok(socket);
                 }
                 Err(e) => {
-                    let error_string = e.to_string();
+                    let mut error_string = e.to_string();
 
-                    if e.kind() == ErrorKind::Other {
-                        debug!("Socket connect error: {} {}", &error_string, &socket);
-
-                        if !error_string.contains("No route to host")
-                            && !error_string.contains("Network is unreachable")
-                        {
-                            panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-                        }
+                    if error_string.to_lowercase().contains("too many open files") {
+                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
                     }
 
                     if nr_try == tries {
+                        error_string.push(' ');
+                        error_string.push_str(&socket.ip().to_string());
                         return Err(io::Error::new(io::ErrorKind::Other, error_string));
                     }
                 }
