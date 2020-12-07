@@ -231,17 +231,9 @@ impl Script {
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
+        debug!("\nScript format to run {}", to_run);
 
-        debug!("\nTo run {}", to_run);
-
-        let arguments = shell_words::split(
-            &to_run
-                .split(' ')
-                .map(ToString::to_string)
-                .collect::<Vec<String>>()
-                .join(" "),
-        )
-        .expect("Failed to parse script arguments");
+        let arguments = shell_words::split(&to_run).expect("Failed to parse script arguments");
 
         execute_script(arguments)
     }
@@ -249,7 +241,7 @@ impl Script {
 
 #[cfg(not(tarpaulin_include))]
 fn execute_script(mut arguments: Vec<String>) -> Result<String> {
-    debug!("\nArguments vec: {:?}", &arguments);
+    debug!("\nScript arguments vec: {:?}", &arguments);
     let process = Exec::cmd(&arguments.remove(0)).args(&arguments);
     match process.capture() {
         Ok(c) => {

@@ -154,19 +154,20 @@ fn main() {
 
         // Run all the scripts we found and parsed based on the script config file tags field.
         for mut script_f in scripts_to_run.clone() {
-            output!(
-                format!("Script to be run {:?}\n", script_f.call_format,),
-                opts.greppable,
-                opts.accessible
-            );
-
             // This part allows us to add commandline arguments to the Script call_format, appending them to the end of the command.
             if !opts.command.is_empty() {
-                let user_extra_args: Vec<String> = shell_words::split(&opts.command.join(" "))
-                    .expect("Failed to parse extra user commandline arguments");
+                let user_extra_args = &opts.command.join(" ");
+                debug!("Extra args vec {:?}", user_extra_args);
                 if script_f.call_format.is_some() {
                     let mut call_f = script_f.call_format.unwrap();
-                    call_f.push_str(&format!(" {}", &user_extra_args.join(" ")));
+                    call_f.push(' ');
+                    call_f.push_str(user_extra_args);
+                    output!(
+                        format!("Running script {:?} on ip {}\nDepending on the complexity of the script, results may take some time to appear.", call_f, &ip),
+                        opts.greppable,
+                        opts.accessible
+                    );
+                    debug!("Call format {}", call_f);
                     script_f.call_format = Some(call_f);
                 }
             }
