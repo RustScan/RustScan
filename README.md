@@ -1,6 +1,6 @@
 <p align="center">
 ➡️
-<a href="https://discord.gg/GFrQsGy">Discord</a> |
+<a href="http://discord.skerritt.blog">Discord</a> |
  <a href="https://github.com/RustScan/RustScan/wiki/Installation-Guide">Installation Guide</a> |
  <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
  ⬅️
@@ -15,7 +15,7 @@
 <img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
 <img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads">
 <img alt="Crates.io" src="https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads">
-<img alt="Discord" src="https://img.shields.io/discord/736614461313515576">
+<img alt="Discord" src="https://img.shields.io/discord/754001738184392704">
 <img alt="Actions" src="https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master">
 </p>
 <hr>
@@ -45,13 +45,13 @@ The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run 
 
 | Installation Guide                                                                     | Documentation                                            | Discord                                  |
 | -------------------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](https://discord.gg/GFrQsGy) |
+| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](http://discord.skerritt.blog) |
 
 ## 🙋 Table of Contents
 
 - 📖 [Installation Guide](https://github.com/RustScan/RustScan/wiki/Installation-Guide)
 - 🐋 [Docker Usage](https://github.com/RustScan/RustScan/wiki/Installation-Guide)
-- 🦜 [Discord](https://discord.gg/GFrQsGy)
+- 🦜 [Discord](http://discord.skerritt.blog)
 - 🤸 [Usage](https://github.com/RustScan/RustScan/wiki/Usage)
 - 🎪 [Community](https://github.com/RustScan/RustScan#-community)
 
