@@ -134,7 +134,7 @@ fn main() {
         \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 milliseconds (2s) timeout.\n",
         ip,
         opts.batch_size,
-        "'rustscan -b <batch_size> <ip address>'");
+        "'rustscan -b <batch_size> -a <ip address>'");
         warning!(x, opts.greppable, opts.accessible);
     }
 
