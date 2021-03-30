@@ -8,12 +8,12 @@ COPY Cargo.toml Cargo.lock ./
 COPY src/ src/
 RUN cargo install --path .
 
-FROM alpine:3.12
+FROM alpine:3.13
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
 RUN addgroup -S rustscan && \
     adduser -S -G rustscan rustscan && \
     ulimit -n 100000 && \
-    apk add --no-cache nmap nmap-scripts wget
+    apk add --no-cache nmap nmap-scripts wget ca-certificates bind-tools
 COPY --from=builder /usr/local/cargo/bin/rustscan /usr/local/bin/rustscan
 USER rustscan
 ENTRYPOINT [ "/usr/local/bin/rustscan" ]
