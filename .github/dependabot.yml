@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: cargo
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: anyhow
+    versions:
+    - 1.0.38
+    - 1.0.39
+  - dependency-name: serde
+    versions:
+    - 1.0.123
+  - dependency-name: futures
+    versions:
+    - 0.3.12
+  - dependency-name: rlimit
+    versions:
+    - 0.5.3
