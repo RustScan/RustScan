@@ -47,7 +47,6 @@
 
 use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
-use itertools::Itertools;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::convert::TryInto;
