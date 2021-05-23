@@ -89,9 +89,9 @@ fn pick_random_coprime(end: u32) -> u32 {
     for _ in 0..10 {
         if end.gcd(candidate) == 1 {
             return candidate;
-        } else {
-            candidate = rng.gen_range(lower_range..upper_range);
         }
+
+        candidate = rng.gen_range(lower_range..upper_range);
     }
 
     end - 1

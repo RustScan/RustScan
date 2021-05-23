@@ -176,7 +176,7 @@ fn main() {
             let script = Script::build(
                 script_f.path,
                 *ip,
-                ports.to_vec(),
+                ports.clone(),
                 script_f.port,
                 script_f.ports_separator,
                 script_f.tags,

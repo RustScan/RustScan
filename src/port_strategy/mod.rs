@@ -44,7 +44,7 @@ impl PortStrategy {
 
     pub fn order(&self) -> Vec<u16> {
         match self {
-            PortStrategy::Manual(ports) => ports.to_vec(),
+            PortStrategy::Manual(ports) => ports.clone(),
             PortStrategy::Serial(range) => range.generate(),
             PortStrategy::Random(range) => range.generate(),
         }

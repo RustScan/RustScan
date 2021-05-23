@@ -105,7 +105,7 @@ pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
                         let script_hashset: HashSet<String> =
                             script.tags.clone().unwrap().into_iter().collect();
                         if config_hashset.is_subset(&script_hashset) {
-                            scripts_to_run.push(script.to_owned());
+                            scripts_to_run.push(script.clone());
                         } else {
                             debug!(
                                 "\nScript tags does not match config tags {:?} {}",
