@@ -302,7 +302,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
         for ip in addrs {
             ips.push(ip.ip());
         }
-    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(source) {
         ips.extend(addrs.iter());
     }
 
