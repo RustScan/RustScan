@@ -21,10 +21,10 @@
 </p>
 <hr>
 
-| <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p> | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p> | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p> | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a></p> |
-| ---- | ---- | ---- | --- |
-| <p align="center"><img src="pictures/docker.png" /></p> | <p align="center"><img src="pictures/kali.png" /></p> | <p align="center"><img src="pictures/arch.png" /></p> | <p align="center"><img src="pictures/rust.png" /></p>
-| `docker pull cmnatic/rustscan:debian-buster` <p>[Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
+| <a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a> | <a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian</a> | <a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a> | <a href="https://crates.io/crates/rustscan">🔧 Cargo (Universal) </a> |
+| :----: | :----: | :----: | :---: |
+| <img src="pictures/docker.png" /> | <img src="pictures/kali.png" /> | <img src="pictures/arch.png" /> | <img src="pictures/rust.png" />
+| `docker pull cmnatic/rustscan:debian-buster` [Usage](https://github.com/RustScan/RustScan#docker-whale) | [Read the install guide](https://github.com/brandonskerritt/RustScan/blob/master/README.md#%EF%B8%8F-debian--kali) | `yay -S rustscan` | `cargo install rustscan`
 
 <hr>
 
@@ -327,7 +327,7 @@ RustScan has 2 major labels for GitHub issues you should look at:
 These are issues for newcomers to open source!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22)
 * Help wanted
-These are issues that aren't really for newcomers, but we could still do wiht help!
+These are issues that aren't really for newcomers, but we could still do with help!
 [https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22](https://github.com/RustScan/RustScan/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22+label%3A%22help+wanted%22)
 
 If you want to, solve the issue or comment on the issue for help.
