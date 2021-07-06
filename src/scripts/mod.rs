@@ -105,7 +105,7 @@ pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
                         let script_hashset: HashSet<String> =
                             script.tags.clone().unwrap().into_iter().collect();
                         if config_hashset.is_subset(&script_hashset) {
-                            scripts_to_run.push(script.to_owned());
+                            scripts_to_run.push(script.clone());
                         } else {
                             debug!(
                                 "\nScript tags does not match config tags {:?} {}",
@@ -293,16 +293,19 @@ impl ScriptFile {
         let real_path = script.clone();
         let mut lines_buf = String::new();
         if let Ok(file) = File::open(script) {
-            for line in io::BufReader::new(file).lines().skip(1) {
-                if let Ok(mut line) = line {
-                    if line.starts_with('#') {
-                        line.retain(|c| c != '#');
-                        line = line.trim().to_string();
-                        line.push('\n');
-                        lines_buf.push_str(&line);
-                    } else {
-                        break;
-                    }
+            for line in io::BufReader::new(file)
+                .lines()
+                .skip(1)
+                .filter_map(|result| result.ok())
+            {
+                if line.starts_with('#') {
+                    let mut sanitised_line = line.clone();
+                    sanitised_line.retain(|c| c != '#');
+                    sanitised_line = sanitised_line.trim().to_string();
+                    sanitised_line.push('\n');
+                    lines_buf.push_str(&sanitised_line);
+                } else {
+                    break;
                 }
             }
         } else {

@@ -43,10 +43,9 @@ impl<'s> Iterator for SocketIterator<'s> {
     /// it.next(); // 192.168.0.1:443
     /// it.next(); // None
     fn next(&mut self) -> Option<Self::Item> {
-        match self.product_it.next() {
-            None => None,
-            Some((port, ip)) => Some(SocketAddr::new(*ip, *port)),
-        }
+        self.product_it
+            .next()
+            .map(|(port, ip)| SocketAddr::new(*ip, *port))
     }
 }
 
