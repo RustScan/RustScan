@@ -282,16 +282,37 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
-    IpCidr::from_str(&address)
-        .map(|cidr| cidr.iter().collect())
-        .ok()
-        .or_else(|| {
-            format!("{}:{}", &address, 80)
-                .to_socket_addrs()
+    let mut ips: Vec<String> = vec![address.into()];
+
+    if address.contains('-') && address.matches('.').count() == 3 {
+        let last_number = address.split('.').last().unwrap();
+        let result: Vec<u8> = last_number
+            .split('-')
+            .map(|x| x.parse::<u8>().unwrap())
+            .collect();
+        let truncated = &address[..address.rfind('.').unwrap()];
+        ips = (result[0]..=result[1])
+            .map(|x| format!("{}.{}", truncated, x))
+            .collect();
+    }
+
+    let mut result = vec![];
+    for address in ips {
+        result.extend(
+            IpCidr::from_str(&address)
+                .map(|cidr| cidr.iter().collect())
                 .ok()
-                .map(|mut iter| vec![iter.next().unwrap().ip()])
-        })
-        .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
+                .or_else(|| {
+                    format!("{}:{}", &address, 80)
+                        .to_socket_addrs()
+                        .ok()
+                        .map(|mut iter| vec![iter.next().unwrap().ip()])
+                })
+                .unwrap_or_else(|| resolve_ips_from_host(&address, resolver)),
+        );
+    }
+
+    result
 }
 
 /// Uses DNS to get the IPS assiocated with host
