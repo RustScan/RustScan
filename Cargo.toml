@@ -39,6 +39,7 @@ trust-dns-resolver = { version = "0.19.5", features = ["dns-over-rustls"] }
 anyhow = "1.0.40"
 subprocess = "0.2.6"
 text_placeholder = { version = "0.4", features = ["struct_context"] }
+ring = "0.16.19"
 
 [dev-dependencies]
 wait-timeout = "0.2"
