@@ -19,10 +19,7 @@ fn rustscan_a11y_test(args: &[&str]) {
         error_chain::bail!("Command exec failed");
     }
 
-    let pattern = Regex::new(
-        r"
-                               ",
-    )?;
+    let pattern = Regex::new(r"( ?[!~>|{}] ?)",)?;
 
     if pattern.is_match(output.stdout) {
         panic!("stdout contains non-accessible characters");
