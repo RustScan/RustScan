@@ -74,6 +74,8 @@ macro_rules! funny_opening {
             "😵 https://admin.tryhackme.com",
             "0day was here ♥",
             "⌛ Hackers dont waste time!! ⌛",
+            "Hackers choice!!",
+            "No systems are safe!!!",
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 
