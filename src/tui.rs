@@ -73,6 +73,7 @@ macro_rules! funny_opening {
             "Please contribute more quotes to our GitHub https://github.com/rustscan/rustscan",
             "😵 https://admin.tryhackme.com",
             "0day was here ♥",
+            "⌛ Hackers dont waste time!! ⌛",
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 
