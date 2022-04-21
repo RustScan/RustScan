@@ -68,7 +68,7 @@ fn main() {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
-                format!("Initiating scripts failed!\n{}", e.to_string()),
+                format!("Initiating scripts failed!\n{}", e),
                 opts.greppable,
                 opts.accessible
             );
@@ -176,7 +176,7 @@ fn main() {
             let script = Script::build(
                 script_f.path,
                 *ip,
-                ports.to_vec(),
+                ports.clone(),
                 script_f.port,
                 script_f.ports_separator,
                 script_f.tags,
@@ -187,11 +187,7 @@ fn main() {
                     detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
-                    warning!(
-                        &format!("Error {}", e.to_string()),
-                        opts.greppable,
-                        opts.accessible
-                    );
+                    warning!(&format!("Error {}", e), opts.greppable, opts.accessible);
                 }
             }
         }
@@ -302,7 +298,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
         for ip in addrs {
             ips.push(ip.ip());
         }
-    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(source) {
         ips.extend(addrs.iter());
     }
 
@@ -373,12 +369,12 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
             // decrease batch size to half of ulimit
             warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", opts.greppable, opts.accessible);
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            batch_size = ulimit / 2
+            batch_size = ulimit / 2;
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
-            batch_size = AVERAGE_BATCH_SIZE
+            batch_size = AVERAGE_BATCH_SIZE;
         } else {
-            batch_size = ulimit - 100
+            batch_size = ulimit - 100;
         }
     }
     // When the ulimit is higher than the batch size let the user know that the
