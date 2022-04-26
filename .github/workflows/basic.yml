@@ -13,9 +13,9 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-      - uses: actions-rs/cargo@v1
-        with:
-          command: check
+      # - uses: actions-rs/cargo@v1
+        # with:
+          # command: check
 
   test:
     name: Test Suite
@@ -46,25 +46,3 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
-
-  clippy:
-    name: Clippy linting
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-            toolchain: stable
-            components: clippy
-            override: true
-      - uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
-
-  links:
-        name: markdown-link-check
-        runs-on: ubuntu-latest
-        steps:
-        - uses: actions/checkout@master
-        - uses: gaurav-nelson/github-action-markdown-link-check@v1
