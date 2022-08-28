@@ -205,11 +205,12 @@ fn main() {
 /// Prints the opening title of RustScan
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
-    let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
-| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
-| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
-`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-The Modern Day Port Scanner."#;
+    let s = concat!(
+        r".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.", "\n",
+        r"| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |", "\n",
+        r"| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |", "\n",
+        r"`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'", "\n",
+        r"The Modern Day Port Scanner.");
     println!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
 : https://discord.gg/GFrQsGy           :
