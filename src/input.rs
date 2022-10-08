@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::path::PathBuf;
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -85,6 +86,10 @@ pub struct Opts {
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
     pub no_config: bool,
+
+    /// Custom path to config file
+    #[structopt(short, long, parse(from_os_str))]
+    pub config_path: Option<PathBuf>,
 
     /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -234,16 +239,11 @@ impl Config {
     /// greppable = true
     /// scan_order: "Serial"
     ///
-    pub fn read() -> Self {
-        let mut home_dir = match dirs::home_dir() {
-            Some(dir) => dir,
-            None => panic!("Could not infer config file path."),
-        };
-        home_dir.push(".rustscan.toml");
-
+    pub fn read(custom_config_path: Option<PathBuf>) -> Self {
         let mut content = String::new();
-        if home_dir.exists() {
-            content = match fs::read_to_string(home_dir) {
+        let config_path = custom_config_path.unwrap_or_else(default_config_path);
+        if config_path.exists() {
+            content = match fs::read_to_string(config_path) {
                 Ok(content) => content,
                 Err(_) => String::new(),
             }
@@ -259,6 +259,16 @@ impl Config {
 
         config
     }
+}
+
+/// Constructs default path to config toml
+pub fn default_config_path() -> PathBuf {
+    let mut config_path = match dirs::home_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
+    };
+    config_path.push(".rustscan.toml");
+    config_path
 }
 
 #[cfg(test)]
@@ -300,6 +310,7 @@ mod tests {
                 no_config: true,
                 top: false,
                 scripts: ScriptsRequired::Default,
+                config_path: None,
             }
         }
     }
