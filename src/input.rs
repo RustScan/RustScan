@@ -71,7 +71,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 pub struct Opts {
-    /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
+    /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be scanned.
     #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
