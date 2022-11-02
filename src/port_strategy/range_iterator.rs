@@ -1,5 +1,6 @@
 use gcd::Gcd;
 use rand::Rng;
+use std::convert::TryInto;
 
 pub struct RangeIterator {
     active: bool,
@@ -60,7 +61,11 @@ impl Iterator for RangeIterator {
         }
 
         self.normalized_pick = next_pick;
-        Some((self.actual_start + current_pick) as u16)
+        Some(
+            (self.actual_start + current_pick)
+                .try_into()
+                .expect("Could not convert u32 to u16"),
+        )
     }
 }
 

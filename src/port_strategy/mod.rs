@@ -1,26 +1,50 @@
 mod range_iterator;
-use super::ScanOrder;
+use super::{PortRange, ScanOrder};
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 use range_iterator::RangeIterator;
 
 /// Represents options of port scanning.
 ///
 /// Right now all these options involve ranges, but in the future
 /// it will also contain custom lists of ports.
+#[derive(Debug)]
 pub enum PortStrategy {
+    Manual(Vec<u16>),
     Serial(SerialRange),
     Random(RandomRange),
 }
 
 impl PortStrategy {
-    pub fn pick(start: u16, end: u16, scan_type: ScanOrder) -> Self {
-        match scan_type {
-            ScanOrder::Serial => PortStrategy::Serial(SerialRange { start, end }),
-            ScanOrder::Random => PortStrategy::Random(RandomRange { start, end }),
+    pub fn pick(range: &Option<PortRange>, ports: Option<Vec<u16>>, order: ScanOrder) -> Self {
+        match order {
+            ScanOrder::Serial if ports.is_none() => {
+                let range = range.as_ref().unwrap();
+                PortStrategy::Serial(SerialRange {
+                    start: range.start,
+                    end: range.end,
+                })
+            }
+            ScanOrder::Random if ports.is_none() => {
+                let range = range.as_ref().unwrap();
+                PortStrategy::Random(RandomRange {
+                    start: range.start,
+                    end: range.end,
+                })
+            }
+            ScanOrder::Serial => PortStrategy::Manual(ports.unwrap()),
+            ScanOrder::Random => {
+                let mut rng = thread_rng();
+                let mut ports = ports.unwrap();
+                ports.shuffle(&mut rng);
+                PortStrategy::Manual(ports)
+            }
         }
     }
 
     pub fn order(&self) -> Vec<u16> {
         match self {
+            PortStrategy::Manual(ports) => ports.to_vec(),
             PortStrategy::Serial(range) => range.generate(),
             PortStrategy::Random(range) => range.generate(),
         }
@@ -35,6 +59,7 @@ trait RangeOrder {
 
 /// As the name implies SerialRange will always generate a vector in
 /// ascending order.
+#[derive(Debug)]
 pub struct SerialRange {
     start: u16,
     end: u16,
@@ -48,6 +73,7 @@ impl RangeOrder for SerialRange {
 
 /// As the name implies RandomRange will always generate a vector with
 /// a random order. This vector is built following the LCG algorithm.
+#[derive(Debug)]
 pub struct RandomRange {
     start: u16,
     end: u16,
@@ -71,20 +97,40 @@ impl RangeOrder for RandomRange {
 #[cfg(test)]
 mod tests {
     use super::PortStrategy;
-    use crate::ScanOrder;
+    use crate::{PortRange, ScanOrder};
 
     #[test]
-    fn serial_strategy() {
-        let strategy = PortStrategy::pick(1, 100, ScanOrder::Serial);
+    fn serial_strategy_with_range() {
+        let range = PortRange { start: 1, end: 100 };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
         let result = strategy.order();
         let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
     }
     #[test]
-    fn random_strategy() {
-        let strategy = PortStrategy::pick(1, 100, ScanOrder::Random);
+    fn random_strategy_with_range() {
+        let range = PortRange { start: 1, end: 100 };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let mut result = strategy.order();
         let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
+        assert_ne!(expected_range, result);
+
+        result.sort();
+        assert_eq!(expected_range, result);
+    }
+
+    #[test]
+    fn serial_strategy_with_ports() {
+        let strategy = PortStrategy::pick(&None, Some(vec![80, 443]), ScanOrder::Serial);
+        let result = strategy.order();
+        assert_eq!(vec![80, 443], result);
+    }
+
+    #[test]
+    fn random_strategy_with_ports() {
+        let strategy = PortStrategy::pick(&None, Some((1..10).collect()), ScanOrder::Random);
+        let mut result = strategy.order();
+        let expected_range = (1..10).into_iter().collect::<Vec<u16>>();
         assert_ne!(expected_range, result);
 
         result.sort();

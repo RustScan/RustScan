@@ -1,0 +1,9 @@
+#!intentional_blank_line
+#tags = ["core_approved", "example"]
+#developer = [ "example", "https://example.org" ]
+#ports_separator = ","
+#call_format = "nmap -vvv -p {{port}} {{ip}}"
+
+# Scriptfile parser stops at the first blank line with parsing.
+# This script will run the system installed nmap, ports will be concatenated with "," .
+# Unused field: trigger_port = "80"

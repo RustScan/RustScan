@@ -87,6 +87,15 @@
       ]
     },
     {
+      "login": "TGotwig",
+      "name": "Thomas Gotwig",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/30773779?v=4",
+      "profile": "https://tgotwig.me",
+      "contributions": [
+        "platform"
+      ]
+    },
+    {
       "login": "remigourdon",
       "name": "Rémi Gourdon",
       "avatar_url": "https://avatars3.githubusercontent.com/u/2874133?v=4",
@@ -94,6 +103,161 @@
       "contributions": [
         "doc",
         "code"
+      ]
+    },
+    {
+      "login": "cmnatic",
+      "name": "Ben (CMNatic)",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/4163116?v=4",
+      "profile": "https://cmnatic.co.uk",
+      "contributions": [
+        "code",
+        "doc",
+        "design"
+      ]
+    },
+    {
+      "login": "Ferryistaken",
+      "name": "Alessandro Ferrari",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/47927670?v=4",
+      "profile": "https://github.com/Ferryistaken",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "Phenomite",
+      "name": "Phenomite",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/8285537?v=4",
+      "profile": "https://github.com/Phenomite",
+      "contributions": [
+        "content"
+      ]
+    },
+    {
+      "login": "SuperSandro2000",
+      "name": "Sandro",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/7258858?v=4",
+      "profile": "https://supersandro.de/",
+      "contributions": [
+        "content",
+        "bug",
+        "code"
+      ]
+    },
+    {
+      "login": "caass",
+      "name": "Cass",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/25358963?v=4",
+      "profile": "https://swag.lgbt",
+      "contributions": [
+        "platform",
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "niklasmohrin",
+      "name": "Niklas Mohrin",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/47574893?v=4",
+      "profile": "https://github.com/niklasmohrin",
+      "contributions": [
+        "doc",
+        "code",
+        "bug"
+      ]
+    },
+    {
+      "login": "tim77",
+      "name": "Artem Polishchuk",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/5614476?v=4",
+      "profile": "https://liberapay.com/Artem4/",
+      "contributions": [
+        "platform"
+      ]
+    },
+    {
+      "login": "buermarc",
+      "name": "buermarc",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/44375277?v=4",
+      "profile": "https://github.com/buermarc",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "bergabman",
+      "name": "bergabman",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/44554109?v=4",
+      "profile": "https://github.com/bergabman",
+      "contributions": [
+        "code",
+        "bug",
+        "design"
+      ]
+    },
+    {
+      "login": "dmitris",
+      "name": "Dmitry Savintsev",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/31205?v=4",
+      "profile": "https://github.com/dmitris",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "bofh69",
+      "name": "Sebastian Andersson",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/1444315?v=4",
+      "profile": "https://github.com/bofh69",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mattcorbin",
+      "name": "Matt Corbin",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/6537765?v=4",
+      "profile": "https://github.com/mattcorbin",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rootsploit",
+      "name": "RootSploit",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/67270834?v=4",
+      "profile": "http://rootsploit.com",
+      "contributions": [
+        "blog"
+      ]
+    },
+    {
+      "login": "eiffel-fl",
+      "name": "eiffel-fl",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/12171754?v=4",
+      "profile": "https://github.com/eiffel-fl",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "u5surf",
+      "name": "Y.Horie",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/14180225?v=4",
+      "profile": "https://github.com/u5surf",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "okrplay",
+      "name": "Oskar",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/32576280?v=4",
+      "profile": "https://github.com/okrplay",
+      "contributions": [
+        "code",
+        "test"
       ]
     }
   ],
