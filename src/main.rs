@@ -59,7 +59,7 @@ fn main() {
     let mut rustscan_bench = NamedTimer::start("RustScan");
 
     let mut opts: Opts = Opts::read();
-    let config = Config::read();
+    let config = Config::read(opts.config_path.clone());
     opts.merge(&config);
 
     debug!("Main() `opts` arguments are {:?}", opts);
@@ -218,9 +218,10 @@ The Modern Day Port Scanner."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = dirs::home_dir()
-        .expect("Could not infer config file path.")
-        .join(".rustscan.toml");
+    let config_path = opts
+        .config_path
+        .clone()
+        .unwrap_or_else(input::default_config_path);
 
     detail!(
         format!("The config file is expected to be at {:?}", config_path),
