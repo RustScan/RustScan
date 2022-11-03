@@ -1,6 +1,6 @@
 [package]
 name = "rustscan"
-version = "2.0.0"
+version = "2.1.0"
 authors = ["Bee <brandon@skerritt.blog>"]
 edition = "2018"
 description = "Faster Nmap Scanning with Rust"
@@ -21,7 +21,7 @@ colored = "2.0.0"
 structopt = "0.3.20"
 async-std = "1.7.0"
 futures = "0.3"
-rlimit = "0.5.4"
+rlimit = "0.8.3"
 shell-words = "1.0.0"
 log = "0.4.0"
 env_logger = "0.8.2"

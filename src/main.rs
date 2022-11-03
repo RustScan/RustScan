@@ -24,9 +24,7 @@ use scripts::{init_scripts, Script, ScriptFile};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
@@ -42,9 +40,10 @@ extern crate colorful;
 extern crate dirs;
 
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: RawRlim = 8000;
+#[cfg(unix)]
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: u64 = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: RawRlim = 3000;
+const AVERAGE_BATCH_SIZE: u16 = 3000;
 
 #[macro_use]
 extern crate log;
@@ -59,7 +58,7 @@ fn main() {
     let mut rustscan_bench = NamedTimer::start("RustScan");
 
     let mut opts: Opts = Opts::read();
-    let config = Config::read();
+    let config = Config::read(opts.config_path.clone());
     opts.merge(&config);
 
     debug!("Main() `opts` arguments are {:?}", opts);
@@ -68,7 +67,7 @@ fn main() {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
-                format!("Initiating scripts failed!\n{}", e.to_string()),
+                format!("Initiating scripts failed!\n{}", e),
                 opts.greppable,
                 opts.accessible
             );
@@ -93,8 +92,11 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: RawRlim = adjust_ulimit_size(&opts);
-    let batch_size: u16 = infer_batch_size(&opts, ulimit);
+    #[cfg(unix)]
+    let batch_size: u16 = infer_batch_size(&opts, adjust_ulimit_size(&opts));
+
+    #[cfg(not(unix))]
+    let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
     let scanner = Scanner::new(
         &ips,
@@ -176,7 +178,7 @@ fn main() {
             let script = Script::build(
                 script_f.path,
                 *ip,
-                ports.to_vec(),
+                ports.clone(),
                 script_f.port,
                 script_f.ports_separator,
                 script_f.tags,
@@ -187,11 +189,7 @@ fn main() {
                     detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
-                    warning!(
-                        &format!("Error {}", e.to_string()),
-                        opts.greppable,
-                        opts.accessible
-                    );
+                    warning!(&format!("Error {}", e), opts.greppable, opts.accessible);
                 }
             }
         }
@@ -222,9 +220,10 @@ The Modern Day Port Scanner."#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = dirs::home_dir()
-        .expect("Could not infer config file path.")
-        .join(".rustscan.toml");
+    let config_path = opts
+        .config_path
+        .clone()
+        .unwrap_or_else(input::default_config_path);
 
     detail!(
         format!("The config file is expected to be at {:?}", config_path),
@@ -302,7 +301,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
         for ip in addrs {
             ips.push(ip.ip());
         }
-    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(source) {
         ips.extend(addrs.iter());
     }
 
@@ -331,11 +330,11 @@ fn read_ips_from_file(
     Ok(ips)
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
-    if opts.ulimit.is_some() {
-        let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
-
-        if setrlimit(Resource::NOFILE, limit, limit).is_ok() {
+#[cfg(unix)]
+fn adjust_ulimit_size(opts: &Opts) -> u64 {
+    use rlimit::Resource;
+    if let Some(limit) = opts.ulimit {
+        if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
                 format!("Automatically increasing ulimit value to {}.", limit),
                 opts.greppable,
@@ -350,13 +349,15 @@ fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
         }
     }
 
-    let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
-
-    rlim.as_raw()
+    let (soft, _) = Resource::NOFILE.get().unwrap();
+    soft
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
-    let mut batch_size: RawRlim = opts.batch_size.into();
+#[cfg(unix)]
+fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
+    use std::convert::TryInto;
+
+    let mut batch_size: u64 = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
@@ -367,18 +368,18 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit < AVERAGE_BATCH_SIZE {
+        if ulimit < AVERAGE_BATCH_SIZE.into() {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
             warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", opts.greppable, opts.accessible);
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            batch_size = ulimit / 2
+            batch_size = ulimit / 2;
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
-            batch_size = AVERAGE_BATCH_SIZE
+            batch_size = AVERAGE_BATCH_SIZE.into();
         } else {
-            batch_size = ulimit - 100
+            batch_size = ulimit - 100;
         }
     }
     // When the ulimit is higher than the batch size let the user know that the
