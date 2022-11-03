@@ -24,9 +24,7 @@ use scripts::{init_scripts, Script, ScriptFile};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
@@ -42,9 +40,10 @@ extern crate colorful;
 extern crate dirs;
 
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: RawRlim = 8000;
+#[cfg(unix)]
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: u64 = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: RawRlim = 3000;
+const AVERAGE_BATCH_SIZE: u16 = 3000;
 
 #[macro_use]
 extern crate log;
@@ -93,8 +92,11 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: RawRlim = adjust_ulimit_size(&opts);
-    let batch_size: u16 = infer_batch_size(&opts, ulimit);
+    #[cfg(unix)]
+    let batch_size: u16 = infer_batch_size(&opts, adjust_ulimit_size(&opts));
+
+    #[cfg(not(unix))]
+    let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
     let scanner = Scanner::new(
         &ips,
@@ -328,11 +330,11 @@ fn read_ips_from_file(
     Ok(ips)
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
-    if opts.ulimit.is_some() {
-        let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
-
-        if setrlimit(Resource::NOFILE, limit, limit).is_ok() {
+#[cfg(unix)]
+fn adjust_ulimit_size(opts: &Opts) -> u64 {
+    use rlimit::Resource;
+    if let Some(limit) = opts.ulimit {
+        if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
                 format!("Automatically increasing ulimit value to {}.", limit),
                 opts.greppable,
@@ -347,13 +349,15 @@ fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
         }
     }
 
-    let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
-
-    rlim.as_raw()
+    let (soft, _) = Resource::NOFILE.get().unwrap();
+    soft
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
-    let mut batch_size: RawRlim = opts.batch_size.into();
+#[cfg(unix)]
+fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
+    use std::convert::TryInto;
+
+    let mut batch_size: u64 = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
@@ -364,7 +368,7 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit < AVERAGE_BATCH_SIZE {
+        if ulimit < AVERAGE_BATCH_SIZE.into() {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
@@ -373,7 +377,7 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
             batch_size = ulimit / 2;
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
-            batch_size = AVERAGE_BATCH_SIZE;
+            batch_size = AVERAGE_BATCH_SIZE.into();
         } else {
             batch_size = ulimit - 100;
         }
