@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::path::PathBuf;
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -70,7 +71,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - Discord https://discord.gg/GFrQsGy
 /// - GitHub https://github.com/RustScan/RustScan
 pub struct Opts {
-    /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
+    /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be scanned.
     #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
@@ -85,6 +86,10 @@ pub struct Opts {
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
     pub no_config: bool,
+
+    /// Custom path to config file
+    #[structopt(short, long, parse(from_os_str))]
+    pub config_path: Option<PathBuf>,
 
     /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -112,7 +117,7 @@ pub struct Opts {
 
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
-    pub ulimit: Option<rlimit::RawRlim>,
+    pub ulimit: Option<u64>,
 
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
@@ -216,7 +221,7 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
-    ulimit: Option<rlimit::RawRlim>,
+    ulimit: Option<u64>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
@@ -234,16 +239,11 @@ impl Config {
     /// greppable = true
     /// scan_order: "Serial"
     ///
-    pub fn read() -> Self {
-        let mut home_dir = match dirs::home_dir() {
-            Some(dir) => dir,
-            None => panic!("Could not infer config file path."),
-        };
-        home_dir.push(".rustscan.toml");
-
+    pub fn read(custom_config_path: Option<PathBuf>) -> Self {
         let mut content = String::new();
-        if home_dir.exists() {
-            content = match fs::read_to_string(home_dir) {
+        let config_path = custom_config_path.unwrap_or_else(default_config_path);
+        if config_path.exists() {
+            content = match fs::read_to_string(config_path) {
                 Ok(content) => content,
                 Err(_) => String::new(),
             }
@@ -259,6 +259,16 @@ impl Config {
 
         config
     }
+}
+
+/// Constructs default path to config toml
+pub fn default_config_path() -> PathBuf {
+    let mut config_path = match dirs::home_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
+    };
+    config_path.push(".rustscan.toml");
+    config_path
 }
 
 #[cfg(test)]
@@ -300,6 +310,7 @@ mod tests {
                 no_config: true,
                 top: false,
                 scripts: ScriptsRequired::Default,
+                config_path: None,
             }
         }
     }
