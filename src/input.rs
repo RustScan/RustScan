@@ -117,7 +117,7 @@ pub struct Opts {
 
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
-    pub ulimit: Option<rlimit::RawRlim>,
+    pub ulimit: Option<u64>,
 
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
@@ -221,7 +221,7 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
-    ulimit: Option<rlimit::RawRlim>,
+    ulimit: Option<u64>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
