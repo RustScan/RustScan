@@ -1,7 +1,7 @@
 [package]
 name = "rustscan"
-version = "2.1.0"
-authors = ["Bee <brandon@skerritt.blog>"]
+version = "2.1.1"
+authors = ["Autumn <autumn@skerritt.blog>"]
 edition = "2018"
 description = "Faster Nmap Scanning with Rust"
 homepage = "https://github.com/rustscan/rustscan"
