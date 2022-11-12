@@ -1110,7 +1110,7 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
-version = "2.1.0"
+version = "2.1.1"
 dependencies = [
  "ansi_term",
  "anyhow",
