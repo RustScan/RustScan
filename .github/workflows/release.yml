@@ -1,0 +1,69 @@
+name: release
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v2
+      - id: get_version
+        run: echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      - name: tar-bin
+        run: tar cvf target-bin.tar target/release/rustscan
+      - uses: actions/upload-artifact@v2
+        with:
+          name: target-bin
+          path: target-bin.tar
+
+  build_deb:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: target-bin
+          path: ./
+      - name: untar-bin
+        run: tar xvf target-bin.tar
+      - name: cargo-deb
+        run: |
+          cargo install cargo-deb
+          cargo deb --deb-version ${{ needs.build.outputs.version }}
+      - name: tar-deb
+        run: tar cvf target-deb.tar target/debian/rustscan_${{ needs.build.outputs.version }}_amd64.deb
+      - uses: actions/upload-artifact@v2
+        with:
+          name: target-deb
+          path: target-deb.tar
+
+  make_release:
+    runs-on: ubuntu-latest
+    needs: [build, build_deb]
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: target-deb
+          path: ./
+      - name: untar-deb
+        run: tar xvf target-deb.tar
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          prerelease: false
+          files: |
+            target/debian/rustscan_${{ needs.build.outputs.version }}_amd64.deb
