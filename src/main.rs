@@ -205,6 +205,7 @@ fn main() {
 }
 
 /// Prints the opening title of RustScan
+#[allow(clippy::items_after_statements)]
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
     let s = format!(
@@ -287,7 +288,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
-    IpCidr::from_str(&address)
+    IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
         .or_else(|| {
@@ -503,7 +504,7 @@ mod tests {
         opts.addresses = vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()];
         let ips = parse_addresses(&opts);
 
-        assert_eq!(ips.is_empty(), true);
+        assert!(ips.is_empty());
     }
     #[test]
     fn parse_hosts_file_and_incorrect_hosts() {

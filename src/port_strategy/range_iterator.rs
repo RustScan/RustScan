@@ -89,9 +89,8 @@ fn pick_random_coprime(end: u32) -> u32 {
     for _ in 0..10 {
         if end.gcd(candidate) == 1 {
             return candidate;
-        } else {
-            candidate = rng.gen_range(lower_range, upper_range);
         }
+        candidate = rng.gen_range(lower_range, upper_range);
     }
 
     end - 1
@@ -127,7 +126,7 @@ mod tests {
     fn generate_sorted_range(start: u32, end: u32) -> Vec<u16> {
         let range = RangeIterator::new(start, end);
         let mut result = range.into_iter().collect::<Vec<u16>>();
-        result.sort();
+        result.sort_unstable();
 
         result
     }

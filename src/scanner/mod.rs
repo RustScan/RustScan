@@ -125,7 +125,7 @@ impl Scanner {
                     }
                     if !self.greppable {
                         if self.accessible {
-                            println!("Open {}", socket.to_string());
+                            println!("Open {}", socket);
                         } else {
                             println!("Open {}", socket.to_string().purple());
                         }
