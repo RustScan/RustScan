@@ -434,6 +434,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn run_bash_script() {
         let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.sh".into()).unwrap();
         let script: Script = into_script(script_f);
@@ -455,6 +456,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn run_perl_script() {
         let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.pl".into()).unwrap();
         let script: Script = into_script(script_f);

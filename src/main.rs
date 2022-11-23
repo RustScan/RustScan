@@ -340,6 +340,7 @@ fn read_ips_from_file(
 #[cfg(unix)]
 fn adjust_ulimit_size(opts: &Opts) -> u64 {
     use rlimit::Resource;
+
     if let Some(limit) = opts.ulimit {
         if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
@@ -403,10 +404,14 @@ fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts};
+    #[cfg(unix)]
+    use crate::{adjust_ulimit_size, infer_batch_size};
+
+    use crate::{parse_addresses, print_opening, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -416,6 +421,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered_average_size() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -424,6 +430,7 @@ mod tests {
         assert!(batch_size == 3_000);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
@@ -434,6 +441,7 @@ mod tests {
         assert!(batch_size == 4_900);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let mut opts = Opts::default();
@@ -452,6 +460,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn test_high_ulimit_no_greppable_mode() {
         let mut opts = Opts::default();
         opts.batch_size = 10;
