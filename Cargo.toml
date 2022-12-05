@@ -50,3 +50,8 @@ section = "rust"
 [profile.release]
 lto = true
 panic = 'abort'
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "rustscan"
+path = "src/main.rs"
