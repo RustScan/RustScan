@@ -11,7 +11,7 @@ arg_enum! {
     /// Represents the strategy in which the port scanning will run.
     ///   - Serial will run from start to end, for example 1 to 1_000.
     ///   - Random will randomize the order in which ports will be scanned.
-    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq)]
+    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq, Eq)]
     pub enum ScanOrder {
         Serial,
         Random,
@@ -23,7 +23,7 @@ arg_enum! {
     ///   - none will avoid running any script, only portscan results will be shown.
     ///   - default will run the default embedded nmap script, that's part of RustScan since the beginning.
     ///   - custom will read the ScriptConfig file and the available scripts in the predefined folders
-    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Copy)]
+    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Eq, Copy)]
     pub enum ScriptsRequired {
         None,
         Default,
@@ -32,7 +32,7 @@ arg_enum! {
 }
 
 /// Represents the range of ports to be scanned.
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct PortRange {
     pub start: u16,
     pub end: u16,
@@ -161,8 +161,8 @@ impl Opts {
     /// values found within the user configuration file.
     pub fn merge(&mut self, config: &Config) {
         if !self.no_config {
-            self.merge_required(&config);
-            self.merge_optional(&config);
+            self.merge_required(config);
+            self.merge_optional(config);
         }
     }
 
@@ -198,7 +198,7 @@ impl Opts {
         if self.top && config.ports.is_some() {
             let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
             for entry in config.ports.clone().unwrap().keys() {
-                ports.push(entry.parse().unwrap())
+                ports.push(entry.parse().unwrap());
             }
             self.ports = Some(ports);
         }
@@ -323,8 +323,8 @@ mod tests {
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.greppable, true);
-        assert_eq!(opts.accessible, false);
+        assert!(opts.greppable);
+        assert!(!opts.accessible);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
         assert_eq!(opts.scan_order, ScanOrder::Serial);
@@ -343,7 +343,7 @@ mod tests {
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
         assert_eq!(opts.scan_order, config.scan_order.unwrap());
-        assert_eq!(opts.scripts, ScriptsRequired::Default)
+        assert_eq!(opts.scripts, ScriptsRequired::Default);
     }
 
     #[test]

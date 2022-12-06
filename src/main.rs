@@ -205,6 +205,7 @@ fn main() {
 }
 
 /// Prints the opening title of RustScan
+#[allow(clippy::items_after_statements)]
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
     let s = format!(
@@ -287,7 +288,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this everytime you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
-    IpCidr::from_str(&address)
+    IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
         .or_else(|| {
@@ -339,6 +340,7 @@ fn read_ips_from_file(
 #[cfg(unix)]
 fn adjust_ulimit_size(opts: &Opts) -> u64 {
     use rlimit::Resource;
+
     if let Some(limit) = opts.ulimit {
         if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
@@ -402,10 +404,14 @@ fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts};
+    #[cfg(unix)]
+    use crate::{adjust_ulimit_size, infer_batch_size};
+
+    use crate::{parse_addresses, print_opening, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -415,6 +421,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered_average_size() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -423,6 +430,7 @@ mod tests {
         assert!(batch_size == 3_000);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
@@ -433,6 +441,7 @@ mod tests {
         assert!(batch_size == 4_900);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let mut opts = Opts::default();
@@ -451,6 +460,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn test_high_ulimit_no_greppable_mode() {
         let mut opts = Opts::default();
         opts.batch_size = 10;
@@ -503,7 +513,7 @@ mod tests {
         opts.addresses = vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()];
         let ips = parse_addresses(&opts);
 
-        assert_eq!(ips.is_empty(), true);
+        assert!(ips.is_empty());
     }
     #[test]
     fn parse_hosts_file_and_incorrect_hosts() {
