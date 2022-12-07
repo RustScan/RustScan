@@ -13,7 +13,7 @@ pub struct RangeIterator {
 
 /// An iterator that follows the `Linear Congruential Generator` algorithm.
 ///
-/// For more information: https://en.wikipedia.org/wiki/Linear_congruential_generator
+/// For more information: <https://en.wikipedia.org/wiki/Linear_congruential_generator>
 impl RangeIterator {
     /// Receives the the start and end of a range and normalize
     /// these values before selecting a coprime for the end of the range
