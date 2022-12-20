@@ -1,20 +1,14 @@
 name: Release
 on:
-  # schedule:
-  # - cron: '0 0 * * *' # midnight UTC
-
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-    ## - release
-
   pull_request:
     branches:
       - master
     paths:
-      - 'package.json'
-      - 'package-lock.json'
-      - 'CHANGELOG.md'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
       - '.github/workflows/release.yml'
 
 env:
