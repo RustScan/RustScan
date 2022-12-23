@@ -1,6 +1,7 @@
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
+use std::path::PathBuf;
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -10,7 +11,7 @@ arg_enum! {
     /// Represents the strategy in which the port scanning will run.
     ///   - Serial will run from start to end, for example 1 to 1_000.
     ///   - Random will randomize the order in which ports will be scanned.
-    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq)]
+    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq, Eq)]
     pub enum ScanOrder {
         Serial,
         Random,
@@ -22,7 +23,7 @@ arg_enum! {
     ///   - none will avoid running any script, only portscan results will be shown.
     ///   - default will run the default embedded nmap script, that's part of RustScan since the beginning.
     ///   - custom will read the ScriptConfig file and the available scripts in the predefined folders
-    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Copy)]
+    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Eq, Copy)]
     pub enum ScriptsRequired {
         None,
         Default,
@@ -31,7 +32,7 @@ arg_enum! {
 }
 
 /// Represents the range of ports to be scanned.
-#[derive(Deserialize, Debug, Clone, PartialEq)]
+#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct PortRange {
     pub start: u16,
     pub end: u16,
@@ -67,10 +68,10 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
 /// specified server may not be able to handle this many socket connections at once.
-/// - Discord https://discord.gg/GFrQsGy
-/// - GitHub https://github.com/RustScan/RustScan
+/// - Discord  <http://discord.skerritt.blog>
+/// - GitHub <https://github.com/RustScan/RustScan>
 pub struct Opts {
-    /// A list of comma separated CIDRs, IPs, or hosts to be scanned.
+    /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be scanned.
     #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
@@ -85,6 +86,10 @@ pub struct Opts {
     /// Whether to ignore the configuration file or not.
     #[structopt(short, long)]
     pub no_config: bool,
+
+    /// Custom path to config file
+    #[structopt(short, long, parse(from_os_str))]
+    pub config_path: Option<PathBuf>,
 
     /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
     #[structopt(short, long)]
@@ -112,7 +117,7 @@ pub struct Opts {
 
     /// Automatically ups the ULIMIT with the value you provided.
     #[structopt(short, long)]
-    pub ulimit: Option<rlimit::RawRlim>,
+    pub ulimit: Option<u64>,
 
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
@@ -156,8 +161,8 @@ impl Opts {
     /// values found within the user configuration file.
     pub fn merge(&mut self, config: &Config) {
         if !self.no_config {
-            self.merge_required(&config);
-            self.merge_optional(&config);
+            self.merge_required(config);
+            self.merge_optional(config);
         }
     }
 
@@ -193,7 +198,7 @@ impl Opts {
         if self.top && config.ports.is_some() {
             let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
             for entry in config.ports.clone().unwrap().keys() {
-                ports.push(entry.parse().unwrap())
+                ports.push(entry.parse().unwrap());
             }
             self.ports = Some(ports);
         }
@@ -216,7 +221,7 @@ pub struct Config {
     batch_size: Option<u16>,
     timeout: Option<u32>,
     tries: Option<u8>,
-    ulimit: Option<rlimit::RawRlim>,
+    ulimit: Option<u64>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
@@ -234,16 +239,11 @@ impl Config {
     /// greppable = true
     /// scan_order: "Serial"
     ///
-    pub fn read() -> Self {
-        let mut home_dir = match dirs::home_dir() {
-            Some(dir) => dir,
-            None => panic!("Could not infer config file path."),
-        };
-        home_dir.push(".rustscan.toml");
-
+    pub fn read(custom_config_path: Option<PathBuf>) -> Self {
         let mut content = String::new();
-        if home_dir.exists() {
-            content = match fs::read_to_string(home_dir) {
+        let config_path = custom_config_path.unwrap_or_else(default_config_path);
+        if config_path.exists() {
+            content = match fs::read_to_string(config_path) {
                 Ok(content) => content,
                 Err(_) => String::new(),
             }
@@ -259,6 +259,16 @@ impl Config {
 
         config
     }
+}
+
+/// Constructs default path to config toml
+pub fn default_config_path() -> PathBuf {
+    let mut config_path = match dirs::home_dir() {
+        Some(dir) => dir,
+        None => panic!("Could not infer config file path."),
+    };
+    config_path.push(".rustscan.toml");
+    config_path
 }
 
 #[cfg(test)]
@@ -300,6 +310,7 @@ mod tests {
                 no_config: true,
                 top: false,
                 scripts: ScriptsRequired::Default,
+                config_path: None,
             }
         }
     }
@@ -312,8 +323,8 @@ mod tests {
         opts.merge(&config);
 
         assert_eq!(opts.addresses, vec![] as Vec<String>);
-        assert_eq!(opts.greppable, true);
-        assert_eq!(opts.accessible, false);
+        assert!(opts.greppable);
+        assert!(!opts.accessible);
         assert_eq!(opts.timeout, 0);
         assert_eq!(opts.command, vec![] as Vec<String>);
         assert_eq!(opts.scan_order, ScanOrder::Serial);
@@ -332,7 +343,7 @@ mod tests {
         assert_eq!(opts.command, config.command.unwrap());
         assert_eq!(opts.accessible, config.accessible.unwrap());
         assert_eq!(opts.scan_order, config.scan_order.unwrap());
-        assert_eq!(opts.scripts, ScriptsRequired::Default)
+        assert_eq!(opts.scripts, ScriptsRequired::Default);
     }
 
     #[test]

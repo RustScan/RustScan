@@ -72,7 +72,7 @@ pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
         ScriptsRequired::None => Ok(scripts_to_run),
         ScriptsRequired::Default => {
             let default_script =
-                toml::from_str::<ScriptFile>(&DEFAULT).expect("Failed to parse Script file.");
+                toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
             scripts_to_run.push(default_script);
             Ok(scripts_to_run)
         }
@@ -105,7 +105,7 @@ pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
                         let script_hashset: HashSet<String> =
                             script.tags.clone().unwrap().into_iter().collect();
                         if config_hashset.is_subset(&script_hashset) {
-                            scripts_to_run.push(script.to_owned());
+                            scripts_to_run.push(script.clone());
                         } else {
                             debug!(
                                 "\nScript tags does not match config tags {:?} {}",
@@ -134,6 +134,7 @@ pub fn parse_scripts(scripts: Vec<PathBuf>) -> Vec<ScriptFile> {
 }
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct Script {
     // Path to the script itself.
     path: Option<PathBuf>,
@@ -293,16 +294,14 @@ impl ScriptFile {
         let real_path = script.clone();
         let mut lines_buf = String::new();
         if let Ok(file) = File::open(script) {
-            for line in io::BufReader::new(file).lines().skip(1) {
-                if let Ok(mut line) = line {
-                    if line.starts_with('#') {
-                        line.retain(|c| c != '#');
-                        line = line.trim().to_string();
-                        line.push('\n');
-                        lines_buf.push_str(&line);
-                    } else {
-                        break;
-                    }
+            for mut line in io::BufReader::new(file).lines().skip(1).flatten() {
+                if line.starts_with('#') {
+                    line.retain(|c| c != '#');
+                    line = line.trim().to_string();
+                    line.push('\n');
+                    lines_buf.push_str(&line);
+                } else {
+                    break;
                 }
             }
         } else {
@@ -435,6 +434,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn run_bash_script() {
         let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.sh".into()).unwrap();
         let script: Script = into_script(script_f);
@@ -456,6 +456,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn run_perl_script() {
         let script_f = ScriptFile::new("fixtures/.rustscan_scripts/test_script.pl".into()).unwrap();
         let script: Script = into_script(script_f);

@@ -1,7 +1,7 @@
 [package]
 name = "rustscan"
-version = "2.0.0"
-authors = ["Bee <brandon@skerritt.blog>"]
+version = "2.1.1"
+authors = ["Autumn <autumn@skerritt.blog>"]
 edition = "2018"
 description = "Faster Nmap Scanning with Rust"
 homepage = "https://github.com/rustscan/rustscan"
@@ -21,7 +21,7 @@ colored = "2.0.0"
 structopt = "0.3.20"
 async-std = "1.7.0"
 futures = "0.3"
-rlimit = "0.5.4"
+rlimit = "0.8.3"
 shell-words = "1.0.0"
 log = "0.4.0"
 env_logger = "0.8.2"
@@ -35,7 +35,7 @@ serde = "1.0.124"
 serde_derive = "1.0.116"
 cidr-utils = "0.5.1"
 itertools = "0.9.0"
-trust-dns-resolver = { version = "0.19.5", features = ["dns-over-rustls"] }
+trust-dns-resolver = { version = "0.21.1", features = ["dns-over-rustls"] }
 anyhow = "1.0.40"
 subprocess = "0.2.6"
 text_placeholder = { version = "0.4", features = ["struct_context"] }
@@ -50,3 +50,8 @@ section = "rust"
 [profile.release]
 lto = true
 panic = 'abort'
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "rustscan"
+path = "src/main.rs"

@@ -44,7 +44,7 @@ impl PortStrategy {
 
     pub fn order(&self) -> Vec<u16> {
         match self {
-            PortStrategy::Manual(ports) => ports.to_vec(),
+            PortStrategy::Manual(ports) => ports.clone(),
             PortStrategy::Serial(range) => range.generate(),
             PortStrategy::Random(range) => range.generate(),
         }
@@ -115,7 +115,7 @@ mod tests {
         let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
         assert_ne!(expected_range, result);
 
-        result.sort();
+        result.sort_unstable();
         assert_eq!(expected_range, result);
     }
 
@@ -133,7 +133,7 @@ mod tests {
         let expected_range = (1..10).into_iter().collect::<Vec<u16>>();
         assert_ne!(expected_range, result);
 
-        result.sort();
+        result.sort_unstable();
         assert_eq!(expected_range, result);
     }
 }
