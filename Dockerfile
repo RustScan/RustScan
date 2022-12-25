@@ -8,7 +8,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src/ src/
 RUN cargo build --release
 
-FROM alpine:3.12
+FROM alpine:3.17
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
 LABEL author="LeoFVO <https://github.com/LeoFVO>"
 RUN addgroup -S rustscan && \
