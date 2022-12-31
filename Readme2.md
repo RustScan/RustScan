@@ -18,6 +18,7 @@
 <img alt="Discord" src="https://img.shields.io/discord/754001738184392704">
 <img alt="Actions" src="https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master">
 </p>
+
 <hr>
 
 | <p align="center"><a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended) </a></p>            | <p align="center"><a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian </p>                 | <p align="center"><a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a></p>                       | <p align="center"><a href="https://crates.io/crates/rustscan">🔧 Homebrew </a></p>                     | <p align="center"><a href="https://crates.io/crates/rustscan">🧀 Crates </a></p>                     |
@@ -189,3 +190,5 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+,3
