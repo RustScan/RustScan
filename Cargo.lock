@@ -1056,7 +1056,11 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
+<<<<<<< Updated upstream
 version = "2.1.1"
+=======
+version = "2.1.0"
+>>>>>>> Stashed changes
 dependencies = [
  "ansi_term",
  "anyhow",
