@@ -75,7 +75,7 @@ pub struct Opts {
     #[structopt(short, long, use_delimiter = true)]
     pub addresses: Vec<String>,
 
-    /// A list of comma separed ports to be scanned. Example: 80,443,8080.
+    /// A list of comma separated ports to be scanned. Example: 80,443,8080.
     #[structopt(short, long, use_delimiter = true)]
     pub ports: Option<Vec<u16>>,
 
