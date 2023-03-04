@@ -286,7 +286,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
-/// Call this everytime you have a possible IP_or_host
+/// Call this every time you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
     IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
@@ -300,7 +300,7 @@ fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
         .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
 }
 
-/// Uses DNS to get the IPS assiocated with host
+/// Uses DNS to get the IPS associated with host
 fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 

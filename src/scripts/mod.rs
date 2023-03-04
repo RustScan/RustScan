@@ -38,7 +38,7 @@
 //!     The {{ip}} part will be replaced with the ip we got from the scan.
 //!     The {{port}} part will be reaplced with the ports separated with the ports_separator found in the script file
 //!
-//! And when there is only {{ip}} and {{port}} is in the format, ony those will be replaced with the arguments from the scan.
+//! And when there is only {{ip}} and {{port}} is in the format, only those will be replaced with the arguments from the scan.
 //! This makes it easy to run a system installed command like nmap, and give any kind of arguments to it.
 //!
 //! If the format is different, the script will be silently discarded and will not run. With the Debug option it's possible to see where it goes wrong.
