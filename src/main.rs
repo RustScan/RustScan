@@ -67,7 +67,7 @@ fn main() {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
-                format!("Initiating scripts failed!\n{}", e),
+                format!("Initiating scripts failed!\n{e}"),
                 opts.greppable,
                 opts.accessible
             );
@@ -189,7 +189,7 @@ fn main() {
                     detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
-                    warning!(&format!("Error {}", e), opts.greppable, opts.accessible);
+                    warning!(&format!("Error {e}"), opts.greppable, opts.accessible);
                 }
             }
         }
@@ -233,7 +233,7 @@ fn print_opening(opts: &Opts) {
         .unwrap_or_else(input::default_config_path);
 
     detail!(
-        format!("The config file is expected to be at {:?}", config_path),
+        format!("The config file is expected to be at {config_path:?}"),
         opts.greppable,
         opts.accessible
     );
@@ -262,7 +262,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 
         if !file_path.is_file() {
             warning!(
-                format!("Host {:?} could not be resolved.", file_path),
+                format!("Host {file_path:?} could not be resolved."),
                 input.greppable,
                 input.accessible
             );
@@ -274,7 +274,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             ips.extend(x);
         } else {
             warning!(
-                format!("Host {:?} could not be resolved.", file_path),
+                format!("Host {file_path:?} could not be resolved."),
                 input.greppable,
                 input.accessible
             );
@@ -344,7 +344,7 @@ fn adjust_ulimit_size(opts: &Opts) -> u64 {
     if let Some(limit) = opts.ulimit {
         if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
-                format!("Automatically increasing ulimit value to {}.", limit),
+                format!("Automatically increasing ulimit value to {limit}."),
                 opts.greppable,
                 opts.accessible
             );

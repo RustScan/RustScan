@@ -77,9 +77,8 @@ pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
             Ok(scripts_to_run)
         }
         ScriptsRequired::Custom => {
-            let scripts_dir_base = match dirs::home_dir() {
-                Some(dir) => dir,
-                None => return Err(anyhow!("Could not infer scripts path.")),
+            let Some(scripts_dir_base) = dirs::home_dir() else {
+                return Err(anyhow!("Could not infer scripts path."));
             };
             let script_paths = match find_scripts(scripts_dir_base) {
                 Ok(script_paths) => script_paths,
@@ -243,7 +242,7 @@ impl Script {
 #[cfg(not(tarpaulin_include))]
 fn execute_script(mut arguments: Vec<String>) -> Result<String> {
     debug!("\nScript arguments vec: {:?}", &arguments);
-    let process = Exec::cmd(&arguments.remove(0)).args(&arguments);
+    let process = Exec::cmd(arguments.remove(0)).args(&arguments);
     match process.capture() {
         Ok(c) => {
             let es = match c.exit_status {
@@ -335,9 +334,8 @@ pub struct ScriptConfig {
 #[cfg(not(tarpaulin_include))]
 impl ScriptConfig {
     pub fn read_config() -> Result<ScriptConfig> {
-        let mut home_dir = match dirs::home_dir() {
-            Some(dir) => dir,
-            None => return Err(anyhow!("Could not infer ScriptConfig path.")),
+        let Some(mut home_dir) = dirs::home_dir() else {
+            return Err(anyhow!("Could not infer ScriptConfig path."));
         };
         home_dir.push(".rustscan_scripts.toml");
 
