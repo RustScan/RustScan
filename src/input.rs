@@ -252,7 +252,7 @@ impl Config {
         let config: Config = match toml::from_str(&content) {
             Ok(config) => config,
             Err(e) => {
-                println!("Found {} in configuration file.\nAborting scan.\n", e);
+                println!("Found {e} in configuration file.\nAborting scan.\n");
                 std::process::exit(1);
             }
         };
@@ -263,9 +263,8 @@ impl Config {
 
 /// Constructs default path to config toml
 pub fn default_config_path() -> PathBuf {
-    let mut config_path = match dirs::home_dir() {
-        Some(dir) => dir,
-        None => panic!("Could not infer config file path."),
+    let Some(mut config_path) = dirs::home_dir() else {
+        panic!("Could not infer config file path.");
     };
     config_path.push(".rustscan.toml");
     config_path
