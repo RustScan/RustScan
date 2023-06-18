@@ -1,9 +1,9 @@
 <p align="center">
 ➡️
 <a href="http://discord.skerritt.blog">Discord</a> |
- <a href="https://github.com/RustScan/RustScan/wiki/Installation-Guide">Installation Guide</a> |
- <a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
- ⬅️
+<a href="https://github.com/RustScan/RustScan/wiki/Installation-Guide">Installation Guide</a> |
+<a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
+⬅️
 <br>
 <img src="pictures/rustscan.png" height=400px width=400px>
 </p>
@@ -20,11 +20,18 @@
 </p>
 <hr>
 
-| <a href="https://hub.docker.com/r/cmnatic/rustscan">🐋 Docker (Recommended)</a> | <a href="https://github.com/RustScan/RustScan/releases">👩‍💻 Kali / Debian | <a href="https://aur.archlinux.org/packages/rustscan/">🏗️ Arch </a> | <a href="https://crates.io/crates/rustscan">🔧 Homebrew </a> |
-|:-----------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------------------------------------:|
-| <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true" /></p> | <p align="center"><img src="https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true" /></p> | <p align="center"><img src="https://raw.githubusercontent.com/RustScan/RustScan/master/pictures/apple.png" /></p> |
-| `docker pull rustscan/rustscan:2.1.1` [Usage](https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale) | [Read the install guide](https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali)     | `yay -S rustscan` | `brew install rustscan` |
+| 🐋 [Docker \(Recommended\)](https://hub.docker.com/r/cmnatic/rustscan) | 👩‍💻 [Kali / Debian](https://github.com/RustScan/RustScan/releases) | 🏗️ [Arch](https://aur.archlinux.org/packages/rustscan/) | 🔧 [Homebrew](https://crates.io/crates/rustscan) |
+|:------:|:------:|:------:|:------:|
+| ![Docker] | ![Kali1] | ![Arch] | ![apple] |
+| `docker pull rustscan/rustscan:2.1.1` [Usage] | [kali] | `yay -S rustscan` | `brew install rustscan` |
 
+[Docker]: <https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true> "Docker install" 
+[Kali1]: <https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true> "Kali Picture"
+[Arch]: <https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true> "Arch Linux"
+[Apple]: <https://raw.githubusercontent.com/RustScan/RustScan/master/pictures/apple.png> "Apple"
+[Usage]: <https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale> "Use Docker rustscan"
+[kali]: <https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali> "Read the install guide" 
+ 
 <hr>
 
 # 🤔 What is this?
