@@ -137,9 +137,7 @@ impl Scanner {
                 Err(e) => {
                     let mut error_string = e.to_string();
 
-                    if error_string.to_lowercase().contains("too many open files") {
-                        panic!("Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
-                    }
+                    assert!(!error_string.to_lowercase().contains("too many open files"), "Too many open files. Please reduce batch size. The default is 5000. Try -b 2500.");
 
                     if nr_try == tries {
                         error_string.push(' ');
