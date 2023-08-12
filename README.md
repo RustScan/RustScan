@@ -1,42 +1,29 @@
-<p align="center">
-➡️
-<a href="http://discord.skerritt.blog">Discord</a> |
-<a href="https://github.com/RustScan/RustScan/wiki/Installation-Guide">Installation Guide</a> |
-<a href="https://github.com/RustScan/RustScan#-usage">Usage Guide</a>
-⬅️
-<br>
+<div align="center" markdown="1">
+
+➡️ [Discord][discord] | [Installation Guide][toc-install] | [Usage Guide][usage-guide] ⬅️
+
 <img src="pictures/rustscan.png" height=400px width=400px>
-</p>
-<p align="center">
-<u><b> The Modern Port Scanner. </b></u><br><b>Fast, smart, effective.</b> 
-</p>
-<p align="center">
-<img alt="AUR version" src="https://img.shields.io/aur/version/rustscan">
-<img src="https://img.shields.io/badge/Built%20with-Rust-Purple">
-<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads">
-<img alt="Crates.io" src="https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads">
-<img alt="Discord" src="https://img.shields.io/discord/754001738184392704">
-<img alt="Actions" src="https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master">
-</p>
-<hr>
 
-| 🐋 [Docker \(Recommended\)](https://hub.docker.com/r/cmnatic/rustscan) | 👩‍💻 [Kali / Debian](https://github.com/RustScan/RustScan/releases) | 🏗️ [Arch](https://aur.archlinux.org/packages/rustscan/) | 🔧 [Homebrew](https://crates.io/crates/rustscan) |
-|:------:|:------:|:------:|:------:|
-| ![Docker] | ![Kali1] | ![Arch] | ![apple] |
-| `docker pull rustscan/rustscan:2.1.1` [Usage] | [kali] | `yay -S rustscan` | `brew install rustscan` |
+<!--<u>**The Modern Port Scanner.**</u>-->
+**Fast, smart, effective.**
 
-[Docker]: <https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true> "Docker install" 
-[Kali1]: <https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true> "Kali Picture"
-[Arch]: <https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true> "Arch Linux"
-[Apple]: <https://raw.githubusercontent.com/RustScan/RustScan/master/pictures/apple.png> "Apple"
-[Usage]: <https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale> "Use Docker rustscan"
-[kali]: <https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali> "Read the install guide" 
- 
-<hr>
+![Arch Linux package][badge-1] ![Built with Rust][badge-2] ![GitHub All Releases][badge-3] ![Crates.io][badge-4] ![Discord][badge-5] ![Actions][badge-6]
+
+
+---
+
+|                     🐋 `(Recommended)`                      |              👩‍💻               |             🏗️              |             🔧              |
+| :---------------------------------------------------------: | :---------------------------: | :-------------------------: | :-------------------------: |
+|               [![Docker][DockerPic]][Docker]                | [![Kali][Kali1]][Kali/Debian] | [![Arch][Arch]][Arch-Linux] | [![apple][apple]][Homebrew] |
+| `docker pull rustscan/rustscan:2.1.1`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
+
+---
+
+</div>
 
 # 🤔 What is this?
 
-![fast](pictures/fast.gif)
+![fast][speed-1]
 
 The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run scripts through our scripting engine (Python, Lua, Shell supported).
 
@@ -50,17 +37,17 @@ The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run 
 
 ## ‼️ Important Links
 
-| Installation Guide                                                                     | Documentation                                            | Discord                                  |
-| -------------------------------------------------------------------------------------- | -------------------------------------------------------- | ---------------------------------------- |
-| 📖 [Installation Guide](https://github.com/RustScan/RustScan#-full-installation-guide) | 📚 [Documentation](https://rustscan.github.io/RustScan/) | 🦜 [Discord](http://discord.skerritt.blog) |
+|         <!--Installation Guide-->          |          <!--Documentation-->          |       <!--Discord-->        |
+| :----------------------------------------: | :------------------------------------: | :-------------------------: |
+| :book: [Installation Guide][links-table-1] | :books: [Documentation][links-table-2] | :parrot: [Discord][discord] |
 
 ## 🙋 Table of Contents
 
-- 📖 [Installation Guide](https://github.com/RustScan/RustScan/wiki/Installation-Guide)
-- 🐋 [Docker Usage](https://github.com/RustScan/RustScan/wiki/Installation-Guide)
-- 🦜 [Discord](http://discord.skerritt.blog)
-- 🤸 [Usage](https://github.com/RustScan/RustScan/wiki/Usage)
-- 🎪 [Community](https://github.com/RustScan/RustScan#-community)
+- 📖 [Installation Guide][toc-install]
+- 🐋 [Docker Usage][toc-docker-usage]
+- 🦜 [Discord][discord]
+- 🤸 [Usage][usage-1]
+- 🎪 [Community][toc-community]
 
 # 🔭 Why RustScan?
 
@@ -70,83 +57,85 @@ Not to mention RustScan uses Adaptive Learning to improve itself over time, maki
 
 ## 🧋 Speed
 
-![fast](pictures/fast.gif)
+![fast][speed-1]
 
-Speed is guaranteed via RustScan. However, if you want to run a slow scan due to stealth that is possible too.
+Speed is guaranteed via RustScan. However, if you want to run a slow scan due to stealth, that is possible too.
 
 Firstly, let's talk code.
 
-We have tests that check to see if RustScan is significantly slower than the previous version. If it is, the continuous integration fails and we can't commit code to master unless we make it faster.
+We have tests that check to see if RustScan is significantly slower than the previous version. If it is, the continuous integration fails, and we can't commit code to master unless we make it faster.
 
-[HyperFine](https://github.com/sharkdp/hyperfine) is used to monitor RustScan's performance over time to answer the question "Are we getting faster? Are we getting slower?".
+[HyperFine][speed-2] is used to monitor RustScan's performance over time to answer the question, "Are we getting faster? Are we getting slower?".
 
-Every pull request is reviewed by 1 person, but more often than not 2 people review it. We test it manually and make sure the code doesn't affect performance negatively.
+Every pull request is reviewed by **one** person, but more often than not, **two** people review it. We test it manually and ensure the code doesn't negatively affect performance.
 
-[Read more here](https://github.com/RustScan/RustScan/wiki/Increasing-Speed-&-Accuracy).
+[Read more here][speed-3].
 
-## ⚙️ Extensible 
+## ⚙️ Extensible
 
-![scripts](pictures/scripts.gif)
+![scripts][extensible-1]
 
-_RustScan piping results into the custom Python script_
+### _RustScan piping results into the custom Python script_
 
-RustScan has a new scripting engine which allows anyone to write scripts in most languages. Python, Lua, Shell are all supported.
+RustScan has a new scripting engine that allows anyone to write scripts in most languages. Python, Lua, and Shell are all supported.
 
 Want to take your found ports and pipe them into Nmap for further analysis? That's possible. Want to run `smb-enum` if SMB is found open? Possible.
 
 The possibilities are endless -- and you can write scripts in whatever language you feel comfortable with.
 
-[Read more here](https://github.com/RustScan/RustScan/wiki/RustScan-Scripting-Engine).
+[Read more here][extensible-2].
 
 ## 🌊 Adaptive
 
-![adaptive](pictures/adaptive.gif)
+![adaptive][adaptive-1]
 
-_RustScan automatically fine-tuning itself to match the host OS_.
+### _RustScan automatically fine-tunes itself to match the host OS_
 
 RustScan has a cool set of features called "Adaptive Learning". These features "learn" about the environment you are scanning and how _you_ use RustScan to **improve itself over time**.
 
-This is an umbrella term we use for any feature that fits this criteria. The list is constantly changing, so [check out our wiki for more information](https://github.com/RustScan/RustScan/wiki/Adaptive-Learning).
+We use this umbrella term for any feature that fits this criterion. The list constantly changes, so [check out our wiki for more information][adaptive-learning].
 
 ## 👩‍🦯 Accessible
 
-![fast](pictures/accessible.gif)
+![fast][accessible-1]
 
-RustScan is one of the first penetration testing tools that aims to be entirely accessible. 
+RustScan is one of the first penetration testing tools that aims to be entirely accessible.
 
-[Most penetration testing tools are not accessible](https://bees.substack.com/p/making-hacking-accessible), which negatively affects the whole industry.
+[Most penetration testing tools are not accessible][accessible-2], which negatively affects the whole industry.
 
-RustScan has continuous integration testing that aims to make sure it is accessible, and we are constantly working on ways to improve our accessibility and make sure _everyone_ can use RustScan.
+RustScan has continuous integration testing that aims to ensure it is accessible, and we are constantly working on ways to improve our accessibility and ensure _everyone_ can use RustScan.
 
 # 📖 Full Installation Guide
 
-You can find our guide [here](https://github.com/RustScan/RustScan/wiki/Installation-Guide).
+You can find our guide [here][install-1].
 
 ## 🦊 Community Distributions
 
 Here are all of RustScan's community distributions.
 
-If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however you want to let us know.
+If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however, you want to let us know.
 
-- [OpenSuse](https://software.opensuse.org/package/rustscan?search_term=rustscan)
-- [Fedora/CentOS](https://copr.fedorainfracloud.org/coprs/atim/rustscan/)
+- [Open Suse][distributions-1]
+- [Fedora/CentOS][distributions-2]
 
-[![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
+[![Packaging status][rustscan-svg]][repology-1]
 
 # 🤸 Usage
 
-We have 2 usage guides. [Basic Usage](https://github.com/RustScan/RustScan/wiki/Usage) and [Things you may want to do](https://github.com/RustScan/RustScan/wiki/Things-you-may-want-to-do-with-RustScan-but-don't-understand-how).
+We have 2 usage guides. [Basic Usage][usage-1] and [Things you may want to do][usage-2].
 
-We also have documentation about our config file [here](https://github.com/RustScan/RustScan/wiki/Config-File).
+We also have documentation about our config file [here][config-file-here].
 
 # 🎪 Community
 
-[Read this to learn how to contribute](https://github.com/RustScan/RustScan/wiki/Contributing).
+[Contributing][community-1] Read this to learn how.
 
 ## Contributors ✨
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
 [![All Contributors](https://img.shields.io/badge/all_contributors-26-orange.svg?style=flat-square)](#contributors-)
+
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
@@ -193,6 +182,54 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 <!-- markdownlint-enable -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
+
+<!--Links-->
+
+[Docker]: https://hub.docker.com/r/cmnatic/rustscan "This is the recommended distribution of rustscan"
+[kali]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali "Read the install guide"
+[Kali/Debian]: https://github.com/RustScan/RustScan/releases "Kali Debian"
+[Arch-Linux]: https://archlinux.org/packages/extra/x86_64/rustscan/ "Arch Linux installation of Rustscan"
+[Homebrew]: https://crates.io/crates/rustscan/ "Homebrew install of Rustscan"
+[usage-1]: https://github.com/RustScan/RustScan/wiki/Usage "Basic Usage of Rustscan"
+[usage-0]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale "Use Docker Rustscan"
+[config-file-here]: https://github.com/RustScan/RustScan/wiki/Config-File "RustScan Configuration File"
+[usage-2]: https://github.com/RustScan/RustScan/wiki/Things-you-may-want-to-do-with-RustScan-but-don't-understand-how "Things you may want to do with rustscan but don't know how"
+[community-1]: https://github.com/RustScan/RustScan/wiki/Contributing "Learn how to contribute"
+[distributions-1]: https://software.opensuse.org/package/rustscan?search_term=rustscan "Open Suse rustscan distribution"
+[distributions-2]: https://copr.fedorainfracloud.org/coprs/atim/rustscan/ "Rustscan in Fedora"
+[repology-1]: https://repology.org/project/rustscan/versions "Packaging Status"
+[install-1]: https://github.com/RustScan/RustScan/wiki/Installation-Guide "Installation guide"
+[accessible-2]: https://bees.substack.com/p/making-hacking-accessible "Making Hacking Accessible"
+[extensible-2]: https://github.com/RustScan/RustScan/wiki/RustScan-Scripting-Engine "Scripting Engine"
+[speed-2]: https://github.com/sharkdp/hyperfine "Hyperfine"
+[speed-3]: https://github.com/RustScan/RustScan/wiki/Increasing-Speed-&-Accuracy "Increasing Speed & Accuracy"
+[toc-community]: https://github.com/RustScan/RustScan#-community "Community"
+[links-table-1]: https://github.com/RustScan/RustScan#-full-installation-guide "Full installation guide"
+[links-table-2]: https://rustscan.github.io/RustScan/ "Rustscan"
+[discord]: http://discord.skerritt.blog "Discord blog"
+[toc-install]: https://github.com/RustScan/RustScan/wiki/Installation-Guide "Installation Guide Wiki"
+[toc-docker-usage]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker- "Docker Installation Guide Wiki"
+[usage-guide]: https://github.com/RustScan/RustScan#-usage
+[adaptive-learning]: https://github.com/RustScan/RustScan/wiki/Adaptive-Learning "Adaptive Learning"
+
+<!--Pictures-->
+
+[DockerPic]: https://github.com/RustScan/RustScan/blob/master/pictures/docker.png?raw=true "Docker install"
+[Kali1]: https://github.com/RustScan/RustScan/blob/master/pictures/kali.png?raw=true "Kali Picture"
+[Arch]: https://github.com/RustScan/RustScan/blob/master/pictures/arch.png?raw=true "Arch Linux"
+[Apple]: https://raw.githubusercontent.com/RustScan/RustScan/master/pictures/apple.png?size "Apple"
+[rustscan-svg]: https://repology.org/badge/vertical-allrepos/rustscan.svg "Picture of rustscan repology"
+[accessible-1]: pictures/accessible.gif "Fast"
+[adaptive-1]: pictures/adaptive.gif "Adaptive"
+[extensible-1]: pictures/scripts.gif "Scripts"
+[speed-1]: pictures/fast.gif "Speed"
+[badge-1]: https://img.shields.io/archlinux/v/extra/x86_64/rustscan?style=plastic&logo=archlinux&link=https%3A%2F%2Farchlinux.org%2Fpackages%2Fextra%2Fx86_64%2Frustscan%2F
+[badge-2]: https://img.shields.io/badge/Built%20with-Rust-Purple
+[badge-3]: https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads
+[badge-4]: https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads
+[badge-5]: https://img.shields.io/discord/754001738184392704
+[badge-6]: https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master
