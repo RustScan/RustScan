@@ -220,7 +220,7 @@ fn print_opening(opts: &Opts) {
     let info = format!(
         "{}\n{}\n{}\n{}",
         r#"________________________________________"#,
-        r#": http://discord.skerritt.blog           :"#,
+        r#": http://discord.skerritt.blog         :"#,
         r#": https://github.com/RustScan/RustScan :"#,
         r#" --------------------------------------"#
     );
