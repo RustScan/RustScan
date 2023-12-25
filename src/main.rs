@@ -7,7 +7,10 @@ extern crate shell_words;
 mod tui;
 
 mod input;
+use hickory_resolver::config::{NameServerConfig, Protocol};
 use input::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+use std::fs;
+use std::str::FromStr;
 
 mod scanner;
 use scanner::Scanner;
@@ -24,17 +27,17 @@ use scripts::{init_scripts, Script, ScriptFile};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{prelude::*, BufReader};
-use std::net::{IpAddr, ToSocketAddrs};
-use std::path::Path;
-use std::string::ToString;
-use std::time::Duration;
-use trust_dns_resolver::{
+use hickory_resolver::{
     config::{ResolverConfig, ResolverOpts},
     Resolver,
 };
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
+use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+use std::path::Path;
+use std::string::ToString;
+use std::time::Duration;
 
 extern crate colorful;
 extern crate dirs;
@@ -244,11 +247,38 @@ fn print_opening(opts: &Opts) {
 fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
-    let backup_resolver =
+    let mut self_resolve = true;
+    let mut backup_resolver =
         Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
+    if input.resolver.ne("") {
+        let resolver_ips =
+            if let Ok(r) = read_resolver_from_file(input.resolver.as_str()) {
+                r
+            } else {
+                // Get resolvers from the comma-delimited list string
+                let mut r = Vec::new();
+                input.resolver.split(',').into_iter().for_each(|item| {
+                    match IpAddr::from_str(item) {
+                        Ok(ip) => r.push(ip),
+                        Err(_) => (),
+                    }
+                });
+                r
+            };
+        let mut rc = ResolverConfig::new();
+        for ip in resolver_ips {
+            rc.add_name_server(NameServerConfig::new(
+                SocketAddr::new(ip, 53),
+                Protocol::Udp,
+            ));
+        }
+        backup_resolver = Resolver::new(rc, ResolverOpts::default()).unwrap();
+        self_resolve = false;
+    }
+
     for address in &input.addresses {
-        let parsed_ips = parse_address(address, &backup_resolver);
+        let parsed_ips = parse_address(address, &backup_resolver, self_resolve);
         if !parsed_ips.is_empty() {
             ips.extend(parsed_ips);
         } else {
@@ -270,7 +300,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver) {
+        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver, self_resolve) {
             ips.extend(x);
         } else {
             warning!(
@@ -284,14 +314,31 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     ips
 }
 
+fn read_resolver_from_file(path: &str) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+    let mut ips = Vec::new();
+    fs::read_to_string(path)?
+        .split('\n')
+        .for_each(|line| match IpAddr::from_str(line) {
+            Ok(ip) => ips.push(ip),
+            Err(_) => (),
+        });
+    Ok(ips)
+}
+
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this every time you have a possible IP_or_host
-fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
+/// If the address is a domain, we can self-resolve the domain locally
+/// or resolve it by dns resolver list
+fn parse_address(address: &str, resolver: &Resolver, self_resolve: bool) -> Vec<IpAddr> {
     IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
         .or_else(|| {
+            if !self_resolve {
+                // This will trigger `unwrap_or_else` then call `resolve_ips_from_host` function
+                return None;
+            };
             format!("{}:{}", &address, 80)
                 .to_socket_addrs()
                 .ok()
@@ -320,6 +367,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
 fn read_ips_from_file(
     ips: &std::path::Path,
     backup_resolver: &Resolver,
+    self_resolve: bool,
 ) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
@@ -328,7 +376,7 @@ fn read_ips_from_file(
 
     for address_line in reader.lines() {
         if let Ok(address) = address_line {
-            ips.extend(parse_address(&address, backup_resolver));
+            ips.extend(parse_address(&address, backup_resolver, self_resolve));
         } else {
             debug!("Line in file is not valid");
         }
