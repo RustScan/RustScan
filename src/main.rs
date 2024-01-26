@@ -98,7 +98,9 @@ fn main() {
     #[cfg(not(unix))]
     let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
-    let scanner = Scanner::new(
+    // Added by wasuaje - 01/26/2024:
+    // exclude_ports  is an exclusion port list
+    let scanner = Scanner::new( // TODO pass eclusion list vector to scanner
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
@@ -106,8 +108,9 @@ fn main() {
         opts.greppable,
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
+        opts.exclude_ports.unwrap_or_default()
     );
-    debug!("Scanner finished building: {:?}", scanner);
+    println!("Scanner finished building: {:?}", scanner);
 
     let mut portscan_bench = NamedTimer::start("Portscan");
     let scan_result = block_on(scanner.run());
