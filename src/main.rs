@@ -110,7 +110,7 @@ fn main() {
         opts.accessible,
         opts.exclude_ports.unwrap_or_default()
     );
-    println!("Scanner finished building: {:?}", scanner);
+    dbg!("Scanner finished building: {:?}", scanner);
 
     let mut portscan_bench = NamedTimer::start("Portscan");
     let scan_result = block_on(scanner.run());
