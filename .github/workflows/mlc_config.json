@@ -1,0 +1,14 @@
+{
+    "_comment": "Config for markdown-link-check. Resolves issue #540.",
+    "ignorePatterns": [
+      {
+        "pattern": "^https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg"
+      },
+      {
+        "pattern": "^https://crates.io/crates/rustscan/"
+      },
+      {
+        "pattern": "^https://bees.substack.com/p/making-hacking-accessible"
+      }
+    ]
+  }
