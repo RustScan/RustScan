@@ -228,6 +228,7 @@ pub struct Config {
 }
 
 #[cfg(not(tarpaulin_include))]
+#[allow(clippy::doc_link_with_quotes)]
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.

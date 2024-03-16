@@ -205,7 +205,7 @@ fn main() {
 }
 
 /// Prints the opening title of RustScan
-#[allow(clippy::items_after_statements)]
+#[allow(clippy::items_after_statements, clippy::needless_raw_string_hashes)]
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
     let s = format!(
