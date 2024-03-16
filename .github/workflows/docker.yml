@@ -4,7 +4,7 @@ on:
   push:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
-    branches: [ 'main']
+    branches: ['master']
   release:
     types: [published]
 
