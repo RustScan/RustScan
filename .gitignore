@@ -120,3 +120,5 @@ fabric.properties
 .idea/*
 .idea
 .idea*
+
+settings.json
