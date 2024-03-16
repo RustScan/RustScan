@@ -29,6 +29,7 @@ impl<'s> SocketIterator<'s> {
     }
 }
 
+#[allow(clippy::doc_link_with_quotes)]
 impl<'s> Iterator for SocketIterator<'s> {
     type Item = SocketAddr;
 
