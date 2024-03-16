@@ -10,7 +10,7 @@ RUN cargo build --release
 
 FROM alpine:3.17
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
-LABEL author="LeoFVOtesttest <https://github.com/LeoFVO>"
+LABEL author="LeoFVOtesttestteaasstestest <https://github.com/LeoFVO>"
 RUN addgroup -S rustscan && \
     adduser -S -G rustscan rustscan && \
     ulimit -n 100000 && \
