@@ -67,7 +67,7 @@ pub struct SerialRange {
 
 impl RangeOrder for SerialRange {
     fn generate(&self) -> Vec<u16> {
-        (self.start..self.end).collect()
+        (self.start..=self.end).collect()
     }
 }
 
@@ -104,7 +104,7 @@ mod tests {
         let range = PortRange { start: 1, end: 100 };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
         let result = strategy.order();
-        let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
     }
     #[test]
@@ -112,7 +112,7 @@ mod tests {
         let range = PortRange { start: 1, end: 100 };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let mut result = strategy.order();
-        let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
         assert_ne!(expected_range, result);
 
         result.sort_unstable();
