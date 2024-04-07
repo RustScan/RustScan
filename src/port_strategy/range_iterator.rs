@@ -22,7 +22,7 @@ impl RangeIterator {
     /// For example, the range `1000-2500` will be normalized to `0-1500`
     /// before going through the algorithm.
     pub fn new(start: u32, end: u32) -> Self {
-        let normalized_end = end - start;
+        let normalized_end = end - start + 1;
         let step = pick_random_coprime(normalized_end);
 
         // Randomly choose a number within the range to be the first
@@ -103,23 +103,23 @@ mod tests {
     #[test]
     fn range_iterator_iterates_through_the_entire_range() {
         let result = generate_sorted_range(1, 10);
-        let expected_range = (1..10).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=10).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 100);
-        let expected_range = (1..100).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 1000);
-        let expected_range = (1..1000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=1000).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 65_535);
-        let expected_range = (1..65_535).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=65_535).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1000, 2000);
-        let expected_range = (1000..2000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1000..=2000).into_iter().collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
     }
 
