@@ -62,7 +62,7 @@ impl Scanner {
         let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
-        let mut errors: HashSet<String> = HashSet::with_capacity(self.ips.len() * 1000);
+        let mut errors: HashSet<String> = HashSet::new();
 
         for _ in 0..self.batch_size {
             if let Some(socket) = socket_iterator.next() {
