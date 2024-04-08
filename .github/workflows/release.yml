@@ -113,11 +113,22 @@ jobs:
             aarch64-linux-gnu-strip \
             /target/${{ matrix.target }}/release/$BIN_NAME
 
+      - name: Calculate tag name
+        if: matrix.build == 'x86_64-linux'
+        run: |
+          name=dev
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            name=${GITHUB_REF:10}
+          fi
+          echo ::set-output name=val::$name
+          echo TAG=$name >> $GITHUB_ENV
+        id: tagname
+
       - name: Build deb package (linux only)
         if: matrix.build == 'x86_64-linux'
         run: |
           cargo install cargo-deb
-          cargo deb --target ${{ matrix.target }}
+          cargo deb --target ${{ matrix.target }} --deb-version ${TAG}
 
       - name: Build archive
         shell: bash
@@ -130,8 +141,7 @@ jobs:
           fi
 
           if [ "${{ matrix.build }}" = "x86_64-linux" ]; then
-            find target/ -name "*.deb"
-            cp "$(find target/ -name "*.deb")" "dist/"
+            cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/"
           fi
       - uses: actions/upload-artifact@v2.2.4
         with:
@@ -185,7 +195,7 @@ jobs:
               chmod +x tmp/$pkgname/$BIN_NAME$exe
 
               if [[ $platform == "x86_64-linux" ]]; then
-                  mv bins-$platform/*.deb dist/
+                  mv "bins-$platform/rustscan_${TAG}_amd64.deb" dist/
               fi
 
               if [ "$exe" = "" ]; then
