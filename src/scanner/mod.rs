@@ -33,7 +33,7 @@ pub struct Scanner {
     greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
-    exclude_ports: Vec<u16>
+    exclude_ports: Vec<u16>,
 }
 
 impl Scanner {
@@ -45,7 +45,7 @@ impl Scanner {
         greppable: bool,
         port_strategy: PortStrategy,
         accessible: bool,
-        exclude_ports: Vec<u16>
+        exclude_ports: Vec<u16>,
     ) -> Self {
         Self {
             batch_size,
@@ -55,7 +55,7 @@ impl Scanner {
             port_strategy,
             ips: ips.iter().map(ToOwned::to_owned).collect(),
             accessible,
-            exclude_ports
+            exclude_ports,
         }
     }
 
@@ -65,7 +65,9 @@ impl Scanner {
     /// Added by wasuaje - 01/26/2024:
     ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
-        let ports: Vec<u16> = self.port_strategy.order()
+        let ports: Vec<u16> = self
+            .port_strategy
+            .order()
             .iter()
             .filter(|&port| !self.exclude_ports.contains(port))
             .cloned()
@@ -206,7 +208,7 @@ mod tests {
             true,
             strategy,
             true,
-            vec![9000]
+            vec![9000],
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -229,7 +231,7 @@ mod tests {
             true,
             strategy,
             true,
-            vec![9000]
+            vec![9000],
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -251,7 +253,7 @@ mod tests {
             true,
             strategy,
             true,
-            vec![9000]
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -272,7 +274,7 @@ mod tests {
             true,
             strategy,
             true,
-            vec![9000]
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -296,7 +298,7 @@ mod tests {
             true,
             strategy,
             true,
-            vec![9000]
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);

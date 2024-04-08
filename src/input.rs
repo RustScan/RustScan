@@ -294,7 +294,7 @@ mod tests {
                 accessible: Some(true),
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
-                exclude_ports: None
+                exclude_ports: None,
             }
         }
     }
@@ -317,7 +317,7 @@ mod tests {
                 top: false,
                 scripts: ScriptsRequired::Default,
                 config_path: None,
-                exclude_ports: None
+                exclude_ports: None,
             }
         }
     }

@@ -109,7 +109,7 @@ fn main() {
         opts.greppable,
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
-        opts.exclude_ports.unwrap_or_default()
+        opts.exclude_ports.unwrap_or_default(),
     );
     debug!("Scanner finished building: {:?}", scanner);
 
