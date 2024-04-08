@@ -100,6 +100,7 @@ fn main() {
 
     // Added by wasuaje - 01/26/2024:
     // exclude_ports  is an exclusion port list
+    //
     let scanner = Scanner::new( // TODO pass eclusion list vector to scanner
         &ips,
         batch_size,
