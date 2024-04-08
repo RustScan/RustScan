@@ -1232,9 +1232,9 @@ dependencies = [
 
 [[package]]
 name = "text_placeholder"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbd6afcbe8d748e35406f4c3a79b60567a5104b451f1b618097f139294969ef4"
+checksum = "9661c4c4b27c2b57565aed574959eddea332f8b09cd4719ddf9f51d780c11160"
 dependencies = [
  "serde",
  "serde_json",
