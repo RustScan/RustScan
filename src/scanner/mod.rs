@@ -72,7 +72,7 @@ impl Scanner {
             .order()
             .iter()
             .filter(|&port| !self.exclude_ports.contains(port))
-            .cloned()
+            .copied()
             .collect();
         let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
