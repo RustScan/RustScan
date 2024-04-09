@@ -112,6 +112,24 @@ jobs:
             rustembedded/cross:${{ matrix.target }} \
             aarch64-linux-gnu-strip \
             /target/${{ matrix.target }}/release/$BIN_NAME
+
+      - name: Calculate tag name
+        if: matrix.build == 'x86_64-linux'
+        run: |
+          name=dev
+          if [[ $GITHUB_REF == refs/tags/v* ]]; then
+            name=${GITHUB_REF:10}
+          fi
+          echo ::set-output name=val::$name
+          echo TAG=$name >> $GITHUB_ENV
+        id: tagname
+
+      - name: Build deb package (linux only)
+        if: matrix.build == 'x86_64-linux'
+        run: |
+          cargo install cargo-deb
+          cargo deb --target ${{ matrix.target }} --deb-version ${TAG}
+
       - name: Build archive
         shell: bash
         run: |
@@ -120,6 +138,10 @@ jobs:
             cp "target/${{ matrix.target }}/release/$BIN_NAME.exe" "dist/"
           else
             cp "target/${{ matrix.target }}/release/$BIN_NAME" "dist/"
+          fi
+
+          if [ "${{ matrix.build }}" = "x86_64-linux" ]; then
+            cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/"
           fi
       - uses: actions/upload-artifact@v2.2.4
         with:
@@ -171,12 +193,18 @@ jobs:
               # cp LICENSE README.md tmp/$pkgname
               mv bins-$platform/$BIN_NAME$exe tmp/$pkgname
               chmod +x tmp/$pkgname/$BIN_NAME$exe
+
+              if [[ $platform == "x86_64-linux" ]]; then
+                  mv "bins-$platform/rustscan_${TAG}_amd64.deb" dist/
+              fi
+
               if [ "$exe" = "" ]; then
                   tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
               else
                   (cd tmp && 7z a -r ../dist/$pkgname.zip $pkgname)
               fi
           done
+
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v2
         with:
