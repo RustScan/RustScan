@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches:
       - master
@@ -104,8 +104,8 @@ jobs:
         if: matrix.build == 'x86_64-linux'
         run: |
           name=dev
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            name=${GITHUB_REF:10}
+          if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
+            name=${GITHUB_REF#refs/tags/}
           fi
           echo ::set-output name=val::$name
           echo TAG=$name >> $GITHUB_ENV
@@ -155,8 +155,8 @@ jobs:
       - name: Calculate tag name
         run: |
           name=dev
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            name=${GITHUB_REF:10}
+          if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
+            name=${GITHUB_REF#refs/tags/}
           fi
           echo ::set-output name=val::$name
           echo TAG=$name >> $GITHUB_ENV
