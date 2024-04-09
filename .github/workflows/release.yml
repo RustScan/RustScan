@@ -59,7 +59,7 @@ jobs:
         #   target: i686-pc-windows-msvc
 
     steps:
-      - name: Strip release binary (linux and macos)
+      - name: Set Git config. (windows only)
         if: matrix.build == 'x86_64-windows' # Windows is missing some dependencies
         run: |
           git config --global pack.windowMemory "100m"
@@ -99,19 +99,6 @@ jobs:
           use-cross: ${{ matrix.cross }}
           command: build
           args: --release --locked --target ${{ matrix.target }}
-
-      - name: Strip release binary (linux and macos)
-        if: matrix.build == 'x86_64-linux' || matrix.build == 'x86_64-macos'
-        run: strip "target/${{ matrix.target }}/release/$BIN_NAME"
-
-      - name: Strip release binary (arm)
-        if: matrix.build == 'aarch64-linux'
-        run: |
-          docker run --rm -v \
-            "$PWD/target:/target:Z" \
-            rustembedded/cross:${{ matrix.target }} \
-            aarch64-linux-gnu-strip \
-            /target/${{ matrix.target }}/release/$BIN_NAME
 
       - name: Calculate tag name
         if: matrix.build == 'x86_64-linux'
