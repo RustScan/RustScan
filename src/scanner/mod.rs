@@ -36,6 +36,8 @@ pub struct Scanner {
     exclude_ports: Vec<u16>,
 }
 
+// Allowing too many arguments for clippy.
+#[allow(clippy::too_many_arguments)]
 impl Scanner {
     pub fn new(
         ips: &[IpAddr],
