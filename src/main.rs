@@ -286,7 +286,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     ips
 }
 
-/// Given a string, parse it as an host, IP address, or CIDR.
+/// Given a string, parse it as a host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this every time you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
