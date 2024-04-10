@@ -21,6 +21,8 @@ use std::{
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// greppable is whether or not RustScan should print things, or wait until the end to print only the ip and open ports.
+/// Added by wasuaje - 01/26/2024:
+///     exclude_ports  is an exclusion port list
 #[cfg(not(tarpaulin_include))]
 #[derive(Debug)]
 pub struct Scanner {
@@ -31,8 +33,11 @@ pub struct Scanner {
     greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
+    exclude_ports: Vec<u16>,
 }
 
+// Allowing too many arguments for clippy.
+#[allow(clippy::too_many_arguments)]
 impl Scanner {
     pub fn new(
         ips: &[IpAddr],
@@ -42,6 +47,7 @@ impl Scanner {
         greppable: bool,
         port_strategy: PortStrategy,
         accessible: bool,
+        exclude_ports: Vec<u16>,
     ) -> Self {
         Self {
             batch_size,
@@ -51,14 +57,23 @@ impl Scanner {
             port_strategy,
             ips: ips.iter().map(ToOwned::to_owned).collect(),
             accessible,
+            exclude_ports,
         }
     }
 
     /// Runs scan_range with chunk sizes
     /// If you want to run RustScan normally, this is the entry point used
     /// Returns all open ports as Vec<u16>
+    /// Added by wasuaje - 01/26/2024:
+    ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
-        let ports: Vec<u16> = self.port_strategy.order();
+        let ports: Vec<u16> = self
+            .port_strategy
+            .order()
+            .iter()
+            .filter(|&port| !self.exclude_ports.contains(port))
+            .copied()
+            .collect();
         let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
@@ -72,7 +87,7 @@ impl Scanner {
             }
         }
 
-        debug!("Start scanning sockets. \nBatch size {}\nNumber of ip-s {}\nNumber of ports {}\nTargets all together {} ", 
+        debug!("Start scanning sockets. \nBatch size {}\nNumber of ip-s {}\nNumber of ports {}\nTargets all together {} ",
             self.batch_size,
             self.ips.len(),
             &ports.len(),
@@ -195,6 +210,7 @@ mod tests {
             true,
             strategy,
             true,
+            vec![9000],
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -217,6 +233,7 @@ mod tests {
             true,
             strategy,
             true,
+            vec![9000],
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -238,6 +255,7 @@ mod tests {
             true,
             strategy,
             true,
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -258,6 +276,7 @@ mod tests {
             true,
             strategy,
             true,
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -281,6 +300,7 @@ mod tests {
             true,
             strategy,
             true,
+            vec![9000],
         );
         block_on(scanner.run());
         assert_eq!(1, 1);

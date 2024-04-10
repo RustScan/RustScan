@@ -140,6 +140,10 @@ pub struct Opts {
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
     #[structopt(last = true)]
     pub command: Vec<String>,
+
+    /// A list of comma separated ports to be excluded from scanning. Example: 80,443,8080.
+    #[structopt(short, long, use_delimiter = true)]
+    pub exclude_ports: Option<Vec<u16>>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -203,7 +207,7 @@ impl Opts {
             self.ports = Some(ports);
         }
 
-        merge_optional!(range, ulimit);
+        merge_optional!(range, ulimit, exclude_ports);
     }
 }
 
@@ -225,6 +229,7 @@ pub struct Config {
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
+    exclude_ports: Option<Vec<u16>>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -239,6 +244,7 @@ impl Config {
     /// ports = [80, 443, 8080]
     /// greppable = true
     /// scan_order: "Serial"
+    /// exclude_ports = [8080, 9090, 80]
     ///
     pub fn read(custom_config_path: Option<PathBuf>) -> Self {
         let mut content = String::new();
@@ -289,6 +295,7 @@ mod tests {
                 accessible: Some(true),
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
+                exclude_ports: None,
             }
         }
     }
@@ -311,6 +318,7 @@ mod tests {
                 top: false,
                 scripts: ScriptsRequired::Default,
                 config_path: None,
+                exclude_ports: None,
             }
         }
     }

@@ -98,6 +98,9 @@ fn main() {
     #[cfg(not(unix))]
     let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
+    // Added by wasuaje - 01/26/2024:
+    // exclude_ports  is an exclusion port list
+    //
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -106,6 +109,7 @@ fn main() {
         opts.greppable,
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
+        opts.exclude_ports.unwrap_or_default(),
     );
     debug!("Scanner finished building: {:?}", scanner);
 
