@@ -1,4 +1,4 @@
-//! Scripting engine to run scripts based on tags.
+//! Scripting Engine to run scripts based on tags.
 //! This module serves to filter and run the scripts selected by the user.
 //!
 //! A new commandline and configuration file option was added.
