@@ -24,9 +24,7 @@ use scripts::{init_scripts, Script, ScriptFile};
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
 use futures::executor::block_on;
-use rlimit::{getrlimit, setrlimit, RawRlim, Resource, Rlim};
 use std::collections::HashMap;
-use std::convert::TryInto;
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
@@ -42,9 +40,10 @@ extern crate colorful;
 extern crate dirs;
 
 // Average value for Ubuntu
-const DEFAULT_FILE_DESCRIPTORS_LIMIT: RawRlim = 8000;
+#[cfg(unix)]
+const DEFAULT_FILE_DESCRIPTORS_LIMIT: u64 = 8000;
 // Safest batch size based on experimentation
-const AVERAGE_BATCH_SIZE: RawRlim = 3000;
+const AVERAGE_BATCH_SIZE: u16 = 3000;
 
 #[macro_use]
 extern crate log;
@@ -59,7 +58,7 @@ fn main() {
     let mut rustscan_bench = NamedTimer::start("RustScan");
 
     let mut opts: Opts = Opts::read();
-    let config = Config::read();
+    let config = Config::read(opts.config_path.clone());
     opts.merge(&config);
 
     debug!("Main() `opts` arguments are {:?}", opts);
@@ -68,7 +67,7 @@ fn main() {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
-                format!("Initiating scripts failed!\n{}", e.to_string()),
+                format!("Initiating scripts failed!\n{e}"),
                 opts.greppable,
                 opts.accessible
             );
@@ -93,9 +92,15 @@ fn main() {
         std::process::exit(1);
     }
 
-    let ulimit: RawRlim = adjust_ulimit_size(&opts);
-    let batch_size: u16 = infer_batch_size(&opts, ulimit);
+    #[cfg(unix)]
+    let batch_size: u16 = infer_batch_size(&opts, adjust_ulimit_size(&opts));
 
+    #[cfg(not(unix))]
+    let batch_size: u16 = AVERAGE_BATCH_SIZE;
+
+    // Added by wasuaje - 01/26/2024:
+    // exclude_ports  is an exclusion port list
+    //
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -104,6 +109,7 @@ fn main() {
         opts.greppable,
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
+        opts.exclude_ports.unwrap_or_default(),
     );
     debug!("Scanner finished building: {:?}", scanner);
 
@@ -134,7 +140,7 @@ fn main() {
         \n Alternatively, increase the timeout if your ping is high. Rustscan -t 2000 for 2000 milliseconds (2s) timeout.\n",
         ip,
         opts.batch_size,
-        "'rustscan -b <batch_size> <ip address>'");
+        "'rustscan -b <batch_size> -a <ip address>'");
         warning!(x, opts.greppable, opts.accessible);
     }
 
@@ -176,7 +182,7 @@ fn main() {
             let script = Script::build(
                 script_f.path,
                 *ip,
-                ports.to_vec(),
+                ports.clone(),
                 script_f.port,
                 script_f.ports_separator,
                 script_f.tags,
@@ -187,11 +193,7 @@ fn main() {
                     detail!(script_result.to_string(), opts.greppable, opts.accessible);
                 }
                 Err(e) => {
-                    warning!(
-                        &format!("Error {}", e.to_string()),
-                        opts.greppable,
-                        opts.accessible
-                    );
+                    warning!(&format!("Error {e}"), opts.greppable, opts.accessible);
                 }
             }
         }
@@ -207,27 +209,35 @@ fn main() {
 }
 
 /// Prints the opening title of RustScan
+#[allow(clippy::items_after_statements, clippy::needless_raw_string_hashes)]
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
-    let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
-| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
-| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
-`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-The Modern Day Port Scanner."#;
+    let s = format!(
+        "{}\n{}\n{}\n{}\n{}",
+        r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-."#,
+        r#"| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |"#,
+        r#"| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |"#,
+        r#"`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'"#,
+        r#"The Modern Day Port Scanner."#
+    );
     println!("{}", s.gradient(Color::Green).bold());
-    let info = r#"________________________________________
-: https://discord.gg/GFrQsGy           :
-: https://github.com/RustScan/RustScan :
- --------------------------------------"#;
+    let info = format!(
+        "{}\n{}\n{}\n{}",
+        r#"________________________________________"#,
+        r#": http://discord.skerritt.blog         :"#,
+        r#": https://github.com/RustScan/RustScan :"#,
+        r#" --------------------------------------"#
+    );
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
-    let config_path = dirs::home_dir()
-        .expect("Could not infer config file path.")
-        .join(".rustscan.toml");
+    let config_path = opts
+        .config_path
+        .clone()
+        .unwrap_or_else(input::default_config_path);
 
     detail!(
-        format!("The config file is expected to be at {:?}", config_path),
+        format!("The config file is expected to be at {config_path:?}"),
         opts.greppable,
         opts.accessible
     );
@@ -256,7 +266,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 
         if !file_path.is_file() {
             warning!(
-                format!("Host {:?} could not be resolved.", file_path),
+                format!("Host {file_path:?} could not be resolved."),
                 input.greppable,
                 input.accessible
             );
@@ -268,7 +278,7 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             ips.extend(x);
         } else {
             warning!(
-                format!("Host {:?} could not be resolved.", file_path),
+                format!("Host {file_path:?} could not be resolved."),
                 input.greppable,
                 input.accessible
             );
@@ -280,9 +290,9 @@ fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 
 /// Given a string, parse it as an host, IP address, or CIDR.
 /// This allows us to pass files as hosts or cidr or IPs easily
-/// Call this everytime you have a possible IP_or_host
+/// Call this every time you have a possible IP_or_host
 fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
-    IpCidr::from_str(&address)
+    IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
         .or_else(|| {
@@ -294,7 +304,7 @@ fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
         .unwrap_or_else(|| resolve_ips_from_host(address, resolver))
 }
 
-/// Uses DNS to get the IPS assiocated with host
+/// Uses DNS to get the IPS associated with host
 fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
     let mut ips: Vec<std::net::IpAddr> = Vec::new();
 
@@ -302,7 +312,7 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
         for ip in addrs {
             ips.push(ip.ip());
         }
-    } else if let Ok(addrs) = backup_resolver.lookup_ip(&source) {
+    } else if let Ok(addrs) = backup_resolver.lookup_ip(source) {
         ips.extend(addrs.iter());
     }
 
@@ -331,13 +341,14 @@ fn read_ips_from_file(
     Ok(ips)
 }
 
-fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
-    if opts.ulimit.is_some() {
-        let limit: Rlim = Rlim::from_raw(opts.ulimit.unwrap());
+#[cfg(unix)]
+fn adjust_ulimit_size(opts: &Opts) -> u64 {
+    use rlimit::Resource;
 
-        if setrlimit(Resource::NOFILE, limit, limit).is_ok() {
+    if let Some(limit) = opts.ulimit {
+        if Resource::NOFILE.set(limit, limit).is_ok() {
             detail!(
-                format!("Automatically increasing ulimit value to {}.", limit),
+                format!("Automatically increasing ulimit value to {limit}."),
                 opts.greppable,
                 opts.accessible
             );
@@ -350,13 +361,15 @@ fn adjust_ulimit_size(opts: &Opts) -> RawRlim {
         }
     }
 
-    let (rlim, _) = getrlimit(Resource::NOFILE).unwrap();
-
-    rlim.as_raw()
+    let (soft, _) = Resource::NOFILE.get().unwrap();
+    soft
 }
 
-fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
-    let mut batch_size: RawRlim = opts.batch_size.into();
+#[cfg(unix)]
+fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
+    use std::convert::TryInto;
+
+    let mut batch_size: u64 = opts.batch_size.into();
 
     // Adjust the batch size when the ulimit value is lower than the desired batch size
     if ulimit < batch_size {
@@ -367,18 +380,18 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
         // When the OS supports high file limits like 8000, but the user
         // selected a batch size higher than this we should reduce it to
         // a lower number.
-        if ulimit < AVERAGE_BATCH_SIZE {
+        if ulimit < AVERAGE_BATCH_SIZE.into() {
             // ulimit is smaller than aveage batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
             warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", opts.greppable, opts.accessible);
             info!("Halving batch_size because ulimit is smaller than average batch size");
-            batch_size = ulimit / 2
+            batch_size = ulimit / 2;
         } else if ulimit > DEFAULT_FILE_DESCRIPTORS_LIMIT {
             info!("Batch size is now average batch size");
-            batch_size = AVERAGE_BATCH_SIZE
+            batch_size = AVERAGE_BATCH_SIZE.into();
         } else {
-            batch_size = ulimit - 100
+            batch_size = ulimit - 100;
         }
     }
     // When the ulimit is higher than the batch size let the user know that the
@@ -395,10 +408,14 @@ fn infer_batch_size(opts: &Opts, ulimit: RawRlim) -> u16 {
 
 #[cfg(test)]
 mod tests {
-    use crate::{adjust_ulimit_size, infer_batch_size, parse_addresses, print_opening, Opts};
+    #[cfg(unix)]
+    use crate::{adjust_ulimit_size, infer_batch_size};
+
+    use crate::{parse_addresses, print_opening, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -408,6 +425,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn batch_size_lowered_average_size() {
         let mut opts = Opts::default();
         opts.batch_size = 50_000;
@@ -416,6 +434,7 @@ mod tests {
         assert!(batch_size == 3_000);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
@@ -426,6 +445,7 @@ mod tests {
         assert!(batch_size == 4_900);
     }
     #[test]
+    #[cfg(unix)]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
         let mut opts = Opts::default();
@@ -444,6 +464,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(unix)]
     fn test_high_ulimit_no_greppable_mode() {
         let mut opts = Opts::default();
         opts.batch_size = 10;
@@ -496,7 +517,7 @@ mod tests {
         opts.addresses = vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()];
         let ips = parse_addresses(&opts);
 
-        assert_eq!(ips.is_empty(), true);
+        assert!(ips.is_empty());
     }
     #[test]
     fn parse_hosts_file_and_incorrect_hosts() {

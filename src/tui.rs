@@ -1,21 +1,18 @@
 /// Terminal User Interface Module for RustScan
 /// Defines macros to use
-
 #[macro_export]
 macro_rules! warning {
     ($name:expr) => {
-        use ansi_term::Colour::Red;
-        println!("{} {}", Red.bold().paint("[!]"), $name);
+        println!("{} {}", ansi_term::Colour::Red.bold().paint("[!]"), $name);
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
-        use ansi_term::Colour::Red;
         // if not greppable then print, otherwise no else statement so do not print.
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
                 println!("{}", $name);
             } else {
-                println!("{} {}", Red.bold().paint("[!]"), $name);
+                println!("{} {}", ansi_term::Colour::Red.bold().paint("[!]"), $name);
             }
         }
     };
@@ -24,18 +21,16 @@ macro_rules! warning {
 #[macro_export]
 macro_rules! detail {
     ($name:expr) => {
-        use ansi_term::Colour::Blue;
-        println!("{} {}", Blue.bold().paint("[~]"), $name);
+        println!("{} {}", ansi_term::Colour::Blue.bold().paint("[~]"), $name);
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
-        use ansi_term::Colour::Blue;
         // if not greppable then print, otherwise no else statement so do not print.
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
                 println!("{}", $name);
             } else {
-                println!("{} {}", Blue.bold().paint("[~]"), $name);
+                println!("{} {}", ansi_term::Colour::Blue.bold().paint("[~]"), $name);
             }
         }
     };
@@ -44,18 +39,24 @@ macro_rules! detail {
 #[macro_export]
 macro_rules! output {
     ($name:expr) => {
-        use ansi_term::Colour::RGB;
-        println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+        println!(
+            "{} {}",
+            RGansi_term::Colour::RGB(0, 255, 9).bold().paint("[>]"),
+            $name
+        );
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
-        use ansi_term::Colour::RGB;
         // if not greppable then print, otherwise no else statement so do not print.
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
                 println!("{}", $name);
             } else {
-                println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
+                println!(
+                    "{} {}",
+                    ansi_term::Colour::RGB(0, 255, 9).bold().paint("[>]"),
+                    $name
+                );
             }
         }
     };
@@ -72,10 +73,27 @@ macro_rules! funny_opening {
             "Real hackers hack time ⌛",
             "Please contribute more quotes to our GitHub https://github.com/rustscan/rustscan",
             "😵 https://admin.tryhackme.com",
+            "0day was here ♥",
+            "I don't always scan ports, but when I do, I prefer RustScan.",
+            "RustScan: Where scanning meets swagging. 😎",
+            "To scan or not to scan? That is the question.",
+            "RustScan: Because guessing isn't hacking.",
+            "Scanning ports like it's my full-time job. Wait, it is.",
+            "Open ports, closed hearts.",
+            "I scanned my computer so many times, it thinks we're dating.",
+            "Port scanning: Making networking exciting since... whenever.",
+            "You miss 100% of the ports you don't scan. - RustScan",
+            "Breaking and entering... into the world of open ports.",
+            "TCP handshake? More like a friendly high-five!",
+            "Scanning ports: The virtual equivalent of knocking on doors.",
+            "RustScan: Making sure 'closed' isn't just a state of mind.",
+            "Port scanning: Because every port has a story to tell.",
+            "I scanned ports so fast, even my computer was surprised.",
+            "RustScan: Where '404 Not Found' meets '200 OK'.",
+            "RustScan: Exploring the digital landscape, one IP at a time.",
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 
         println!("{}\n", random_quote);
-        // println!("{} {}", RGB(0, 255, 9).bold().paint("[>]"), $name);
     };
 }

@@ -35,7 +35,7 @@ fn run_rustscan_with_timeout(args: &[&str], timeout: Duration) {
                 if tries == 0 {
                     // child hasn't exited yet
                     child.kill().unwrap();
-                    child.wait().unwrap().code();
+                    child.wait().unwrap().code().unwrap();
                     panic!("Timeout while running command");
                 }
             }
