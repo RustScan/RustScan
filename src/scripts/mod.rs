@@ -1,4 +1,4 @@
-//! Scripting engine to run scripts based on tags.
+//! Scripting Engine to run scripts based on tags.
 //! This module serves to filter and run the scripts selected by the user.
 //!
 //! A new commandline and configuration file option was added.
@@ -233,16 +233,14 @@ impl Script {
         }
         debug!("\nScript format to run {}", to_run);
 
-        let arguments = shell_words::split(&to_run).expect("Failed to parse script arguments");
-
-        execute_script(arguments)
+        execute_script(&to_run)
     }
 }
 
 #[cfg(not(tarpaulin_include))]
-fn execute_script(mut arguments: Vec<String>) -> Result<String> {
-    debug!("\nScript arguments vec: {:?}", &arguments);
-    let process = Exec::cmd(arguments.remove(0)).args(&arguments);
+fn execute_script(script: &str) -> Result<String> {
+    debug!("\nScript arguments {}", script);
+    let process = Exec::shell(script);
     match process.capture() {
         Ok(c) => {
             let es = match c.exit_status {

@@ -2,8 +2,6 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::doc_markdown, clippy::if_not_else, clippy::non_ascii_literal)]
 
-extern crate shell_words;
-
 mod tui;
 
 mod input;
