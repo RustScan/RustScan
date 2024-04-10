@@ -17,7 +17,7 @@ exclude = [
 ]
 
 [dependencies]
-colored = "2.0.0"
+colored = "2.1.0"
 structopt = "0.3.20"
 async-std = "1.7.0"
 futures = "0.3"
