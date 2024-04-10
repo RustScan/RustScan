@@ -137,7 +137,7 @@ pub struct Opts {
     /// To use the argument -A, end RustScan's args with '-- -A'.
     /// Example: 'rustscan -t 1500 -a 127.0.0.1 -- -A -sC'.
     /// This command adds -Pn -vvv -p $PORTS automatically to nmap.
-    /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"")
+    /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"
     #[structopt(last = true)]
     pub command: Vec<String>,
 
