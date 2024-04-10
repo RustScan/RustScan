@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches:
       - master
@@ -59,8 +59,8 @@ jobs:
         #   target: i686-pc-windows-msvc
 
     steps:
-      - name: Strip release binary (linux and macos)
-        if: matrix.build == 'x86_64-windows' # Windows is missing some dependencies
+      - name: Set Git config. (windows only)
+        if: contains(matrix.build, 'windows') # Windows is missing some dependencies
         run: |
           git config --global pack.windowMemory "100m"
           git config --global pack.packSizeLimit "100m"
@@ -68,7 +68,7 @@ jobs:
           git config --global pack.deltaCacheSize "512m"
 
       - name: Install python 3.10 for windows
-        if: matrix.build == 'x86_64-windows' # Windows is missing some dependencies
+        if: contains(matrix.build, 'windows') # Windows is missing some dependencies
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -100,32 +100,19 @@ jobs:
           command: build
           args: --release --locked --target ${{ matrix.target }}
 
-      - name: Strip release binary (linux and macos)
-        if: matrix.build == 'x86_64-linux' || matrix.build == 'x86_64-macos'
-        run: strip "target/${{ matrix.target }}/release/$BIN_NAME"
-
-      - name: Strip release binary (arm)
-        if: matrix.build == 'aarch64-linux'
-        run: |
-          docker run --rm -v \
-            "$PWD/target:/target:Z" \
-            rustembedded/cross:${{ matrix.target }} \
-            aarch64-linux-gnu-strip \
-            /target/${{ matrix.target }}/release/$BIN_NAME
-
       - name: Calculate tag name
-        if: matrix.build == 'x86_64-linux'
+        if: contains(matrix.build, 'linux')
         run: |
           name=dev
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            name=${GITHUB_REF:10}
+          if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
+            name=${GITHUB_REF#refs/tags/}
           fi
           echo ::set-output name=val::$name
           echo TAG=$name >> $GITHUB_ENV
         id: tagname
 
       - name: Build deb package (linux only)
-        if: matrix.build == 'x86_64-linux'
+        if: contains(matrix.build, 'linux')
         run: |
           cargo install cargo-deb
           cargo deb --target ${{ matrix.target }} --deb-version ${TAG}
@@ -134,13 +121,13 @@ jobs:
         shell: bash
         run: |
           mkdir dist
-          if [ "${{ matrix.os }}" = "windows-2019" ]; then
+          if [[ "${{ matrix.build }}" =~ "windows" ]]; then
             cp "target/${{ matrix.target }}/release/$BIN_NAME.exe" "dist/"
           else
             cp "target/${{ matrix.target }}/release/$BIN_NAME" "dist/"
           fi
 
-          if [ "${{ matrix.build }}" = "x86_64-linux" ]; then
+          if [[ "${{ matrix.build }}" =~ "linux" ]]; then
             cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/"
           fi
       - uses: actions/upload-artifact@v2.2.4
@@ -168,8 +155,8 @@ jobs:
       - name: Calculate tag name
         run: |
           name=dev
-          if [[ $GITHUB_REF == refs/tags/v* ]]; then
-            name=${GITHUB_REF:10}
+          if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
+            name=${GITHUB_REF#refs/tags/}
           fi
           echo ::set-output name=val::$name
           echo TAG=$name >> $GITHUB_ENV
@@ -194,7 +181,7 @@ jobs:
               mv bins-$platform/$BIN_NAME$exe tmp/$pkgname
               chmod +x tmp/$pkgname/$BIN_NAME$exe
 
-              if [[ $platform == "x86_64-linux" ]]; then
+              if [[ $platform =~ "linux" ]]; then
                   mv "bins-$platform/rustscan_${TAG}_amd64.deb" dist/
               fi
 
