@@ -17,7 +17,7 @@ pub struct SocketIterator<'s> {
 /// An iterator that receives a slice of IPs and ports and returns a Socket
 /// for each IP and port pair until all of these combinations are exhausted.
 /// The goal of this iterator is to go over every IP and port combination
-/// wihout generating a big memory footprint. The alternative would be
+/// without generating a big memory footprint. The alternative would be
 /// generating a vector containing all these combinations.
 impl<'s> SocketIterator<'s> {
     pub fn new(ips: &'s [IpAddr], ports: &'s [u16]) -> Self {
@@ -29,6 +29,7 @@ impl<'s> SocketIterator<'s> {
     }
 }
 
+#[allow(clippy::doc_link_with_quotes)]
 impl<'s> Iterator for SocketIterator<'s> {
     type Item = SocketAddr;
 
@@ -43,10 +44,9 @@ impl<'s> Iterator for SocketIterator<'s> {
     /// it.next(); // 192.168.0.1:443
     /// it.next(); // None
     fn next(&mut self) -> Option<Self::Item> {
-        match self.product_it.next() {
-            None => None,
-            Some((port, ip)) => Some(SocketAddr::new(*ip, *port)),
-        }
+        self.product_it
+            .next()
+            .map(|(port, ip)| SocketAddr::new(*ip, *port))
     }
 }
 

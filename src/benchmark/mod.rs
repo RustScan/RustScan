@@ -43,7 +43,7 @@ impl Benchmark {
                     .unwrap()
                     .saturating_duration_since(timer.start.unwrap())
                     .as_secs_f32();
-                summary.push_str(&format!("\n{0: <10} | {1: <10}s", timer.name, runtime_secs))
+                summary.push_str(&format!("\n{0: <10} | {1: <10}s", timer.name, runtime_secs));
             }
         }
         summary
@@ -85,5 +85,5 @@ fn benchmark() {
     assert!(benchmarks
         .summary()
         .contains("\nRustScan Benchmark Summary\ntest       | 0."));
-    assert_ne!(benchmarks.summary().contains("only_start"), true);
+    assert!(!benchmarks.summary().contains("only_start"));
 }
