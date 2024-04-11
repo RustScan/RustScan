@@ -1,3 +1,4 @@
+# Build Stage
 FROM rust:alpine as builder
 LABEL maintainer="RustScan <https://github.com/RustScan>"
 RUN apk add --no-cache build-base
@@ -8,13 +9,17 @@ COPY Cargo.toml Cargo.lock ./
 COPY src/ src/
 RUN cargo build --release
 
-FROM alpine:3.17
+# Release Stage
+FROM alpine:3.19.1 as release
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
 LABEL author="LeoFVO <https://github.com/LeoFVO>"
+
 RUN addgroup -S rustscan && \
     adduser -S -G rustscan rustscan && \
     ulimit -n 100000 && \
-    apk add --no-cache nmap nmap-scripts wget
+    apk add --no-cache nmap nmap-scripts wget ca-certificates bind-tools
+
 USER rustscan
 COPY --from=builder /app/rustscan/target/release/rustscan /usr/local/bin/rustscan
+
 ENTRYPOINT [ "/usr/local/bin/rustscan" ]
