@@ -205,7 +205,7 @@ jobs:
         id: extract-version
         run: |
           printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
-      - uses: mislav/bump-homebrew-formula-action@v1
+      - uses: mislav/bump-homebrew-formula-action@v3
         with:
           formula-path: ${{env.PROJECT_NAME}}.rb
           homebrew-tap: ${{ env.BREW_TAP }}
