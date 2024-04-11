@@ -2,22 +2,12 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::doc_markdown, clippy::if_not_else, clippy::non_ascii_literal)]
 
-mod tui;
-
-mod input;
-use input::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
-
-mod scanner;
-use scanner::Scanner;
-
-mod port_strategy;
-use port_strategy::PortStrategy;
-
-mod benchmark;
-use benchmark::{Benchmark, NamedTimer};
-
-mod scripts;
-use scripts::{init_scripts, Script, ScriptFile};
+use rustscan::benchmark::{Benchmark, NamedTimer};
+use rustscan::input::{self, Config, Opts, ScriptsRequired};
+use rustscan::port_strategy::PortStrategy;
+use rustscan::scanner::Scanner;
+use rustscan::scripts::{init_scripts, Script, ScriptFile};
+use rustscan::{detail, funny_opening, output, warning};
 
 use cidr_utils::cidr::IpCidr;
 use colorful::{Color, Colorful};
@@ -407,9 +397,8 @@ fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
 #[cfg(test)]
 mod tests {
     #[cfg(unix)]
-    use crate::{adjust_ulimit_size, infer_batch_size};
-
-    use crate::{parse_addresses, print_opening, Opts};
+    use super::{adjust_ulimit_size, infer_batch_size};
+    use super::{parse_addresses, print_opening, Opts};
     use std::net::Ipv4Addr;
 
     #[test]

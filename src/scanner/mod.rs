@@ -1,4 +1,5 @@
-use super::PortStrategy;
+use crate::port_strategy::PortStrategy;
+use log::debug;
 
 mod socket_iterator;
 use socket_iterator::SocketIterator;
@@ -189,7 +190,7 @@ impl Scanner {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{PortRange, ScanOrder};
+    use crate::input::{PortRange, ScanOrder};
     use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
