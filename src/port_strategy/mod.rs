@@ -1,3 +1,4 @@
+//! Provides a means to hold configuration options specifically for port scanning.
 mod range_iterator;
 use crate::input::{PortRange, ScanOrder};
 use rand::seq::SliceRandom;

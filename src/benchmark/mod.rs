@@ -1,3 +1,5 @@
+//! Provides functionality to capture timing information for scans.
+//!
 //! # Usage
 //!
 //! ```rust

@@ -1,3 +1,4 @@
+//! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
 use log::debug;
 

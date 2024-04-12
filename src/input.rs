@@ -1,3 +1,4 @@
+//! Provides a means to read, parse and hold configuration options for scans.
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
