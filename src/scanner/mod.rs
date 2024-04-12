@@ -64,7 +64,7 @@ impl Scanner {
 
     /// Runs scan_range with chunk sizes
     /// If you want to run RustScan normally, this is the entry point used
-    /// Returns all open ports as Vec<u16>
+    /// Returns all open ports as `Vec<u16>`
     /// Added by wasuaje - 01/26/2024:
     ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
@@ -116,14 +116,16 @@ impl Scanner {
 
     /// Given a socket, scan it self.tries times.
     /// Turns the address into a SocketAddr
-    /// Deals with the <result> type
+    /// Deals with the `<result>` type
     /// If it experiences error ErrorKind::Other then too many files are open and it Panics!
     /// Else any other error, it returns the error in Result as a string
     /// If no errors occur, it returns the port number in Result to signify the port is open.
     /// This function mainly deals with the logic of Results handling.
     /// # Example
     ///
-    ///     self.scan_socket(socket)
+    /// ```compile_fail
+    /// scanner.scan_socket(socket)
+    /// ```
     ///
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
@@ -169,13 +171,16 @@ impl Scanner {
     /// Performs the connection to the socket with timeout
     /// # Example
     ///
-    ///     let port: u16 = 80
-    ///     // ip is an IpAddr type
-    ///     let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
-    ///     let socket = SocketAddr::new(ip, port);
-    ///     self.connect(socket)
-    ///     // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
-    ///     // Timeout occurs after self.timeout seconds
+    /// ```compile_fail
+    /// # use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    /// let port: u16 = 80;
+    /// // ip is an IpAddr type
+    /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    /// let socket = SocketAddr::new(ip, port);
+    /// scanner.connect(socket);
+    /// // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
+    /// // Timeout occurs after self.timeout seconds
+    /// ```
     ///
     async fn connect(&self, socket: SocketAddr) -> io::Result<TcpStream> {
         let stream = io::timeout(

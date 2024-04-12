@@ -5,23 +5,23 @@
 //!
 //! --scripts
 //!
-//!      default
-//!          This is the default behavior, like as it was from the beginning of RustScan.
-//!          The user do not have to chose anything for this. This is the only script embedded in RustScan running as default.
+//!   default
+//!     This is the default behavior, like as it was from the beginning of RustScan.
+//!     The user do not have to chose anything for this. This is the only script embedded in RustScan running as default.
 //!
-//!      none
-//!          The user have to use the --scripts none commandline argument or scripts = "none" in the config file.
-//!          None of the scripts will run, this replaces the removed --no-nmap option.
+//!   none
+//!     The user have to use the --scripts none commandline argument or scripts = "none" in the config file.
+//!     None of the scripts will run, this replaces the removed --no-nmap option.
 //!
-//!      custom
-//!          The user have to use the --scripts custom commandline argument or scripts = "custom" in the config file.
-//!          Rustscan will look for the script configuration file in the user's home dir: home_dir/.rustscan_scripts.toml
-//!          The config file have 3 optional fields, tag, developer and port. Just the tag field will be used forther in the process.
-//!          RustScan will also look for available scripts in the user's home dir: home_dir/.rustscan_scripts
-//!          and will try to read all the files, and parse them into a vector of ScriptFiles.
-//!          Filtering on tags means the tags found in the rustscan_scripts.toml file will also have to be present in the Scriptfile,
-//!          otherwise the script will not be selected.
-//!          All of the rustscan_script.toml tags have to be present at minimum in a Scriptfile to get selected, but can be also more.
+//!   custom
+//!     The user have to use the --scripts custom commandline argument or scripts = "custom" in the config file.
+//!     Rustscan will look for the script configuration file in the user's home dir: home_dir/.rustscan_scripts.toml
+//!     The config file have 3 optional fields, tag, developer and port. Just the tag field will be used forther in the process.
+//!     RustScan will also look for available scripts in the user's home dir: home_dir/.rustscan_scripts
+//!     and will try to read all the files, and parse them into a vector of ScriptFiles.
+//!     Filtering on tags means the tags found in the rustscan_scripts.toml file will also have to be present in the Scriptfile,
+//!     otherwise the script will not be selected.
+//!     All of the rustscan_script.toml tags have to be present at minimum in a Scriptfile to get selected, but can be also more.
 //!
 //! Config file example:
 //! fixtures/test_rustscan_scripts.toml
