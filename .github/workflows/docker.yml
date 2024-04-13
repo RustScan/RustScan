@@ -28,7 +28,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           password: ${{ secrets.DOCKERHUB_USERNAME }}
-          username: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
