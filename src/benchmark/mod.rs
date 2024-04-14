@@ -1,15 +1,20 @@
+//! Provides functionality to capture timing information for scans.
+//!
 //! # Usage
-//! ```
+//!
+//! ```rust
 //! // Initiate Benchmark vector
+//! # use rustscan::benchmark::{Benchmark, NamedTimer};
+//! # use log::info;
 //! let mut bm = Benchmark::init();
 //! // Start named timer with name
 //! let mut example_bench = NamedTimer::start("Example Bench");
 //! // Stop named timer
-//! example_bench.stop();
+//! example_bench.end();
 //! // Add named timer to Benchmarks
 //! bm.push(example_bench);
 //! // Print Benchmark Summary
-//! info!({}, bm.summary());
+//! info!("{}", bm.summary());
 //! ```
 use std::time::Instant;
 

@@ -1,5 +1,6 @@
+//! Provides a means to hold configuration options specifically for port scanning.
 mod range_iterator;
-use super::{PortRange, ScanOrder};
+use crate::input::{PortRange, ScanOrder};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 use range_iterator::RangeIterator;
@@ -97,7 +98,7 @@ impl RangeOrder for RandomRange {
 #[cfg(test)]
 mod tests {
     use super::PortStrategy;
-    use crate::{PortRange, ScanOrder};
+    use crate::input::{PortRange, ScanOrder};
 
     #[test]
     fn serial_strategy_with_range() {
