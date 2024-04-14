@@ -3,14 +3,14 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - 'master'
+      - 'master' # push on merge/commit to master to create a latest tag
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
   release:
     types: [published]
   pull_request:
     branches:
-      - master
+      - master # run part as PR checks, but the image will not be published on DockerHub (as this will tag it as say rustscan/rustscan:pr-400)
     paths:
       - 'Dockerfile'
       - 'Cargo.toml'
