@@ -1,3 +1,5 @@
+//! Utilities for terminal output during scanning.
+
 /// Terminal User Interface Module for RustScan
 /// Defines macros to use
 #[macro_export]

@@ -1,3 +1,4 @@
+//! Provides a means to read, parse and hold configuration options for scans.
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
@@ -211,6 +212,29 @@ impl Opts {
     }
 }
 
+impl Default for Opts {
+    fn default() -> Self {
+        Self {
+            addresses: vec![],
+            ports: None,
+            range: None,
+            greppable: true,
+            batch_size: 0,
+            timeout: 0,
+            tries: 0,
+            ulimit: None,
+            command: vec![],
+            accessible: false,
+            scan_order: ScanOrder::Serial,
+            no_config: true,
+            top: false,
+            scripts: ScriptsRequired::Default,
+            config_path: None,
+            exclude_ports: None,
+        }
+    }
+}
+
 /// Struct used to deserialize the options specified within our config file.
 /// These will be further merged with our command line arguments in order to
 /// generate the final Opts struct.
@@ -295,29 +319,6 @@ mod tests {
                 accessible: Some(true),
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
-                exclude_ports: None,
-            }
-        }
-    }
-
-    impl Opts {
-        pub fn default() -> Self {
-            Self {
-                addresses: vec![],
-                ports: None,
-                range: None,
-                greppable: true,
-                batch_size: 0,
-                timeout: 0,
-                tries: 0,
-                ulimit: None,
-                command: vec![],
-                accessible: false,
-                scan_order: ScanOrder::Serial,
-                no_config: true,
-                top: false,
-                scripts: ScriptsRequired::Default,
-                config_path: None,
                 exclude_ports: None,
             }
         }

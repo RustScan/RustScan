@@ -1,52 +1,83 @@
 //! Scripting Engine to run scripts based on tags.
+//!
 //! This module serves to filter and run the scripts selected by the user.
 //!
 //! A new commandline and configuration file option was added.
 //!
-//! --scripts
+//! ## `--scripts`
 //!
-//!      default
-//!          This is the default behavior, like as it was from the beginning of RustScan.
-//!          The user do not have to chose anything for this. This is the only script embedded in RustScan running as default.
+//! ### `default`
 //!
-//!      none
-//!          The user have to use the --scripts none commandline argument or scripts = "none" in the config file.
-//!          None of the scripts will run, this replaces the removed --no-nmap option.
+//! This is the default behavior, like as it was from the beginning of RustScan.
 //!
-//!      custom
-//!          The user have to use the --scripts custom commandline argument or scripts = "custom" in the config file.
-//!          Rustscan will look for the script configuration file in the user's home dir: home_dir/.rustscan_scripts.toml
-//!          The config file have 3 optional fields, tag, developer and port. Just the tag field will be used forther in the process.
-//!          RustScan will also look for available scripts in the user's home dir: home_dir/.rustscan_scripts
-//!          and will try to read all the files, and parse them into a vector of ScriptFiles.
-//!          Filtering on tags means the tags found in the rustscan_scripts.toml file will also have to be present in the Scriptfile,
-//!          otherwise the script will not be selected.
-//!          All of the rustscan_script.toml tags have to be present at minimum in a Scriptfile to get selected, but can be also more.
+//! The user do not have to chose anything for this. This is the only script
+//! embedded in RustScan running as default.
+//!
+//! ### `none`
+//!
+//! The user have to use the `--scripts none` commandline argument or `scripts =
+//! "none"` in the config file.
+//!
+//! None of the scripts will run, this replaces the removed `--no-nmap` option.
+//!
+//! ### `custom`
+//!
+//! The user have to use the `--scripts custom` commandline argument or
+//! `scripts = "custom"` in the config file.
+//!
+//! RustScan will look for the script configuration file in the user's home
+//! dir: `home_dir/.rustscan_scripts.toml`
+//!
+//! The config file have 3 optional fields: `tag`, `developer` and `port`. Just
+//! the `tag` field will be used forther in the process.
+//!
+//! RustScan will also look for available scripts in the user's home dir:
+//! `home_dir/.rustscan_scripts` and will try to read all the files, and parse
+//! them into a vector of [`ScriptFile`].
+//!
+//! Filtering on tags means the tags found in the `rustscan_scripts.toml` file
+//! will also have to be present in the [`ScriptFile`], otherwise the script
+//! will not be selected.
+//!
+//! All of the `rustscan_script.toml` tags have to be present at minimum in a
+//! [`ScriptFile`] to get selected, but can be also more.
 //!
 //! Config file example:
-//! fixtures/test_rustscan_scripts.toml
+//!
+//! - `fixtures/test_rustscan_scripts.toml`
 //!
 //! Script file examples:
-//! fixtures/test_script.py
-//! fixtures/test_script.pl
-//! fixtures/test_script.sh
-//! fixtures/test_script.txt
 //!
-//! call_format in script files can be of 2 variants.
-//! One is where all of the possible tags {{script}} {{ip}} {{port}} are there.
-//!     The {{script}} part will be replaced with the scriptfile full path gathered while parsing available scripts.
-//!     The {{ip}} part will be replaced with the ip we got from the scan.
-//!     The {{port}} part will be reaplced with the ports separated with the ports_separator found in the script file
+//! - `fixtures/test_script.py`
+//! - `fixtures/test_script.pl`
+//! - `fixtures/test_script.sh`
+//! - `fixtures/test_script.txt`
 //!
-//! And when there is only {{ip}} and {{port}} is in the format, only those will be replaced with the arguments from the scan.
-//! This makes it easy to run a system installed command like nmap, and give any kind of arguments to it.
+//! `call_format` in script files can be of 2 variants:
 //!
-//! If the format is different, the script will be silently discarded and will not run. With the Debug option it's possible to see where it goes wrong.
+//! One is where all of the possible tags `{{script}}`, `{{ip}}` and `{{port}}`
+//! are there.
+//!
+//! - The `{{script}}` part will be replaced with the scriptfile full path
+//!   gathered while parsing available scripts.
+//! - The `{{ip}}` part will be replaced with the ip we got from the scan.
+//! - The `{{port}}` part will be reaplced with the ports separated with the
+//!   `ports_separator` found in the script file
+//!
+//! And when there is only `{{ip}}` and `{{port}}` is in the format, only those
+//! will be replaced with the arguments from the scan.
+//!
+//! This makes it easy to run a system installed command like `nmap`, and give
+//! any kind of arguments to it.
+//!
+//! If the format is different, the script will be silently discarded and will
+//! not run. With the `Debug` option it's possible to see where it goes wrong.
 
 #![allow(clippy::module_name_repetitions)]
 
 use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
+use log::debug;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::convert::TryInto;
