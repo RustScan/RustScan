@@ -130,7 +130,7 @@ jobs:
           if [[ "${{ matrix.build }}" =~ "linux" ]]; then
             cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/"
           fi
-      - uses: actions/upload-artifact@v4.3.2
+      - uses: actions/upload-artifact@v4.3.3
         with:
           name: bins-${{ matrix.build }}
           path: dist
