@@ -1,3 +1,4 @@
+//! Provides functions to parse input IP addresses, CIDRs or files.
 use std::fs::File;
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, ToSocketAddrs};
@@ -13,8 +14,18 @@ use trust_dns_resolver::{
 use crate::input::Opts;
 use crate::warning;
 
-/// Goes through all possible IP inputs (files or via argparsing)
-/// Parses the string(s) into IPs
+/// Parses the string(s) into IP addresses.
+///
+/// Goes through all possible IP inputs (files or via argparsing).
+///
+/// ```rust
+/// # use rustscan::input::Opts;
+/// # use rustscan::address::parse_addresses;
+/// let mut opts = Opts::default();
+/// opts.addresses = vec!["192.168.0.0/30".to_owned()];
+///
+/// let ips = parse_addresses(&opts);
+/// ```
 pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
@@ -59,8 +70,15 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 }
 
 /// Given a string, parse it as a host, IP address, or CIDR.
+///
 /// This allows us to pass files as hosts or cidr or IPs easily
 /// Call this every time you have a possible IP_or_host
+///
+/// ```rust
+/// # use rustscan::address::parse_address;
+/// # use trust_dns_resolver::Resolver;
+/// let ips = parse_address("127.0.0.1", &Resolver::default().unwrap());
+/// ```
 pub fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
     IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
