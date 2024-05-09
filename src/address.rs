@@ -34,18 +34,15 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut backup_resolver =
         Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
-    if input.resolver.ne("") {
-        let resolver_ips = if let Ok(r) = read_resolver_from_file(input.resolver.as_str()) {
+    if let Some(resolver) = &input.resolver {
+        let resolver_ips = if let Ok(r) = read_resolver_from_file(resolver) {
             r
         } else {
             // Get resolvers from the comma-delimited list string
-            let mut r = Vec::new();
-            input.resolver.split(',').for_each(|item| {
-                if let Ok(ip) = IpAddr::from_str(item) {
-                    r.push(ip)
-                }
-            });
-            r
+            resolver
+                .split(',')
+                .filter_map(|r| IpAddr::from_str(r).ok())
+                .collect::<Vec<_>>()
         };
         let mut rc = ResolverConfig::new();
         for ip in resolver_ips {

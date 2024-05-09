@@ -101,8 +101,8 @@ pub struct Opts {
     pub accessible: bool,
 
     /// A comma-delimited list or file of dns resolvers
-    #[structopt(long, default_value = "")]
-    pub resolver: String,
+    #[structopt(long)]
+    pub resolver: Option<String>,
 
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
@@ -229,7 +229,7 @@ impl Default for Opts {
             ulimit: None,
             command: vec![],
             accessible: false,
-            resolver: String::from(""),
+            resolver: None,
             scan_order: ScanOrder::Serial,
             no_config: true,
             top: false,
