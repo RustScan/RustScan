@@ -212,7 +212,7 @@ impl Opts {
             self.ports = Some(ports);
         }
 
-        merge_optional!(range, ulimit, exclude_ports);
+        merge_optional!(range, resolver, ulimit, exclude_ports);
     }
 }
 
@@ -255,6 +255,7 @@ pub struct Config {
     timeout: Option<u32>,
     tries: Option<u8>,
     ulimit: Option<u64>,
+    resolver: Option<String>,
     scan_order: Option<ScanOrder>,
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
@@ -322,6 +323,7 @@ mod tests {
                 ulimit: None,
                 command: Some(vec!["-A".to_owned()]),
                 accessible: Some(true),
+                resolver: None,
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
                 exclude_ports: None,
@@ -369,10 +371,12 @@ mod tests {
             end: 1_000,
         });
         config.ulimit = Some(1_000);
+        config.resolver = Some("1.1.1.1".to_owned());
 
         opts.merge_optional(&config);
 
         assert_eq!(opts.range, config.range);
         assert_eq!(opts.ulimit, config.ulimit);
+        assert_eq!(opts.resolver, config.resolver);
     }
 }
