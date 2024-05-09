@@ -100,7 +100,7 @@ pub struct Opts {
     #[structopt(long)]
     pub accessible: bool,
 
-    /// A comma-delimited list or file of dns resolvers
+    /// A comma-delimited list or file of DNS resolvers.
     #[structopt(long)]
     pub resolver: Option<String>,
 

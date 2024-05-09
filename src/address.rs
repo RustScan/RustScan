@@ -30,33 +30,10 @@ use crate::warning;
 pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
-    let mut self_resolve = true;
-    let mut backup_resolver =
-        Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
-
-    if let Some(resolver) = &input.resolver {
-        let resolver_ips = if let Ok(r) = read_resolver_from_file(resolver) {
-            r
-        } else {
-            // Get resolvers from the comma-delimited list string
-            resolver
-                .split(',')
-                .filter_map(|r| IpAddr::from_str(r).ok())
-                .collect::<Vec<_>>()
-        };
-        let mut rc = ResolverConfig::new();
-        for ip in resolver_ips {
-            rc.add_name_server(NameServerConfig::new(
-                SocketAddr::new(ip, 53),
-                Protocol::Udp,
-            ));
-        }
-        backup_resolver = Resolver::new(rc, ResolverOpts::default()).unwrap();
-        self_resolve = false;
-    }
+    let backup_resolver = get_resolver(&input.resolver);
 
     for address in &input.addresses {
-        let parsed_ips = parse_address(address, &backup_resolver, self_resolve);
+        let parsed_ips = parse_address(address, &backup_resolver);
         if !parsed_ips.is_empty() {
             ips.extend(parsed_ips);
         } else {
@@ -78,7 +55,7 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
             continue;
         }
 
-        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver, self_resolve) {
+        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver) {
             ips.extend(x);
         } else {
             warning!(
@@ -103,17 +80,13 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// ```rust
 /// # use rustscan::address::parse_address;
 /// # use hickory_resolver::Resolver;
-/// let ips = parse_address("127.0.0.1", &Resolver::default().unwrap(), false);
+/// let ips = parse_address("127.0.0.1", &Resolver::default().unwrap());
 /// ```
-pub fn parse_address(address: &str, resolver: &Resolver, self_resolve: bool) -> Vec<IpAddr> {
+pub fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
     IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
         .or_else(|| {
-            if !self_resolve {
-                // This will trigger `unwrap_or_else` then call `resolve_ips_from_host` function
-                return None;
-            };
             format!("{}:{}", &address, 80)
                 .to_socket_addrs()
                 .ok()
@@ -124,7 +97,7 @@ pub fn parse_address(address: &str, resolver: &Resolver, self_resolve: bool) -> 
 
 /// Uses DNS to get the IPS associated with host
 fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr> {
-    let mut ips: Vec<std::net::IpAddr> = Vec::new();
+    let mut ips: Vec<IpAddr> = Vec::new();
 
     if let Ok(addrs) = source.to_socket_addrs() {
         for ip in addrs {
@@ -137,13 +110,51 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
     ips
 }
 
-fn read_resolver_from_file(path: &str) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
-    let mut ips = Vec::new();
-    fs::read_to_string(path)?.split('\n').for_each(|line| {
-        if let Ok(ip) = IpAddr::from_str(line) {
-            ips.push(ip)
+/// Derive a DNS resolver.
+///
+/// 1. if the `resolver` parameter has been set:
+///     1. assume the parameter is a path and attempt to read IPs.
+///     2. parse the input as a comma-separated list of IPs.
+/// 2. if `resolver` is not set:
+///    1. attempt to derive a resolver from the system config. (e.g.
+///       `/etc/resolv.conf` on *nix).
+///    2. finally, build a CloudFlare-based resolver (default
+///       behaviour).
+fn get_resolver(resolver: &Option<String>) -> Resolver {
+    match resolver {
+        Some(r) => {
+            let mut config = ResolverConfig::new();
+            let resolver_ips = match read_resolver_from_file(r) {
+                Ok(ips) => ips,
+                Err(_) => r
+                    .split(',')
+                    .filter_map(|r| IpAddr::from_str(r).ok())
+                    .collect::<Vec<_>>(),
+            };
+            for ip in resolver_ips {
+                config.add_name_server(NameServerConfig::new(
+                    SocketAddr::new(ip, 53),
+                    Protocol::Udp,
+                ));
+            }
+            Resolver::new(config, ResolverOpts::default()).unwrap()
         }
-    });
+        None => match Resolver::from_system_conf() {
+            Ok(resolver) => resolver,
+            Err(_) => {
+                Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap()
+            }
+        },
+    }
+}
+
+/// Parses and input file of IPs for use in DNS resolution.
+fn read_resolver_from_file(path: &str) -> Result<Vec<IpAddr>, std::io::Error> {
+    let ips = fs::read_to_string(path)?
+        .lines()
+        .filter_map(|line| IpAddr::from_str(line.trim()).ok())
+        .collect();
+
     Ok(ips)
 }
 
@@ -152,16 +163,15 @@ fn read_resolver_from_file(path: &str) -> Result<Vec<std::net::IpAddr>, std::io:
 fn read_ips_from_file(
     ips: &std::path::Path,
     backup_resolver: &Resolver,
-    self_resolve: bool,
-) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+) -> Result<Vec<IpAddr>, std::io::Error> {
     let file = File::open(ips)?;
     let reader = BufReader::new(file);
 
-    let mut ips: Vec<std::net::IpAddr> = Vec::new();
+    let mut ips: Vec<IpAddr> = Vec::new();
 
     for address_line in reader.lines() {
         if let Ok(address) = address_line {
-            ips.extend(parse_address(&address, backup_resolver, self_resolve));
+            ips.extend(parse_address(&address, backup_resolver));
         } else {
             debug!("Line in file is not valid");
         }
@@ -172,7 +182,7 @@ fn read_ips_from_file(
 
 #[cfg(test)]
 mod tests {
-    use super::{parse_addresses, Opts};
+    use super::{get_resolver, parse_addresses, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
@@ -244,5 +254,28 @@ mod tests {
         opts.addresses = vec!["fixtures/naughty_string.txt".to_owned()];
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn resolver_default_cloudflare() {
+        let opts = Opts::default();
+
+        let resolver = get_resolver(&opts.resolver);
+        let lookup = resolver.lookup_ip("www.example.com.").unwrap();
+
+        assert!(opts.resolver.is_none());
+        assert!(lookup.iter().next().is_some());
+    }
+
+    #[test]
+    fn resolver_args_google_dns() {
+        let mut opts = Opts::default();
+        // https://developers.google.com/speed/public-dns
+        opts.resolver = Some("8.8.8.8,8.8.4.4".to_owned());
+
+        let resolver = get_resolver(&opts.resolver);
+        let lookup = resolver.lookup_ip("www.example.com.").unwrap();
+
+        assert!(lookup.iter().next().is_some());
     }
 }
