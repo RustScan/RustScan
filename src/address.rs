@@ -35,20 +35,18 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap();
 
     if input.resolver.ne("") {
-        let resolver_ips =
-            if let Ok(r) = read_resolver_from_file(input.resolver.as_str()) {
-                r
-            } else {
-                // Get resolvers from the comma-delimited list string
-                let mut r = Vec::new();
-                input.resolver.split(',').into_iter().for_each(|item| {
-                    match IpAddr::from_str(item) {
-                        Ok(ip) => r.push(ip),
-                        Err(_) => (),
-                    }
-                });
-                r
-            };
+        let resolver_ips = if let Ok(r) = read_resolver_from_file(input.resolver.as_str()) {
+            r
+        } else {
+            // Get resolvers from the comma-delimited list string
+            let mut r = Vec::new();
+            input.resolver.split(',').for_each(|item| {
+                if let Ok(ip) = IpAddr::from_str(item) {
+                    r.push(ip)
+                }
+            });
+            r
+        };
         let mut rc = ResolverConfig::new();
         for ip in resolver_ips {
             rc.add_name_server(NameServerConfig::new(
@@ -97,30 +95,20 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     ips
 }
 
-fn read_resolver_from_file(path: &str) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
-    let mut ips = Vec::new();
-    fs::read_to_string(path)?
-        .split('\n')
-        .for_each(|line| match IpAddr::from_str(line) {
-            Ok(ip) => ips.push(ip),
-            Err(_) => (),
-        });
-    Ok(ips)
-}
-
 /// Given a string, parse it as a host, IP address, or CIDR.
 ///
 /// This allows us to pass files as hosts or cidr or IPs easily
-/// Call this every time you have a possible IP_or_host
+/// Call this every time you have a possible IP-or-host.
+///
+/// If the address is a domain, we can self-resolve the domain locally
+/// or resolve it by dns resolver list.
 ///
 /// ```rust
 /// # use rustscan::address::parse_address;
-/// # use trust_dns_resolver::Resolver;
-/// let ips = parse_address("127.0.0.1", &Resolver::default().unwrap());
+/// # use hickory_resolver::Resolver;
+/// let ips = parse_address("127.0.0.1", &Resolver::default().unwrap(), false);
 /// ```
-/// If the address is a domain, we can self-resolve the domain locally
-/// or resolve it by dns resolver list
-fn parse_address(address: &str, resolver: &Resolver, self_resolve: bool) -> Vec<IpAddr> {
+pub fn parse_address(address: &str, resolver: &Resolver, self_resolve: bool) -> Vec<IpAddr> {
     IpCidr::from_str(address)
         .map(|cidr| cidr.iter().collect())
         .ok()
@@ -150,6 +138,16 @@ fn resolve_ips_from_host(source: &str, backup_resolver: &Resolver) -> Vec<IpAddr
     }
 
     ips
+}
+
+fn read_resolver_from_file(path: &str) -> Result<Vec<std::net::IpAddr>, std::io::Error> {
+    let mut ips = Vec::new();
+    fs::read_to_string(path)?.split('\n').for_each(|line| {
+        if let Ok(ip) = IpAddr::from_str(line) {
+            ips.push(ip)
+        }
+    });
+    Ok(ips)
 }
 
 #[cfg(not(tarpaulin_include))]
