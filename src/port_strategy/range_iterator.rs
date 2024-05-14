@@ -28,7 +28,7 @@ impl RangeIterator {
         // Randomly choose a number within the range to be the first
         // and assign it as a pick.
         let mut rng = rand::thread_rng();
-        let normalized_first_pick = rng.gen_range(0, normalized_end);
+        let normalized_first_pick = rng.gen_range(0..normalized_end);
 
         Self {
             active: true,
@@ -84,13 +84,13 @@ fn pick_random_coprime(end: u32) -> u32 {
     let lower_range = range_boundary;
     let upper_range = end - range_boundary;
     let mut rng = rand::thread_rng();
-    let mut candidate = rng.gen_range(lower_range, upper_range);
+    let mut candidate = rng.gen_range(lower_range..upper_range);
 
     for _ in 0..10 {
         if end.gcd(candidate) == 1 {
             return candidate;
         }
-        candidate = rng.gen_range(lower_range, upper_range);
+        candidate = rng.gen_range(lower_range..upper_range);
     }
 
     end - 1
