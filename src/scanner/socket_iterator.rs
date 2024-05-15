@@ -1,3 +1,4 @@
+use std::iter::Copied;
 use itertools::{iproduct, Product};
 use std::net::{IpAddr, SocketAddr};
 
@@ -11,7 +12,7 @@ pub struct SocketIterator<'s> {
     // ("hold the port, go through all the IPs, then advance the port...").
     // See also the comments in the iterator implementation for an example.
     product_it:
-        Product<Box<std::slice::Iter<'s, u16>>, Box<std::slice::Iter<'s, std::net::IpAddr>>>,
+        Product<Copied<std::slice::Iter<'s, u16>>, Copied<std::slice::Iter<'s, IpAddr>>>,
 }
 
 /// An iterator that receives a slice of IPs and ports and returns a Socket
@@ -21,8 +22,8 @@ pub struct SocketIterator<'s> {
 /// generating a vector containing all these combinations.
 impl<'s> SocketIterator<'s> {
     pub fn new(ips: &'s [IpAddr], ports: &'s [u16]) -> Self {
-        let ports_it = Box::new(ports.iter());
-        let ips_it = Box::new(ips.iter());
+        let ports_it = ports.iter().copied();
+        let ips_it = ips.iter().copied();
         Self {
             product_it: iproduct!(ports_it, ips_it),
         }
@@ -46,7 +47,7 @@ impl<'s> Iterator for SocketIterator<'s> {
     fn next(&mut self) -> Option<Self::Item> {
         self.product_it
             .next()
-            .map(|(port, ip)| SocketAddr::new(*ip, *port))
+            .map(|(port, ip)| SocketAddr::new(ip, port))
     }
 }
 
