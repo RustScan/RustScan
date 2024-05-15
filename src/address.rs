@@ -84,7 +84,7 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
 /// ```
 pub fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
     IpCidr::from_str(address)
-        .map(|cidr| cidr.iter().collect())
+        .map(|cidr| cidr.iter().map(|c| c.address()).collect())
         .ok()
         .or_else(|| {
             format!("{}:{}", &address, 80)
