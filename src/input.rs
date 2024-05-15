@@ -1,9 +1,9 @@
 //! Provides a means to read, parse and hold configuration options for scans.
+use clap::{arg_enum, StructOpt};
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
@@ -64,7 +64,7 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 }
 
 #[derive(StructOpt, Debug, Clone)]
-#[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
+#[structopt(name = "rustscan", setting = clap::AppSettings::TrailingVarArg)]
 #[allow(clippy::struct_excessive_bools)]
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
@@ -127,11 +127,11 @@ pub struct Opts {
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
     /// ports randomly.
-    #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
+    #[structopt(long, possible_values = ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
     pub scan_order: ScanOrder,
 
     /// Level of scripting required for the run.
-    #[structopt(long, possible_values = &ScriptsRequired::variants(), case_insensitive = true, default_value = "default")]
+    #[structopt(long, possible_values = ScriptsRequired::variants(), case_insensitive = true, default_value = "default")]
     pub scripts: ScriptsRequired,
 
     /// Use the top 1000 ports.
@@ -309,7 +309,10 @@ pub fn default_config_path() -> PathBuf {
 
 #[cfg(test)]
 mod tests {
+    use clap::CommandFactory;
+
     use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+
     impl Config {
         fn default() -> Self {
             Self {
@@ -329,6 +332,11 @@ mod tests {
                 exclude_ports: None,
             }
         }
+    }
+
+    #[test]
+    fn verify_cli() {
+        Opts::command().debug_assert();
     }
 
     #[test]
