@@ -5,17 +5,19 @@ use log::debug;
 mod socket_iterator;
 use socket_iterator::SocketIterator;
 
-use async_std::io;
-use async_std::net::TcpStream;
-use async_std::prelude::*;
+use tokio::io;
+use tokio::net::TcpStream;
 use colored::Colorize;
-use futures::stream::FuturesUnordered;
 use std::{
-    collections::HashSet,
-    net::{IpAddr, Shutdown, SocketAddr},
+    net::{IpAddr, SocketAddr},
     num::NonZeroU8,
     time::Duration,
 };
+use std::collections::HashSet;
+use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
+use tokio::io::AsyncWriteExt;
+use tokio::task::JoinSet;
 
 /// The class for the scanner
 /// IP is data type IpAddr and is the IP address
@@ -27,15 +29,23 @@ use std::{
 ///     exclude_ports  is an exclusion port list
 #[cfg(not(tarpaulin_include))]
 #[derive(Debug)]
-pub struct Scanner {
-    ips: Vec<IpAddr>,
+struct ScannerInner {
+    ips: Box<[IpAddr]>,
     batch_size: u16,
     timeout: Duration,
     tries: NonZeroU8,
     greppable: bool,
     port_strategy: PortStrategy,
     accessible: bool,
-    exclude_ports: Vec<u16>,
+    exclude_ports: Box<[u16]>,
+}
+
+#[derive(Clone)]
+pub struct Scanner(Arc<ScannerInner>);
+impl Debug for Scanner {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        <ScannerInner as Debug>::fmt(&*self.0, f)
+    }
 }
 
 // Allowing too many arguments for clippy.
@@ -51,16 +61,18 @@ impl Scanner {
         accessible: bool,
         exclude_ports: Vec<u16>,
     ) -> Self {
-        Self {
+        let inner = ScannerInner {
             batch_size,
             timeout,
-            tries: NonZeroU8::new(std::cmp::max(tries, 1)).unwrap(),
+            tries: NonZeroU8::new(tries).unwrap_or(NonZeroU8::MIN),
             greppable,
             port_strategy,
-            ips: ips.iter().map(ToOwned::to_owned).collect(),
+            ips: Box::from(ips),
             accessible,
-            exclude_ports,
-        }
+            exclude_ports: exclude_ports.into_boxed_slice(),
+        };
+        
+        Self(Arc::new(inner))
     }
 
     /// Runs scan_range with chunk sizes
@@ -69,42 +81,43 @@ impl Scanner {
     /// Added by wasuaje - 01/26/2024:
     ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
-        let ports: Vec<u16> = self
-            .port_strategy
-            .order()
-            .iter()
-            .filter(|&port| !self.exclude_ports.contains(port))
-            .copied()
-            .collect();
-        let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
+        let ports = {
+            let mut ports = self.0
+                .port_strategy
+                .order();
+            ports.retain(|port| !self.0.exclude_ports.contains(port));
+            ports
+        };
+
+        let mut socket_iterator = SocketIterator::new(&self.0.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        let mut ftrs = FuturesUnordered::new();
+        let mut ftrs = JoinSet::new();
         let mut errors: HashSet<String> = HashSet::new();
 
-        for _ in 0..self.batch_size {
+        for _ in 0..self.0.batch_size {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.push(self.scan_socket(socket));
+                ftrs.spawn(self.clone().scan_socket(socket));
             } else {
                 break;
             }
         }
 
         debug!("Start scanning sockets. \nBatch size {}\nNumber of ip-s {}\nNumber of ports {}\nTargets all together {} ",
-            self.batch_size,
-            self.ips.len(),
+            self.0.batch_size,
+            self.0.ips.len(),
             &ports.len(),
-            (self.ips.len() * ports.len()));
+            self.0.ips.len() * ports.len());
 
-        while let Some(result) = ftrs.next().await {
+        while let Some(result) = ftrs.join_next().await {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.push(self.scan_socket(socket));
+                ftrs.spawn(self.clone().scan_socket(socket));
             }
 
-            match result {
-                Ok(socket) => open_sockets.push(socket),
-                Err(e) => {
-                    let error_string = e.to_string();
-                    if errors.len() < self.ips.len() * 1000 {
+            match result.map_err(io::Error::from) {
+                Ok(Ok(socket)) => open_sockets.push(socket),
+                Err(err) | Ok(Err(err)) => {
+                    let error_string = err.to_string();
+                    if errors.len() < self.0.ips.len() * 1000 {
                         errors.insert(error_string);
                     }
                 }
@@ -129,21 +142,21 @@ impl Scanner {
     /// ```
     ///
     /// Note: `self` must contain `self.ip`.
-    async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
-        let tries = self.tries.get();
+    async fn scan_socket(self, socket: SocketAddr) -> io::Result<SocketAddr> {
+        let tries = self.0.tries.get();
 
         for nr_try in 1..=tries {
             match self.connect(socket).await {
-                Ok(x) => {
+                Ok(mut x) => {
                     debug!(
                         "Connection was successful, shutting down stream {}",
                         &socket
                     );
-                    if let Err(e) = x.shutdown(Shutdown::Both) {
+                    if let Err(e) = x.shutdown().await {
                         debug!("Shutdown stream error {}", &e);
                     }
-                    if !self.greppable {
-                        if self.accessible {
+                    if !self.0.greppable {
+                        if self.0.accessible {
                             println!("Open {socket}");
                         } else {
                             println!("Open {}", socket.to_string().purple());
@@ -184,11 +197,11 @@ impl Scanner {
     /// ```
     ///
     async fn connect(&self, socket: SocketAddr) -> io::Result<TcpStream> {
-        let stream = io::timeout(
-            self.timeout,
+        let stream = tokio::time::timeout(
+            self.0.timeout,
             async move { TcpStream::connect(socket).await },
         )
-        .await?;
+        .await??;
         Ok(stream)
     }
 }
@@ -197,11 +210,10 @@ impl Scanner {
 mod tests {
     use super::*;
     use crate::input::{PortRange, ScanOrder};
-    use async_std::task::block_on;
     use std::{net::IpAddr, time::Duration};
 
-    #[test]
-    fn scanner_runs() {
+    #[tokio::test]
+    async fn scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
@@ -219,12 +231,10 @@ mod tests {
             true,
             vec![9000],
         );
-        block_on(scanner.run());
-        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
-        assert_eq!(1, 1);
+        scanner.run().await;
     }
-    #[test]
-    fn ipv6_scanner_runs() {
+    #[tokio::test]
+    async fn ipv6_scanner_runs() {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
@@ -242,12 +252,11 @@ mod tests {
             true,
             vec![9000],
         );
-        block_on(scanner.run());
-        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
-        assert_eq!(1, 1);
+
+        scanner.run().await;
     }
-    #[test]
-    fn quad_zero_scanner_runs() {
+    #[tokio::test]
+    async fn quad_zero_scanner_runs() {
         let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
         let range = PortRange {
             start: 1,
@@ -264,11 +273,10 @@ mod tests {
             true,
             vec![9000],
         );
-        block_on(scanner.run());
-        assert_eq!(1, 1);
+        scanner.run().await;
     }
-    #[test]
-    fn google_dns_runs() {
+    #[tokio::test]
+    async fn google_dns_runs() {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
         let range = PortRange {
             start: 400,
@@ -285,11 +293,10 @@ mod tests {
             true,
             vec![9000],
         );
-        block_on(scanner.run());
-        assert_eq!(1, 1);
+        scanner.run().await;
     }
-    #[test]
-    fn infer_ulimit_lowering_no_panic() {
+    #[tokio::test]
+    async fn infer_ulimit_lowering_no_panic() {
         // Test behaviour on MacOS where ulimit is not automatically lowered
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
 
@@ -309,7 +316,6 @@ mod tests {
             true,
             vec![9000],
         );
-        block_on(scanner.run());
-        assert_eq!(1, 1);
+        scanner.run().await;
     }
 }

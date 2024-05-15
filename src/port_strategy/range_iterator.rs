@@ -27,8 +27,7 @@ impl RangeIterator {
 
         // Randomly choose a number within the range to be the first
         // and assign it as a pick.
-        let mut rng = rand::thread_rng();
-        let normalized_first_pick = rng.gen_range(0..normalized_end);
+        let normalized_first_pick = rand::thread_rng().gen_range(0..normalized_end);
 
         Self {
             active: true,
