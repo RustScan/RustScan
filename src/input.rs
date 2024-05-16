@@ -310,7 +310,8 @@ pub fn default_config_path() -> PathBuf {
 
 #[cfg(test)]
 mod tests {
-    use clap::CommandFactory;
+    use clap::{CommandFactory, Parser};
+    use parameterized::parameterized;
 
     use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
 
@@ -338,6 +339,26 @@ mod tests {
     #[test]
     fn verify_cli() {
         Opts::command().debug_assert();
+    }
+
+    #[parameterized(input = {
+        vec!["rustscan", "--addresses", "127.0.0.1"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "-sCV"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "-A"],
+        vec!["rustscan", "-t", "1500", "-a", "127.0.0.1", "--", "-A", "-sC"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "--script", r#""'(safe and vuln)'""#],
+    }, command = {
+        vec![],
+        vec!["-sCV".to_owned()],
+        vec!["-A".to_owned()],
+        vec!["-A".to_owned(), "-sC".to_owned()],
+        vec!["--script".to_owned(), "\"'(safe and vuln)'\"".to_owned()],
+    })]
+    fn parse_trailing_command(input: Vec<&str>, command: Vec<String>) {
+        let opts = Opts::parse_from(input);
+
+        assert_eq!(vec!["127.0.0.1".to_owned()], opts.addresses);
+        assert_eq!(command, opts.command);
     }
 
     #[test]

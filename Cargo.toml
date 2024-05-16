@@ -40,6 +40,7 @@ subprocess = "0.2.6"
 text_placeholder = { version = "0.5", features = ["struct_context"] }
 
 [dev-dependencies]
+parameterized = "2.0.0"
 wait-timeout = "0.2"
 
 [package.metadata.deb]
