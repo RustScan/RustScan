@@ -17,8 +17,8 @@ exclude = [
 ]
 
 [dependencies]
+clap = { version = "4.5.4", features = ["derive", "wrap_help"] }
 colored = "2.1.0"
-structopt = "0.3.20"
 async-std = "1.7.0"
 futures = "0.3"
 rlimit = "0.10.1"
@@ -40,6 +40,7 @@ subprocess = "0.2.6"
 text_placeholder = { version = "0.5", features = ["struct_context"] }
 
 [dev-dependencies]
+parameterized = "2.0.0"
 wait-timeout = "0.2"
 
 [package.metadata.deb]

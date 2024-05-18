@@ -1,35 +1,31 @@
 //! Provides a means to read, parse and hold configuration options for scans.
+use clap::{Parser, ValueEnum};
 use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
-use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
 const TOP_PORT_NUMBER: u16 = 65535;
 
-arg_enum! {
-    /// Represents the strategy in which the port scanning will run.
-    ///   - Serial will run from start to end, for example 1 to 1_000.
-    ///   - Random will randomize the order in which ports will be scanned.
-    #[derive(Deserialize, Debug, StructOpt, Clone, Copy, PartialEq, Eq)]
-    pub enum ScanOrder {
-        Serial,
-        Random,
-    }
+/// Represents the strategy in which the port scanning will run.
+///   - Serial will run from start to end, for example 1 to 1_000.
+///   - Random will randomize the order in which ports will be scanned.
+#[derive(Deserialize, Debug, ValueEnum, Clone, Copy, PartialEq, Eq)]
+pub enum ScanOrder {
+    Serial,
+    Random,
 }
 
-arg_enum! {
-    /// Represents the scripts variant.
-    ///   - none will avoid running any script, only portscan results will be shown.
-    ///   - default will run the default embedded nmap script, that's part of RustScan since the beginning.
-    ///   - custom will read the ScriptConfig file and the available scripts in the predefined folders
-    #[derive(Deserialize, Debug, StructOpt, Clone, PartialEq, Eq, Copy)]
-    pub enum ScriptsRequired {
-        None,
-        Default,
-        Custom,
-    }
+/// Represents the scripts variant.
+///   - none will avoid running any script, only portscan results will be shown.
+///   - default will run the default embedded nmap script, that's part of RustScan since the beginning.
+///   - custom will read the ScriptConfig file and the available scripts in the predefined folders
+#[derive(Deserialize, Debug, ValueEnum, Clone, PartialEq, Eq, Copy)]
+pub enum ScriptsRequired {
+    None,
+    Default,
+    Custom,
 }
 
 /// Represents the range of ports to be scanned.
@@ -63,8 +59,13 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
     }
 }
 
-#[derive(StructOpt, Debug, Clone)]
-#[structopt(name = "rustscan", setting = structopt::clap::AppSettings::TrailingVarArg)]
+#[derive(Parser, Debug, Clone)]
+#[command(
+    name = "rustscan",
+    version = env!("CARGO_PKG_VERSION"),
+    max_term_width = 120,
+    help_template = "{bin} {version}\n{about}\n\nUSAGE:\n    {usage}\n\nOPTIONS:\n{options}",
+)]
 #[allow(clippy::struct_excessive_bools)]
 /// Fast Port Scanner built in Rust.
 /// WARNING Do not use this program against sensitive infrastructure since the
@@ -73,69 +74,69 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 /// - GitHub <https://github.com/RustScan/RustScan>
 pub struct Opts {
     /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be scanned.
-    #[structopt(short, long, use_delimiter = true)]
+    #[arg(short, long, value_delimiter = ',')]
     pub addresses: Vec<String>,
 
     /// A list of comma separated ports to be scanned. Example: 80,443,8080.
-    #[structopt(short, long, use_delimiter = true)]
+    #[arg(short, long, value_delimiter = ',')]
     pub ports: Option<Vec<u16>>,
 
     /// A range of ports with format start-end. Example: 1-1000.
-    #[structopt(short, long, conflicts_with = "ports", parse(try_from_str = parse_range))]
+    #[arg(short, long, conflicts_with = "ports", value_parser = parse_range)]
     pub range: Option<PortRange>,
 
     /// Whether to ignore the configuration file or not.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub no_config: bool,
 
     /// Custom path to config file
-    #[structopt(short, long, parse(from_os_str))]
+    #[arg(short, long, value_parser)]
     pub config_path: Option<PathBuf>,
 
     /// Greppable mode. Only output the ports. No Nmap. Useful for grep or outputting to a file.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub greppable: bool,
 
     /// Accessible mode. Turns off features which negatively affect screen readers.
-    #[structopt(long)]
+    #[arg(long)]
     pub accessible: bool,
 
     /// A comma-delimited list or file of DNS resolvers.
-    #[structopt(long)]
+    #[arg(long)]
     pub resolver: Option<String>,
 
     /// The batch size for port scanning, it increases or slows the speed of
     /// scanning. Depends on the open file limit of your OS.  If you do 65535
     /// it will do every port at the same time. Although, your OS may not
     /// support this.
-    #[structopt(short, long, default_value = "4500")]
+    #[arg(short, long, default_value = "4500")]
     pub batch_size: u16,
 
     /// The timeout in milliseconds before a port is assumed to be closed.
-    #[structopt(short, long, default_value = "1500")]
+    #[arg(short, long, default_value = "1500")]
     pub timeout: u32,
 
     /// The number of tries before a port is assumed to be closed.
     /// If set to 0, rustscan will correct it to 1.
-    #[structopt(long, default_value = "1")]
+    #[arg(long, default_value = "1")]
     pub tries: u8,
 
     /// Automatically ups the ULIMIT with the value you provided.
-    #[structopt(short, long)]
+    #[arg(short, long)]
     pub ulimit: Option<u64>,
 
     /// The order of scanning to be performed. The "serial" option will
     /// scan ports in ascending order while the "random" option will scan
     /// ports randomly.
-    #[structopt(long, possible_values = &ScanOrder::variants(), case_insensitive = true, default_value = "serial")]
+    #[arg(long, value_enum, ignore_case = true, default_value = "serial")]
     pub scan_order: ScanOrder,
 
     /// Level of scripting required for the run.
-    #[structopt(long, possible_values = &ScriptsRequired::variants(), case_insensitive = true, default_value = "default")]
+    #[arg(long, value_enum, ignore_case = true, default_value = "default")]
     pub scripts: ScriptsRequired,
 
     /// Use the top 1000 ports.
-    #[structopt(long)]
+    #[arg(long)]
     pub top: bool,
 
     /// The Script arguments to run.
@@ -143,18 +144,18 @@ pub struct Opts {
     /// Example: 'rustscan -t 1500 -a 127.0.0.1 -- -A -sC'.
     /// This command adds -Pn -vvv -p $PORTS automatically to nmap.
     /// For things like --script '(safe and vuln)' enclose it in quotations marks \"'(safe and vuln)'\"
-    #[structopt(last = true)]
+    #[arg(last = true)]
     pub command: Vec<String>,
 
     /// A list of comma separated ports to be excluded from scanning. Example: 80,443,8080.
-    #[structopt(short, long, use_delimiter = true)]
+    #[arg(short, long, value_delimiter = ',')]
     pub exclude_ports: Option<Vec<u16>>,
 }
 
 #[cfg(not(tarpaulin_include))]
 impl Opts {
     pub fn read() -> Self {
-        let mut opts = Opts::from_args();
+        let mut opts = Opts::parse();
 
         if opts.ports.is_none() && opts.range.is_none() {
             opts.range = Some(PortRange {
@@ -309,7 +310,11 @@ pub fn default_config_path() -> PathBuf {
 
 #[cfg(test)]
 mod tests {
+    use clap::{CommandFactory, Parser};
+    use parameterized::parameterized;
+
     use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+
     impl Config {
         fn default() -> Self {
             Self {
@@ -329,6 +334,31 @@ mod tests {
                 exclude_ports: None,
             }
         }
+    }
+
+    #[test]
+    fn verify_cli() {
+        Opts::command().debug_assert();
+    }
+
+    #[parameterized(input = {
+        vec!["rustscan", "--addresses", "127.0.0.1"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "-sCV"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "-A"],
+        vec!["rustscan", "-t", "1500", "-a", "127.0.0.1", "--", "-A", "-sC"],
+        vec!["rustscan", "--addresses", "127.0.0.1", "--", "--script", r#""'(safe and vuln)'""#],
+    }, command = {
+        vec![],
+        vec!["-sCV".to_owned()],
+        vec!["-A".to_owned()],
+        vec!["-A".to_owned(), "-sC".to_owned()],
+        vec!["--script".to_owned(), "\"'(safe and vuln)'\"".to_owned()],
+    })]
+    fn parse_trailing_command(input: Vec<&str>, command: Vec<String>) {
+        let opts = Opts::parse_from(input);
+
+        assert_eq!(vec!["127.0.0.1".to_owned()], opts.addresses);
+        assert_eq!(command, opts.command);
     }
 
     #[test]
