@@ -33,7 +33,7 @@ toml = "0.8.12"
 serde = "1.0.124"
 serde_derive = "1.0.116"
 cidr-utils = "0.6.1"
-itertools = "0.12.1"
+itertools = "0.13.0"
 hickory-resolver = { version = "0.24.0", features = ["dns-over-rustls"] }
 anyhow = "1.0.40"
 subprocess = "0.2.6"
