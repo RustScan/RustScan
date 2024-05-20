@@ -15,7 +15,7 @@
 |                     🐋 `(Recommended)`                      |              👩‍💻               |             🏗️              |             🔧              |
 | :---------------------------------------------------------: | :---------------------------: | :-------------------------: | :-------------------------: |
 |               [![Docker][DockerPic]][Docker]                | [![Kali][Kali1]][Kali/Debian] | [![Arch][Arch]][Arch-Linux] | [![apple][apple]][Homebrew] |
-| `docker pull rustscan/rustscan:2.1.1`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
+| `docker pull rustscan/rustscan:latest`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
 
 ---
 
