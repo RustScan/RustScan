@@ -1,8 +1,8 @@
 //! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
 use crate::udp_packets::{
-    craft_dhcpc_packet, craft_dns_query_packet, craft_isakmp_packet,
-    craft_ntp_packet, craft_snmp_packet,
+    craft_dhcpc_packet, craft_dns_query_packet,
+    craft_ntp_packet,
 };
 use log::debug;
 
@@ -138,13 +138,13 @@ impl Scanner {
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         if self.sudp {
+            // we try different wait times and packet types
+            // I looked for a crate to create these packets but couldn't find one
             let waits = vec![0, 50, 100, 300];
             let payloads = vec![
-                craft_ntp_packet(),
                 craft_dns_query_packet(),
+                craft_ntp_packet(),
                 craft_dhcpc_packet(),
-                craft_isakmp_packet(),
-                craft_snmp_packet(),
             ];
 
             for payload in &payloads {

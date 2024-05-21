@@ -155,10 +155,10 @@ pub fn craft_msrpc_packet() -> Vec<u8> {
     // Interface UUID: {12345678-1234-5678-1234-567812345678}
     packet.extend(&[
         0x12, 0x34, 0x56, 0x78, // TimeLow
-        0x12, 0x34,             // TimeMid
-        0x56, 0x78,             // TimeHiAndVersion
-        0x12, 0x34,             // ClockSeqHiAndReserved, ClockSeqLow
-        0x56, 0x78, 0x12, 0x34, 0x56, 0x78  // Node
+        0x12, 0x34, // TimeMid
+        0x56, 0x78, // TimeHiAndVersion
+        0x12, 0x34, // ClockSeqHiAndReserved, ClockSeqLow
+        0x56, 0x78, 0x12, 0x34, 0x56, 0x78, // Node
     ]);
 
     // Interface Version: 1.0
@@ -166,11 +166,8 @@ pub fn craft_msrpc_packet() -> Vec<u8> {
 
     // Transfer Syntax: {8A885D04-1CEB-11C9-9FE8-08002B104860}
     packet.extend(&[
-        0x8A, 0x88, 0x5D, 0x04,
-        0x1C, 0xEB,
-        0x11, 0xC9,
-        0x9F, 0xE8,
-        0x08, 0x00, 0x2B, 0x10, 0x48, 0x60
+        0x8A, 0x88, 0x5D, 0x04, 0x1C, 0xEB, 0x11, 0xC9, 0x9F, 0xE8, 0x08, 0x00, 0x2B, 0x10, 0x48,
+        0x60,
     ]);
 
     // Transfer Syntax Version: 2.0
@@ -221,7 +218,7 @@ pub fn craft_dns_query_packet() -> Vec<u8> {
     packet.extend(&[0x00, 0x00]);
 
     // Query: www.example.com
-    let query_name = "www.example.com";
+    let query_name = "www.google.com";
     for part in query_name.split('.') {
         packet.push(part.len() as u8);
         packet.extend(part.as_bytes());
@@ -244,10 +241,10 @@ pub fn craft_http_rpc_epmap_packet() -> Vec<u8> {
     // UUID: {12345678-1234-ABCD-EF00-0123456789AB}
     let uuid = vec![
         0x12, 0x34, 0x56, 0x78, // TimeLow
-        0x12, 0x34,             // TimeMid
-        0xAB, 0xCD,             // TimeHiAndVersion
-        0xEF, 0x00,             // ClockSeqHiAndReserved, ClockSeqLow
-        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB  // Node
+        0x12, 0x34, // TimeMid
+        0xAB, 0xCD, // TimeHiAndVersion
+        0xEF, 0x00, // ClockSeqHiAndReserved, ClockSeqLow
+        0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, // Node
     ];
 
     // Other fields and options as needed
@@ -292,16 +289,5 @@ pub fn craft_isakmp_packet() -> Vec<u8> {
     packet.extend(&[0x00, 0x14]); // Payload Length
     packet.extend(&[0x00, 0x01, 0x00, 0x00]); // Transform Number, Transform ID: KEY_IKE
 
-    packet
-}
-
-pub fn craft_tftp_read_request_packet(filename: &str) -> Vec<u8> {
-    let mut packet = Vec::new();
-    packet.push(0x00); // Opcode: Read request (RRQ)
-    packet.push(0x01);
-    packet.extend(filename.as_bytes());
-    packet.push(0x00);
-    packet.extend(b"octet"); // Mode: octet (binary)
-    packet.push(0x00);
     packet
 }
