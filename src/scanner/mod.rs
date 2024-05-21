@@ -1,17 +1,18 @@
 //! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
 use crate::udp_packets::{
-    craft_dhcpc_packet, craft_dns_query_packet, craft_http_rpc_epmap_packet, craft_msrpc_packet,
-    craft_ntp_packet, craft_snmptrap_packet,
+    craft_dhcpc_packet, craft_dns_query_packet, craft_http_rpc_epmap_packet, craft_isakmp_packet,
+    craft_msrpc_packet, craft_ntp_packet, craft_snmp_getrequest_packet, craft_snmp_packet,
+    craft_snmptrap_packet, craft_snmptrap_packet_retry,
 };
 use log::debug;
 
 mod socket_iterator;
 use socket_iterator::SocketIterator;
 
-use async_std::{io, net::UdpSocket};
 use async_std::net::TcpStream;
 use async_std::prelude::*;
+use async_std::{io, net::UdpSocket};
 use colored::Colorize;
 use futures::stream::FuturesUnordered;
 use std::{
@@ -138,7 +139,7 @@ impl Scanner {
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         if self.sudp {
-            let waits = vec![0, 50, 100, 300];
+            let waits = vec![0, 100, 300, 500, 700, 1000];
             let payloads = vec![
                 craft_ntp_packet(),
                 craft_dns_query_packet(),
@@ -146,6 +147,10 @@ impl Scanner {
                 craft_snmptrap_packet(),
                 craft_msrpc_packet(),
                 craft_http_rpc_epmap_packet(),
+                craft_snmp_getrequest_packet(),
+                craft_isakmp_packet(),
+                craft_snmp_packet(),
+                craft_snmptrap_packet_retry(),
             ];
 
             for payload in &payloads {
@@ -335,6 +340,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -358,6 +364,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -380,6 +387,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -401,6 +409,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -425,6 +434,100 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
+        );
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn udp_scan_runs() {
+        // Makes sure the program still runs and doesn't panic
+        let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_ipv6_runs() {
+        // Makes sure the program still runs and doesn't panic
+        let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_quad_zero_scanner_runs() {
+        let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_google_dns_runs() {
+        let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 100,
+            end: 150,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);

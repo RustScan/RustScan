@@ -31,6 +31,7 @@
 //!         strategy,
 //!         true,
 //!         vec![9000],
+//!         false,
 //!     );
 //!
 //!     let scan_result = block_on(scanner.run());

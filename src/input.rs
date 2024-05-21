@@ -339,7 +339,7 @@ mod tests {
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
                 exclude_ports: None,
-                udp: Some(false),
+                sudp: Some(false),
             }
         }
     }

@@ -8,6 +8,47 @@ pub fn craft_snmptrap_packet() -> Vec<u8> {
     [version, community_string, pdu_type, enterprise_oid].concat()
 }
 
+pub fn craft_snmp_getrequest_packet() -> Vec<u8> {
+    let version = vec![0x30, 0x29, 0x02, 0x01, 0x00]; // SNMP version (v1)
+    let community_string = vec![0x04, 0x06, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63]; // Community string "public"
+    let pdu_type = vec![0xa0, 0x1c]; // PDU type for SNMP GetRequest
+    let request_id = vec![0x02, 0x04, 0x7a, 0x69, 0x67, 0x71]; // Request ID
+    let error_status = vec![0x02, 0x01, 0x00]; // Error status
+    let error_index = vec![0x02, 0x01, 0x00]; // Error index
+    let variable_bindings = vec![
+        0x30, 0x0e, 0x30, 0x0c, 0x06, 0x08, 0x2b, 0x06, 0x01, 0x02, 0x01, 0x01, 0x01, 0x00, 0x05,
+        0x00,
+    ]; // Variable bindings
+
+    // Combine the components into a single SNMP GetRequest packet
+    [
+        version,
+        community_string,
+        pdu_type,
+        request_id,
+        error_status,
+        error_index,
+        variable_bindings,
+    ]
+    .concat()
+}
+
+pub fn craft_snmp_packet() -> Vec<u8> {
+    vec![
+        0x30, 0x26, 0x02, 0x01, 0x01, 0x04, 0x06, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0xa0, 0x19,
+        0x02, 0x04, 0x71, 0x64, 0xfe, 0xf1, 0x02, 0x01, 0x00, 0x02, 0x01, 0x00, 0x30, 0x0b, 0x30,
+        0x09, 0x06, 0x05, 0x2b, 0x06, 0x01, 0x02, 0x01, 0x05, 0x00,
+    ]
+}
+
+pub fn craft_snmptrap_packet_retry() -> Vec<u8> {
+    vec![
+        0x30, 0x26, 0x02, 0x01, 0x01, 0x04, 0x06, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0xa0, 0x19,
+        0x02, 0x04, 0x71, 0x64, 0xfe, 0xf1, 0x02, 0x01, 0x00, 0x02, 0x01, 0x00, 0x30, 0x0b, 0x30,
+        0x09, 0x06, 0x05, 0x2b, 0x06, 0x01, 0x02, 0x01, 0x05, 0x00,
+    ]
+}
+
 pub fn craft_dhcpc_packet() -> Vec<u8> {
     let mut packet = Vec::with_capacity(240);
 
@@ -213,5 +254,54 @@ pub fn craft_http_rpc_epmap_packet() -> Vec<u8> {
     // This is a simplified example and may need adjustments
     packet.extend(&uuid);
 
+    packet
+}
+
+pub fn craft_isakmp_packet() -> Vec<u8> {
+    let mut packet = Vec::new();
+
+    // ISAKMP header
+    packet.extend(&[0x00; 8]); // Initiator Cookie
+    packet.extend(&[0x00; 8]); // Responder Cookie
+    packet.push(0x01); // Next Payload: Security Association
+    packet.push(0x10); // Version: 1.0
+    packet.push(0x00); // Exchange Type: IKE_SA_INIT
+    packet.push(0x00); // Flags
+    packet.extend(&[0x00, 0x00, 0x00, 0x00]); // Message ID
+    packet.extend(&[0x00, 0x00, 0x00, 0x28]); // Length
+
+    // Security Association Payload
+    packet.push(0x00); // Next Payload: None
+    packet.push(0x00); // Reserved
+    packet.extend(&[0x00, 0x24]); // Payload Length
+    packet.extend(&[0x00, 0x00, 0x00, 0x01]); // DOI, Situation
+
+    // Proposal Payload
+    packet.push(0x00); // Next Payload: None
+    packet.push(0x00); // Reserved
+    packet.extend(&[0x00, 0x1c]); // Payload Length
+    packet.push(0x02); // Proposal Number
+    packet.push(0x01); // Protocol ID: IKE
+    packet.push(0x00); // SPI Size
+    packet.push(0x01); // Number of Transforms
+    packet.extend(&[0x00, 0x00, 0x00, 0x01]); // Transform ID: Key Exchange
+
+    // Transform Payload
+    packet.push(0x00); // Next Payload: None
+    packet.push(0x00); // Reserved
+    packet.extend(&[0x00, 0x14]); // Payload Length
+    packet.extend(&[0x00, 0x01, 0x00, 0x00]); // Transform Number, Transform ID: KEY_IKE
+
+    packet
+}
+
+pub fn craft_tftp_read_request_packet(filename: &str) -> Vec<u8> {
+    let mut packet = Vec::new();
+    packet.push(0x00); // Opcode: Read request (RRQ)
+    packet.push(0x01);
+    packet.extend(filename.as_bytes());
+    packet.push(0x00);
+    packet.extend(b"octet"); // Mode: octet (binary)
+    packet.push(0x00);
     packet
 }
