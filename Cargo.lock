@@ -1437,7 +1437,7 @@ dependencies = [
 
 [[package]]
 name = "rustscan"
-version = "2.2.3"
+version = "2.2.4-rc1"
 dependencies = [
  "ansi_term",
  "anyhow",

@@ -1,11 +1,15 @@
 //! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
+use crate::udp_packets::{
+    craft_dhcpc_packet, craft_dns_query_packet, craft_http_rpc_epmap_packet, craft_msrpc_packet,
+    craft_ntp_packet, craft_snmptrap_packet,
+};
 use log::debug;
 
 mod socket_iterator;
 use socket_iterator::SocketIterator;
 
-use async_std::io;
+use async_std::{io, net::UdpSocket};
 use async_std::net::TcpStream;
 use async_std::prelude::*;
 use colored::Colorize;
@@ -36,6 +40,7 @@ pub struct Scanner {
     port_strategy: PortStrategy,
     accessible: bool,
     exclude_ports: Vec<u16>,
+    sudp: bool,
 }
 
 // Allowing too many arguments for clippy.
@@ -50,6 +55,7 @@ impl Scanner {
         port_strategy: PortStrategy,
         accessible: bool,
         exclude_ports: Vec<u16>,
+        sudp: bool,
     ) -> Self {
         Self {
             batch_size,
@@ -60,6 +66,7 @@ impl Scanner {
             ips: ips.iter().map(ToOwned::to_owned).collect(),
             accessible,
             exclude_ports,
+            sudp,
         }
     }
 
@@ -130,8 +137,34 @@ impl Scanner {
     ///
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
-        let tries = self.tries.get();
+        if self.sudp {
+            let waits = vec![0, 50, 100, 300];
+            let payloads = vec![
+                craft_ntp_packet(),
+                craft_dns_query_packet(),
+                craft_dhcpc_packet(),
+                craft_snmptrap_packet(),
+                craft_msrpc_packet(),
+                craft_http_rpc_epmap_packet(),
+            ];
 
+            for payload in &payloads {
+                for &wait_ms in &waits {
+                    let wait = Duration::from_millis(wait_ms);
+                    match self.udp_scan(socket, payload.clone(), wait).await {
+                        Ok(true) => return Ok(socket), // Successful scan
+                        Ok(false) => continue,         // Timed out, try next wait time or payload
+                        Err(e) => return Err(e),       // Some other error occurred
+                    }
+                }
+            }
+            return Err(io::Error::new(
+                io::ErrorKind::TimedOut,
+                "All payloads and wait times failed",
+            ));
+        }
+
+        let tries = self.tries.get();
         for nr_try in 1..=tries {
             match self.connect(socket).await {
                 Ok(x) => {
@@ -190,6 +223,90 @@ impl Scanner {
         )
         .await?;
         Ok(stream)
+    }
+
+    /// Binds to a UDP socket so we can send and recieve packets
+    /// # Example
+    ///
+    /// ```compile_fail
+    /// # use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    /// let port: u16 = 80;
+    /// // ip is an IpAddr type
+    /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    /// let socket = SocketAddr::new(ip, port);
+    /// scanner.udp_bind(socket);
+    /// // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
+    /// // Timeout occurs after self.timeout seconds
+    /// ```
+    ///
+    async fn udp_bind(&self, socket: SocketAddr) -> io::Result<UdpSocket> {
+        let local_addr = match socket {
+            SocketAddr::V4(_) => "0.0.0.0:0".parse::<SocketAddr>().unwrap(),
+            SocketAddr::V6(_) => "[::]:0".parse::<SocketAddr>().unwrap(),
+        };
+
+        UdpSocket::bind(local_addr).await
+    }
+
+    /// Performs a UDP scan on the specified socket with a payload and wait duration
+    /// # Example
+    ///
+    /// ```compile_fail
+    /// # use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    /// # use std::time::Duration;
+    /// let port: u16 = 123;
+    /// // ip is an IpAddr type
+    /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    /// let socket = SocketAddr::new(ip, port);
+    /// let payload = vec![0, 1, 2, 3];
+    /// let wait = Duration::from_secs(1);
+    /// let result = scanner.udp_scan(socket, payload, wait).await;
+    /// // returns Result which is either Ok(true) if response received, or Ok(false) if timed out.
+    /// // Err is returned for other I/O errors.
+    async fn udp_scan(
+        &self,
+        socket: SocketAddr,
+        payload: Vec<u8>,
+        wait: Duration,
+    ) -> io::Result<bool> {
+        match self.udp_bind(socket).await {
+            Ok(x) => {
+                let mut buf = [0u8; 1024];
+
+                x.connect(socket).await?;
+                x.send(&payload).await?;
+
+                match io::timeout(wait, x.recv(&mut buf)).await {
+                    Ok(size) => {
+                        println!("Recived {} bytes", size);
+                        self.fmt_ports(socket);
+                        Ok(true)
+                    }
+                    Err(e) => {
+                        if e.kind() == io::ErrorKind::TimedOut {
+                            Ok(false)
+                        } else {
+                            Err(e)
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Err E binding sock {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
+    /// Formats and prints the port status
+    fn fmt_ports(&self, socket: SocketAddr) {
+        if !self.greppable {
+            if self.accessible {
+                println!("Open {socket}");
+            } else {
+                println!("Open {}", socket.to_string().purple());
+            }
+        }
     }
 }
 
