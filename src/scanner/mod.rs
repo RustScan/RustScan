@@ -1,9 +1,8 @@
 //! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
 use crate::udp_packets::{
-    craft_dhcpc_packet, craft_dns_query_packet, craft_http_rpc_epmap_packet, craft_isakmp_packet,
-    craft_msrpc_packet, craft_ntp_packet, craft_snmp_getrequest_packet, craft_snmp_packet,
-    craft_snmptrap_packet, craft_snmptrap_packet_retry,
+    craft_dhcpc_packet, craft_dns_query_packet, craft_isakmp_packet,
+    craft_ntp_packet, craft_snmp_packet,
 };
 use log::debug;
 
@@ -144,12 +143,8 @@ impl Scanner {
                 craft_ntp_packet(),
                 craft_dns_query_packet(),
                 craft_dhcpc_packet(),
-                craft_snmptrap_packet(),
-                craft_msrpc_packet(),
-                craft_http_rpc_epmap_packet(),
                 craft_isakmp_packet(),
                 craft_snmp_packet(),
-                craft_snmptrap_packet_retry(),
             ];
 
             for payload in &payloads {
