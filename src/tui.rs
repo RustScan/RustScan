@@ -93,6 +93,7 @@ macro_rules! funny_opening {
             "I scanned ports so fast, even my computer was surprised.",
             "RustScan: Where '404 Not Found' meets '200 OK'.",
             "RustScan: Exploring the digital landscape, one IP at a time.",
+            "DeathStarMafia was here 🚀",
         ];
         let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
 

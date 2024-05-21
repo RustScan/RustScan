@@ -89,6 +89,8 @@ use std::string::ToString;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
 
+// Note: I couldn't figure out how to get it to pipe into nmap with the -sU scan
+// since -sU needs sudo
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
@@ -389,6 +391,7 @@ mod tests {
             script_f.ports_separator,
             script_f.tags,
             script_f.call_format,
+            script_f.call_format_udp,
         )
     }
 
