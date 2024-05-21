@@ -139,7 +139,7 @@ impl Scanner {
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         if self.sudp {
-            let waits = vec![0, 100, 300, 500, 700, 1000];
+            let waits = vec![0, 50, 100, 300];
             let payloads = vec![
                 craft_ntp_packet(),
                 craft_dns_query_packet(),
@@ -147,7 +147,6 @@ impl Scanner {
                 craft_snmptrap_packet(),
                 craft_msrpc_packet(),
                 craft_http_rpc_epmap_packet(),
-                craft_snmp_getrequest_packet(),
                 craft_isakmp_packet(),
                 craft_snmp_packet(),
                 craft_snmptrap_packet_retry(),
