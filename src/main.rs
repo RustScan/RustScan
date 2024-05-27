@@ -84,7 +84,7 @@ fn main() {
     // exclude_ports  is an exclusion port list
     //
     // Added by brendanglancy - 5/19/2024:
-    // sudo is an option to do a udp scan
+    // sudp is an option to do a udp scan
     let scanner = Scanner::new(
         &ips,
         batch_size,
