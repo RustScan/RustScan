@@ -152,8 +152,8 @@ pub struct Opts {
     pub exclude_ports: Option<Vec<u16>>,
 
     /// UDP scanning mode, finds udp ports that send back responses
-    #[arg(short, long)]
-    pub sudp: bool,
+    #[arg(long)]
+    pub udp: bool,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -193,7 +193,7 @@ impl Opts {
 
         merge_required!(
             addresses, greppable, accessible, batch_size, timeout, tries, scan_order, scripts,
-            command, sudp
+            command, udp
         );
     }
 
@@ -241,7 +241,7 @@ impl Default for Opts {
             scripts: ScriptsRequired::Default,
             config_path: None,
             exclude_ports: None,
-            sudp: false,
+            udp: false,
         }
     }
 }
@@ -266,7 +266,7 @@ pub struct Config {
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
     exclude_ports: Option<Vec<u16>>,
-    sudp: Option<bool>,
+    udp: Option<bool>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -339,7 +339,7 @@ mod tests {
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
                 exclude_ports: None,
-                sudp: Some(false),
+                udp: Some(false),
             }
         }
     }

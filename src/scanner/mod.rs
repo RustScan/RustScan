@@ -1,9 +1,6 @@
 //! Core functionality for actual scanning behaviour.
 use crate::port_strategy::PortStrategy;
-use crate::udp_packets::{
-    craft_dhcpc_packet, craft_dns_query_packet,
-    craft_ntp_packet,
-};
+use crate::udp_packets::udp_payload::cust_payload;
 use log::debug;
 
 mod socket_iterator;
@@ -40,7 +37,7 @@ pub struct Scanner {
     port_strategy: PortStrategy,
     accessible: bool,
     exclude_ports: Vec<u16>,
-    sudp: bool,
+    udp: bool,
 }
 
 // Allowing too many arguments for clippy.
@@ -55,7 +52,7 @@ impl Scanner {
         port_strategy: PortStrategy,
         accessible: bool,
         exclude_ports: Vec<u16>,
-        sudp: bool,
+        udp: bool,
     ) -> Self {
         Self {
             batch_size,
@@ -66,7 +63,7 @@ impl Scanner {
             ips: ips.iter().map(ToOwned::to_owned).collect(),
             accessible,
             exclude_ports,
-            sudp,
+            udp,
         }
     }
 
@@ -137,30 +134,19 @@ impl Scanner {
     ///
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
-        if self.sudp {
-            // we try different wait times and packet types
-            // I looked for a crate to create these packets but couldn't find one
-            let waits = vec![0, 50, 100, 300];
-            let payloads = vec![
-                craft_dns_query_packet(),
-                craft_ntp_packet(),
-                craft_dhcpc_packet(),
-            ];
+        if self.udp {
+            let waits = vec![0, 51, 107, 313];
+            let payload = cust_payload(socket.port());
 
-            for payload in &payloads {
-                for &wait_ms in &waits {
-                    let wait = Duration::from_millis(wait_ms);
-                    match self.udp_scan(socket, payload.clone(), wait).await {
-                        Ok(true) => return Ok(socket), // Successful scan
-                        Ok(false) => continue,         // Timed out, try next wait time or payload
-                        Err(e) => return Err(e),       // Some other error occurred
-                    }
+            for &wait_ms in &waits {
+                let wait = Duration::from_millis(wait_ms);
+                match self.udp_scan(socket, &payload, wait).await {
+                    Ok(true) => return Ok(socket),
+                    Ok(false) => continue,
+                    Err(e) => return Err(e),
                 }
             }
-            return Err(io::Error::new(
-                io::ErrorKind::TimedOut,
-                "All payloads and wait times failed",
-            ));
+            return Ok(socket);
         }
 
         let tries = self.tries.get();
@@ -174,13 +160,7 @@ impl Scanner {
                     if let Err(e) = x.shutdown(Shutdown::Both) {
                         debug!("Shutdown stream error {}", &e);
                     }
-                    if !self.greppable {
-                        if self.accessible {
-                            println!("Open {socket}");
-                        } else {
-                            println!("Open {}", socket.to_string().purple());
-                        }
-                    }
+                    self.fmt_ports(socket);
 
                     debug!("Return Ok after {} tries", nr_try);
                     return Ok(socket);
@@ -265,7 +245,7 @@ impl Scanner {
     async fn udp_scan(
         &self,
         socket: SocketAddr,
-        payload: Vec<u8>,
+        payload: &[u8],
         wait: Duration,
     ) -> io::Result<bool> {
         match self.udp_bind(socket).await {

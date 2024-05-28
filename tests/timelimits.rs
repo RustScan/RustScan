@@ -110,14 +110,14 @@ mod timelimits {
     #[ignore]
     fn udp_scan_localhost() {
         let timeout = super::Duration::from_secs(25);
-        super::run_rustscan_with_timeout(&["--greppable", "127.0.0.1", "--sudp"], timeout);
+        super::run_rustscan_with_timeout(&["--greppable", "127.0.0.1", "--udp"], timeout);
     }
     #[test]
     #[ignore]
     fn udp_scan_google_com() {
         super::run_rustscan_with_timeout(
             &[
-                "--sudp",
+                "--udp",
                 "--greppable",
                 "-u",
                 "5000",
@@ -133,7 +133,7 @@ mod timelimits {
     fn udp_scan_example_com() {
         super::run_rustscan_with_timeout(
             &[
-                "--sudp",
+                "--udp",
                 "--greppable",
                 "-u",
                 "5000",
@@ -149,7 +149,7 @@ mod timelimits {
     fn udp_scan_rustscan_cmnatic_co_uk() {
         super::run_rustscan_with_timeout(
             &[
-                "--sudp",
+                "--udp",
                 "--greppable",
                 "-u",
                 "5000",
