@@ -1,11 +1,11 @@
-name: Publish Docker image
+name: Release - Distribute Docker image
 
 on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
 
 jobs:
   push_to_registry:
