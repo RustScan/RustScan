@@ -1,5 +1,9 @@
-name: Release
+name: Release - Distribute binaries
 on:
+  # If we want to make release using github interface.
+  # release:
+  #   types: [published]
+  # If we want to make release by pushing new tag.
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
@@ -15,17 +19,29 @@ env:
   BIN_NAME: rustscan
   PROJECT_NAME: rustscan
   REPO_NAME: RustScan/RustScan
-  # BREW_TAP: RustScan/homebrew-tap
+  BREW_TAP: RustScan/homebrew-tap
 
 jobs:
-  dist:
-    name: Dist
+  build:
+    name: Build
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false # don't fail other jobs if one fails
       matrix:
-        build: [x86_64-linux, x86_64-macos, x86_64-windows] #, x86_64-win-gnu, win32-msvc
+        # aarch64-linux is failing due to python3 missing issues during tests. I'm removing it for now.
+        # build: [x86_64-linux, aarch64-linux, x86_64-macos, aarch64-macos, x86_64-windows, x86_64-win-gnu]
+        build: [x86_64-linux, x86_64-macos, aarch64-macos, x86_64-windows, x86_64-win-gnu]
         include:
+          - build: aarch64-macos
+            os: macos-latest
+            rust: stable
+            target: aarch64-apple-darwin
+            cross: true
+          # - build: aarch64-linux
+          #   os: ubuntu-20.04
+          #   rust: stable
+          #   target: aarch64-unknown-linux-gnu
+          #   cross: true
           - build: x86_64-linux
             os: ubuntu-20.04
             rust: stable
@@ -41,22 +57,11 @@ jobs:
             rust: stable
             target: x86_64-pc-windows-msvc
             cross: false
-        # - build: aarch64-linux
-        #   os: ubuntu-20.04
-        #   rust: stable
-        #   target: aarch64-unknown-linux-gnu
-        # - build: aarch64-macos
-        #   os: macos-latest
-        #   rust: stable
-        #   target: aarch64-apple-darwin
-        # - build: x86_64-win-gnu
-        #   os: windows-2019
-        #   rust: stable-x86_64-gnu
-        #   target: x86_64-pc-windows-gnu
-        # - build: win32-msvc
-        #   os: windows-2019
-        #   rust: stable
-        #   target: i686-pc-windows-msvc
+          - build: x86_64-win-gnu
+            os: windows-2019
+            rust: stable-x86_64-gnu
+            target: x86_64-pc-windows-gnu
+            cross: false
 
     steps:
       - name: Set Git config. (windows only)
@@ -67,8 +72,11 @@ jobs:
           git config --global pack.threads "1" 
           git config --global pack.deltaCacheSize "512m"
 
-      - name: Install python 3.10 for windows
-        if: contains(matrix.build, 'windows') # Windows is missing some dependencies
+      - name: Install dependencies
+        if: contains(matrix.build, 'aarch64-linux') # Windows is missing some dependencies
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu python3
+
+      - name: Install python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
@@ -101,23 +109,17 @@ jobs:
           args: --release --locked --target ${{ matrix.target }}
 
       - name: Calculate tag name
-        if: contains(matrix.build, 'linux')
+        # if: contains(matrix.build, 'linux')
+        shell: bash
         run: |
           name=dev
           if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
             name=${GITHUB_REF#refs/tags/}
           fi
-          echo ::set-output name=val::$name
-          echo TAG=$name >> $GITHUB_ENV
+          echo "TAG=$name" >> $GITHUB_ENV
         id: tagname
 
-      - name: Build deb package (linux only)
-        if: contains(matrix.build, 'linux')
-        run: |
-          cargo install cargo-deb
-          cargo deb --target ${{ matrix.target }} --deb-version ${TAG}
-
-      - name: Build archive
+      - name: Build and package artifacts
         shell: bash
         run: |
           mkdir dist
@@ -128,17 +130,19 @@ jobs:
           fi
 
           if [[ "${{ matrix.build }}" =~ "linux" ]]; then
-            cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/"
+            cargo install cargo-deb
+            cargo deb --target ${{ matrix.target }} --deb-version ${TAG}
+            cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/" || true
           fi
+
       - uses: actions/upload-artifact@v4.3.3
         with:
           name: bins-${{ matrix.build }}
           path: dist
 
-  publish:
-    name: Publish
-    needs: [dist]
-    if: contains(fromJson('["push", "schedule"]'), github.event_name) && startsWith(github.ref, 'refs/tags/')
+  package:
+    name: Package
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -147,19 +151,18 @@ jobs:
           submodules: false
 
       - uses: actions/download-artifact@v4
-        # with:
-        #   path: dist
-      # - run: ls -al ./dist
-      - run: ls -al bins-*
+        with:
+          path: dist
 
       - name: Calculate tag name
+        # if: contains(matrix.build, 'linux')
+        shell: bash
         run: |
           name=dev
           if [[ ${GITHUB_REF} =~ refs/tags/[0-9]+.[0-9]+.[0-9]+ ]]; then
             name=${GITHUB_REF#refs/tags/}
           fi
-          echo ::set-output name=val::$name
-          echo TAG=$name >> $GITHUB_ENV
+          echo "TAG=$name" >> $GITHUB_ENV
         id: tagname
 
       - name: Build archive
@@ -168,78 +171,46 @@ jobs:
           set -ex
           rm -rf tmp
           mkdir tmp
-          mkdir dist
-          for dir in bins-* ; do
-              platform=${dir#"bins-"}
+          for dir in dist/bins-* ; do
+              platform=${dir#"dist/bins-"}
               unset exe
-              if [[ $platform =~ "windows" ]]; then
+              if [[ $platform =~ "win" ]]; then
                   exe=".exe"
               fi
               pkgname=$PROJECT_NAME-$TAG-$platform
               mkdir tmp/$pkgname
-              # cp LICENSE README.md tmp/$pkgname
-              mv bins-$platform/$BIN_NAME$exe tmp/$pkgname
+              cp $dir/$BIN_NAME$exe dist/ || true
+              mv $dir/$BIN_NAME$exe tmp/$pkgname
               chmod +x tmp/$pkgname/$BIN_NAME$exe
 
               if [[ $platform =~ "linux" ]]; then
-                  mv "bins-$platform/rustscan_${TAG}_amd64.deb" dist/
+                  mv "$dir/rustscan_${TAG}_amd64.deb" dist/ || true
               fi
 
-              if [ "$exe" = "" ]; then
-                  tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
-              else
-                  (cd tmp && 7z a -r ../dist/$pkgname.zip $pkgname)
-              fi
+              tar cJf dist/$pkgname.tar.xz -C tmp $pkgname
+              7z a dist/$pkgname.zip tmp/$pkgname
           done
 
       - name: Upload binaries to release
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'release'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: dist/*
           file_glob: true
-          tag: ${{ steps.tagname.outputs.val }}
+          tag: ${{ github.ref }}
           overwrite: true
 
-      - name: Extract version
-        id: extract-version
-        run: |
-          printf "::set-output name=%s::%s\n" tag-name "${GITHUB_REF#refs/tags/}"
-      - uses: mislav/bump-homebrew-formula-action@v3
-        with:
-          formula-path: ${{env.PROJECT_NAME}}.rb
-          homebrew-tap: ${{ env.BREW_TAP }}
-          download-url: 'https://github.com/${{ env.REPO_NAME }}/releases/download/${{ steps.extract-version.outputs.tag-name }}/${{env.PROJECT_NAME}}-${{ steps.extract-version.outputs.tag-name }}-x86_64-macos.tar.xz'
-          commit-message: updating formula for ${{ env.PROJECT_NAME }}
-        env:
-          COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
-        #
-        # you can use this initial file in your homebrew-tap if you don't have an initial formula:
-        # <projectname>.rb
-        #
-        # class <Projectname capitalized> < Formula
-        #   desc "A test formula"
-        #   homepage "http://www.example.com"
-        #   url "-----"
-        #   version "-----"
-        #   sha256 "-----"
+      # - uses: mislav/bump-homebrew-formula-action@v3
+      #   with:
+      #     formula-path: ${{env.PROJECT_NAME}}.rb
+      #     homebrew-tap: ${{ env.BREW_TAP }}
+      #     download-url: 'https://github.com/${{ env.REPO_NAME }}/releases/download/${{ github.ref }}/${{env.PROJECT_NAME}}-${{ github.ref }}-x86_64-macos.tar.xz'
+      #     commit-message: updating formula for ${{ env.PROJECT_NAME }}
+      #   env:
+      #     COMMITTER_TOKEN: ${{ secrets.COMMITTER_TOKEN }}
 
-        #   def install
-        #     bin.install "<bin-name>"
-        #   end
-        # end
-
-      # Uncomment this section if you want to release your package to crates.io
-      # Before publishing, make sure you have filled out the following fields:
-      # license or license-file, description, homepage, documentation, repository, readme.
-      # Read more: https://doc.rust-lang.org/cargo/reference/publishing.html
-
-      - name: Install ${{ matrix.rust }} toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          target: ${{ matrix.target }}
       - run: cargo publish --token ${CRATES_TOKEN}
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'release'
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
