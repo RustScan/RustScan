@@ -389,7 +389,6 @@ mod tests {
             script_f.ports_separator,
             script_f.tags,
             script_f.call_format,
-            script_f.call_format_udp,
         )
     }
 
