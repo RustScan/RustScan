@@ -2,7 +2,7 @@ pub mod udp_payload {
     // const MAX_PAYLOAD_IPV4: usize = 65507; // 65,535 - 20 (IP header) - 8 (UDP header)
     // const MAX_PAYLOAD_IPV6: usize = 65527; // 65,535 - 40 (IPv6 header) - 8 (UDP header)
 
-    /// From RFC 768
+    /// From [RFC 768](https://www.rfc-editor.org/rfc/rfc768.txt)
     /// We send blank UDP packets, unless the port is determined to be special.
     ///
     /// ```text
@@ -48,6 +48,7 @@ pub mod udp_payload {
         [version, community_string, pdu_type, enterprise_oid].concat()
     }
 
+    /// From [RFC 1592](https://www.rfc-editor.org/rfc/rfc1592.txt)
     /// Crafts an SNMP packet based on the structure from RFC 1592.
     ///
     /// RFC 1592 defines the structure of an SNMP packet as follows
@@ -262,7 +263,7 @@ pub mod udp_payload {
         packet
     }
 
-    /// Creates the simplest ntp packet possibl
+    /// Creates the simplest NTP packet possible
     /// 0x1b followed by 47 0s, (Version = 3, Mode = 3)
     pub fn craft_ntp_packet() -> Vec<u8> {
         let mut packet = vec![0u8; 48];

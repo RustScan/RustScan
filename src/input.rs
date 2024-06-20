@@ -151,7 +151,7 @@ pub struct Opts {
     #[arg(short, long, value_delimiter = ',')]
     pub exclude_ports: Option<Vec<u16>>,
 
-    /// UDP scanning mode, finds udp ports that send back responses
+    /// UDP scanning mode, finds UDP ports that send back responses
     #[arg(long)]
     pub udp: bool,
 }

@@ -152,12 +152,12 @@ impl Scanner {
         let tries = self.tries.get();
         for nr_try in 1..=tries {
             match self.connect(socket).await {
-                Ok(x) => {
+                Ok(tcp_stream) => {
                     debug!(
                         "Connection was successful, shutting down stream {}",
                         &socket
                     );
-                    if let Err(e) = x.shutdown(Shutdown::Both) {
+                    if let Err(e) = tcp_stream.shutdown(Shutdown::Both) {
                         debug!("Shutdown stream error {}", &e);
                     }
                     self.fmt_ports(socket);
@@ -214,7 +214,7 @@ impl Scanner {
     /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
     /// let socket = SocketAddr::new(ip, port);
     /// scanner.udp_bind(socket);
-    /// // returns Result which is either Ok(stream) for port is open, or Er for port is closed.
+    /// // returns Result which is either Ok(stream) for port is open, or Err for port is closed.
     /// // Timeout occurs after self.timeout seconds
     /// ```
     ///
@@ -249,15 +249,15 @@ impl Scanner {
         wait: Duration,
     ) -> io::Result<bool> {
         match self.udp_bind(socket).await {
-            Ok(x) => {
+            Ok(udp_socket) => {
                 let mut buf = [0u8; 1024];
 
-                x.connect(socket).await?;
-                x.send(&payload).await?;
+                udp_socket.connect(socket).await?;
+                udp_socket.send(&payload).await?;
 
-                match io::timeout(wait, x.recv(&mut buf)).await {
+                match io::timeout(wait, udp_socket.recv(&mut buf)).await {
                     Ok(size) => {
-                        println!("Recived {} bytes", size);
+                        debug!("Recieved {} bytes", size);
                         self.fmt_ports(socket);
                         Ok(true)
                     }
