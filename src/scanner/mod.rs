@@ -135,12 +135,11 @@ impl Scanner {
     /// Note: `self` must contain `self.ip`.
     async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
         if self.udp {
-            let waits = vec![0, 51, 107, 313];
             let payload = cust_payload(socket.port());
 
-            for &wait_ms in &waits {
-                let wait = Duration::from_millis(wait_ms);
-                match self.udp_scan(socket, &payload, wait).await {
+            let tries = self.tries.get();
+            for _ in 1..=tries {
+                match self.udp_scan(socket, &payload, self.timeout).await {
                     Ok(true) => return Ok(socket),
                     Ok(false) => continue,
                     Err(e) => return Err(e),
@@ -257,7 +256,7 @@ impl Scanner {
 
                 match io::timeout(wait, udp_socket.recv(&mut buf)).await {
                     Ok(size) => {
-                        debug!("Recieved {} bytes", size);
+                        debug!("Received {} bytes", size);
                         self.fmt_ports(socket);
                         Ok(true)
                     }
