@@ -252,7 +252,7 @@ impl Scanner {
                 let mut buf = [0u8; 1024];
 
                 udp_socket.connect(socket).await?;
-                udp_socket.send(&payload).await?;
+                udp_socket.send(payload).await?;
 
                 match io::timeout(wait, udp_socket.recv(&mut buf)).await {
                     Ok(size) => {
