@@ -150,6 +150,10 @@ pub struct Opts {
     /// A list of comma separated ports to be excluded from scanning. Example: 80,443,8080.
     #[arg(short, long, value_delimiter = ',')]
     pub exclude_ports: Option<Vec<u16>>,
+
+    /// UDP scanning mode, finds UDP ports that send back responses
+    #[arg(long)]
+    pub udp: bool,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -189,7 +193,7 @@ impl Opts {
 
         merge_required!(
             addresses, greppable, accessible, batch_size, timeout, tries, scan_order, scripts,
-            command
+            command, udp
         );
     }
 
@@ -237,6 +241,7 @@ impl Default for Opts {
             scripts: ScriptsRequired::Default,
             config_path: None,
             exclude_ports: None,
+            udp: false,
         }
     }
 }
@@ -261,6 +266,7 @@ pub struct Config {
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
     exclude_ports: Option<Vec<u16>>,
+    udp: Option<bool>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -276,6 +282,7 @@ impl Config {
     /// greppable = true
     /// scan_order: "Serial"
     /// exclude_ports = [8080, 9090, 80]
+    /// udp = false
     ///
     pub fn read(custom_config_path: Option<PathBuf>) -> Self {
         let mut content = String::new();
@@ -332,6 +339,7 @@ mod tests {
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
                 exclude_ports: None,
+                udp: Some(false),
             }
         }
     }

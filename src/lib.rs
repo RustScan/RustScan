@@ -31,6 +31,7 @@
 //!         strategy,
 //!         true,
 //!         vec![9000],
+//!         false,
 //!     );
 //!
 //!     let scan_result = block_on(scanner.run());
@@ -53,3 +54,5 @@ pub mod benchmark;
 pub mod scripts;
 
 pub mod address;
+
+pub mod udp_packets;

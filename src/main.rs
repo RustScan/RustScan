@@ -83,6 +83,8 @@ fn main() {
     // Added by wasuaje - 01/26/2024:
     // exclude_ports  is an exclusion port list
     //
+    // Added by brendanglancy - 5/19/2024:
+    // udp is an option to do a udp scan
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -92,6 +94,7 @@ fn main() {
         PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
         opts.accessible,
         opts.exclude_ports.unwrap_or_default(),
+        opts.udp,
     );
     debug!("Scanner finished building: {:?}", scanner);
 
