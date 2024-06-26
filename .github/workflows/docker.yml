@@ -30,7 +30,7 @@ jobs:
           flavor: latest=true
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: ${{ contains(fromJson('["push", "release"]'), github.event_name) }} # Publish to docker registry only on push event or new release.
