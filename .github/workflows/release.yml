@@ -64,8 +64,8 @@ jobs:
             cross: false
 
     steps:
-      - name: Set Git config. (windows only)
-        if: contains(matrix.build, 'windows') # Windows is missing some dependencies
+      - name: Set Git config (windows only)
+        if: contains(matrix.os, 'windows') # Windows is missing some dependencies
         run: |
           git config --global pack.windowMemory "100m"
           git config --global pack.packSizeLimit "100m"
