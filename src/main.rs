@@ -45,7 +45,7 @@ fn main() {
 
     debug!("Main() `opts` arguments are {:?}", opts);
 
-    let scripts_to_run: Vec<ScriptFile> = match init_scripts(opts.scripts) {
+    let scripts_to_run: Vec<ScriptFile> = match init_scripts(&opts.scripts) {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
