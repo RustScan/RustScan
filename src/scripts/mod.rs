@@ -79,7 +79,6 @@ use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::{self, File};
 use std::io::{self, prelude::*};
@@ -96,7 +95,7 @@ call_format = "nmap -vvv -p {{port}} {{ip}}"
 "#;
 
 #[cfg(not(tarpaulin_include))]
-pub fn init_scripts<'a>(scripts: &'a ScriptsRequired) -> Result<Vec<ScriptFile>> {
+pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
     match scripts {
