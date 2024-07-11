@@ -100,14 +100,15 @@ pub fn init_scripts<'a>(scripts: &'a ScriptsRequired) -> Result<Vec<ScriptFile>>
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
     match scripts {
-        ScriptsRequired::None => {},
+        ScriptsRequired::None => {}
         ScriptsRequired::Default => {
             let default_script =
                 toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
             scripts_to_run.push(default_script);
         }
         ScriptsRequired::Custom => {
-            let scripts_dir_base = dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?;
+            let scripts_dir_base =
+                dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?;
             let script_paths = find_scripts(scripts_dir_base)?;
             debug!("Scripts paths \n{:?}", script_paths);
 
@@ -121,7 +122,10 @@ pub fn init_scripts<'a>(scripts: &'a ScriptsRequired) -> Result<Vec<ScriptFile>>
             if let Some(config_hashset) = script_config.tags {
                 for script in parsed_scripts {
                     if let Some(script_hashset) = &script.tags {
-                        if script_hashset.iter().all(|tag| config_hashset.contains(tag)) {
+                        if script_hashset
+                            .iter()
+                            .all(|tag| config_hashset.contains(tag))
+                        {
                             scripts_to_run.push(script);
                         } else {
                             debug!(
