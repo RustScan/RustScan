@@ -210,8 +210,8 @@ impl Opts {
 
         // Only use top ports when the user asks for them
         if self.top && config.ports.is_some() {
-            let mut ports: Vec<u16> = Vec::with_capacity(config.ports.clone().unwrap().len());
-            for entry in config.ports.clone().unwrap().keys() {
+            let mut ports: Vec<u16> = Vec::with_capacity(config.ports.as_ref().unwrap().len());
+            for entry in config.ports.as_ref().unwrap().keys() {
                 ports.push(entry.parse().unwrap());
             }
             self.ports = Some(ports);

@@ -1,6 +1,6 @@
 [package]
 name = "rustscan"
-version = "2.2.4-rc1"
+version = "2.3.0"
 authors = ["Autumn <autumn@skerritt.blog>"]
 edition = "2018"
 description = "Faster Nmap Scanning with Rust"
@@ -17,12 +17,12 @@ exclude = [
 ]
 
 [dependencies]
-clap = { version = "4.5.7", features = ["derive", "wrap_help"] }
+clap = { version = "4.5.9", features = ["derive", "wrap_help"] }
 colored = "2.1.0"
 async-std = "1.7.0"
 futures = "0.3"
 rlimit = "0.10.1"
-log = "0.4.0"
+log = "0.4.22"
 env_logger = "0.11.3"
 anstream = "=0.6.14"
 dirs = "5.0.1"
