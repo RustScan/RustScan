@@ -81,10 +81,10 @@ fn main() {
     let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
     // Added by wasuaje - 01/26/2024:
-    // exclude_ports  is an exclusion port list
+    // exclude_ports is an exclusion port list
     //
     // Added by brendanglancy - 5/19/2024:
-    // udp is an option to do a udp scan
+    // udp is an option to do an udp scan
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -209,7 +209,7 @@ fn print_opening(opts: &Opts) {
     let info = format!(
         "{}\n{}\n{}\n{}",
         r#"________________________________________"#,
-        r#": http://discord.skerritt.blog         :"#,
+        r#": https://discord.skerritt.blog         :"#,
         r#": https://github.com/RustScan/RustScan :"#,
         r#" --------------------------------------"#
     );
@@ -268,7 +268,7 @@ fn infer_batch_size(opts: &Opts, ulimit: u64) -> u16 {
         // selected a batch size higher than this we should reduce it to
         // a lower number.
         if ulimit < AVERAGE_BATCH_SIZE.into() {
-            // ulimit is smaller than aveage batch size
+            // ulimit is smaller than average batch size
             // user must have very small ulimit
             // decrease batch size to half of ulimit
             warning!("Your file limit is very small, which negatively impacts RustScan's speed. Use the Docker image, or up the Ulimit with '--ulimit 5000'. ", opts.greppable, opts.accessible);

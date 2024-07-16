@@ -23,7 +23,7 @@ use std::{
 /// start & end is where the port scan starts and ends
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
-/// greppable is whether or not RustScan should print things, or wait until the end to print only the ip and open ports.
+/// greppable is whether RustScan should print things, or wait until the end to print only the ip and open ports.
 /// Added by wasuaje - 01/26/2024:
 ///     exclude_ports  is an exclusion port list
 #[cfg(not(tarpaulin_include))]
@@ -119,10 +119,10 @@ impl Scanner {
         open_sockets
     }
 
-    /// Given a socket, scan it self.tries times.
+    /// Given a socket, scan it `self.trie`s times.
     /// Turns the address into a SocketAddr
     /// Deals with the `<result>` type
-    /// If it experiences error ErrorKind::Other then too many files are open and it Panics!
+    /// If it experiences error ErrorKind::Other, then too many files are open and it Panics!
     /// Else any other error, it returns the error in Result as a string
     /// If no errors occur, it returns the port number in Result to signify the port is open.
     /// This function mainly deals with the logic of Results handling.
@@ -203,7 +203,7 @@ impl Scanner {
         Ok(stream)
     }
 
-    /// Binds to a UDP socket so we can send and recieve packets
+    /// Binds to a UDP socket, so we can send and receive packets
     /// # Example
     ///
     /// ```compile_fail

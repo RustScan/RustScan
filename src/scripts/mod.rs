@@ -39,7 +39,7 @@
 //! will also have to be present in the [`ScriptFile`], otherwise the script
 //! will not be selected.
 //!
-//! All of the `rustscan_script.toml` tags have to be present at minimum in a
+//! All the `rustscan_script.toml` tags have to be present at minimum in a
 //! [`ScriptFile`] to get selected, but can be also more.
 //!
 //! Config file example:
