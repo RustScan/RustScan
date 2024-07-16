@@ -203,7 +203,7 @@ impl Scanner {
         Ok(stream)
     }
 
-    /// Binds to a UDP socket, so we can send and receive packets
+    /// Binds to an UDP socket, so we can send and receive packets
     /// # Example
     ///
     /// ```compile_fail
@@ -226,7 +226,7 @@ impl Scanner {
         UdpSocket::bind(local_addr).await
     }
 
-    /// Performs a UDP scan on the specified socket with a payload and wait duration
+    /// Performs an UDP scan on the specified socket with a payload and wait duration
     /// # Example
     ///
     /// ```compile_fail
