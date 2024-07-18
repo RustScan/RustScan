@@ -119,7 +119,7 @@ impl Scanner {
         open_sockets
     }
 
-    /// Given a socket, scan it `self.trie`s times.
+    /// Given a socket, scan it `self.tries` times.
     /// Turns the address into a SocketAddr
     /// Deals with the `<result>` type
     /// If it experiences error ErrorKind::Other, then too many files are open and it Panics!
@@ -203,7 +203,7 @@ impl Scanner {
         Ok(stream)
     }
 
-    /// Binds to an UDP socket, so we can send and receive packets
+    /// Binds to a UDP socket, so we can send and receive packets
     /// # Example
     ///
     /// ```compile_fail
@@ -226,7 +226,7 @@ impl Scanner {
         UdpSocket::bind(local_addr).await
     }
 
-    /// Performs an UDP scan on the specified socket with a payload and wait duration
+    /// Performs a UDP scan on the specified socket with a payload and wait duration
     /// # Example
     ///
     /// ```compile_fail
