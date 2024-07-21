@@ -62,6 +62,7 @@ impl Scanner {
         port_strategy: PortStrategy,
         accessible: bool,
         exclude_ports: Vec<u16>,
+        udp: bool,
     ) -> Self {
         let inner = ScannerInner {
             batch_size,
@@ -145,6 +146,7 @@ impl Scanner {
     async fn scan_socket(self, socket: SocketAddr) -> io::Result<SocketAddr> {
         let tries = self.0.tries.get();
 
+        let tries = self.tries.get();
         for nr_try in 1..=tries {
             match self.connect(socket).await {
                 Ok(mut x) => {
@@ -205,6 +207,90 @@ impl Scanner {
             .await??;
         Ok(stream)
     }
+
+    /// Binds to a UDP socket so we can send and recieve packets
+    /// # Example
+    ///
+    /// ```compile_fail
+    /// # use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    /// let port: u16 = 80;
+    /// // ip is an IpAddr type
+    /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    /// let socket = SocketAddr::new(ip, port);
+    /// scanner.udp_bind(socket);
+    /// // returns Result which is either Ok(stream) for port is open, or Err for port is closed.
+    /// // Timeout occurs after self.timeout seconds
+    /// ```
+    ///
+    async fn udp_bind(&self, socket: SocketAddr) -> io::Result<UdpSocket> {
+        let local_addr = match socket {
+            SocketAddr::V4(_) => "0.0.0.0:0".parse::<SocketAddr>().unwrap(),
+            SocketAddr::V6(_) => "[::]:0".parse::<SocketAddr>().unwrap(),
+        };
+
+        UdpSocket::bind(local_addr).await
+    }
+
+    /// Performs a UDP scan on the specified socket with a payload and wait duration
+    /// # Example
+    ///
+    /// ```compile_fail
+    /// # use std::net::{IpAddr, Ipv6Addr, SocketAddr};
+    /// # use std::time::Duration;
+    /// let port: u16 = 123;
+    /// // ip is an IpAddr type
+    /// let ip = IpAddr::V6(Ipv6Addr::new(0, 0, 0, 0, 0, 0, 0, 1));
+    /// let socket = SocketAddr::new(ip, port);
+    /// let payload = vec![0, 1, 2, 3];
+    /// let wait = Duration::from_secs(1);
+    /// let result = scanner.udp_scan(socket, payload, wait).await;
+    /// // returns Result which is either Ok(true) if response received, or Ok(false) if timed out.
+    /// // Err is returned for other I/O errors.
+    async fn udp_scan(
+        &self,
+        socket: SocketAddr,
+        payload: &[u8],
+        wait: Duration,
+    ) -> io::Result<bool> {
+        match self.udp_bind(socket).await {
+            Ok(udp_socket) => {
+                let mut buf = [0u8; 1024];
+
+                udp_socket.connect(socket).await?;
+                udp_socket.send(payload).await?;
+
+                match io::timeout(wait, udp_socket.recv(&mut buf)).await {
+                    Ok(size) => {
+                        debug!("Received {} bytes", size);
+                        self.fmt_ports(socket);
+                        Ok(true)
+                    }
+                    Err(e) => {
+                        if e.kind() == io::ErrorKind::TimedOut {
+                            Ok(false)
+                        } else {
+                            Err(e)
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                println!("Err E binding sock {:?}", e);
+                Err(e)
+            }
+        }
+    }
+
+    /// Formats and prints the port status
+    fn fmt_ports(&self, socket: SocketAddr) {
+        if !self.greppable {
+            if self.accessible {
+                println!("Open {socket}");
+            } else {
+                println!("Open {}", socket.to_string().purple());
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -233,6 +319,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         scanner.run().await;
     }
@@ -254,6 +341,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
 
         scanner.run().await;
@@ -275,6 +363,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         scanner.run().await;
     }
@@ -295,6 +384,7 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
         );
         scanner.run().await;
     }
@@ -318,6 +408,100 @@ mod tests {
             strategy,
             true,
             vec![9000],
+            false,
+        );
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn udp_scan_runs() {
+        // Makes sure the program still runs and doesn't panic
+        let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_ipv6_runs() {
+        // Makes sure the program still runs and doesn't panic
+        let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_quad_zero_scanner_runs() {
+        let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+        );
+        block_on(scanner.run());
+        assert_eq!(1, 1);
+    }
+    #[test]
+    fn udp_google_dns_runs() {
+        let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 100,
+            end: 150,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
         );
         scanner.run().await;
     }

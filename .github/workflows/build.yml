@@ -1,9 +1,13 @@
 name: Build
 on:
   pull_request:
+    paths-ignore:
+      - '.github/**'
   push:
     branches:
       - master
+    paths-ignore:
+      - '.github/**'
   schedule:
     - cron: '00 01 * * *'
 

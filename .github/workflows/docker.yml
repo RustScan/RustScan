@@ -1,11 +1,11 @@
-name: Publish Docker image
+name: Release - Distribute Docker image
 
 on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
-  release:
-    types: [published]
+  # release:
+  #   types: [published]
 
 jobs:
   push_to_registry:
@@ -30,7 +30,7 @@ jobs:
           flavor: latest=true
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: ${{ contains(fromJson('["push", "release"]'), github.event_name) }} # Publish to docker registry only on push event or new release.
