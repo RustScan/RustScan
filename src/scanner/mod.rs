@@ -1,24 +1,26 @@
 //! Core functionality for actual scanning behaviour.
-use crate::port_strategy::PortStrategy;
-use log::debug;
-
-mod socket_iterator;
-use socket_iterator::SocketIterator;
-
-use tokio::io;
-use tokio::net::TcpStream;
-use colored::Colorize;
+use std::collections::HashSet;
+use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
 use std::{
     net::{IpAddr, SocketAddr},
     num::NonZeroU8,
     time::Duration,
 };
-use std::collections::HashSet;
-use std::fmt::{Debug, Formatter};
-use std::sync::Arc;
-use tokio::io::AsyncWriteExt;
-use tokio::task::JoinSet;
 
+use colored::Colorize;
+use futures::StreamExt;
+use log::debug;
+use tokio::io;
+use tokio::io::AsyncWriteExt;
+use tokio::net::TcpStream;
+use tokio_par_stream::FuturesParallelUnordered;
+
+use socket_iterator::SocketIterator;
+
+use crate::port_strategy::PortStrategy;
+
+mod socket_iterator;
 /// The class for the scanner
 /// IP is data type IpAddr and is the IP address
 /// start & end is where the port scan starts and ends
@@ -71,7 +73,7 @@ impl Scanner {
             accessible,
             exclude_ports: exclude_ports.into_boxed_slice(),
         };
-        
+
         Self(Arc::new(inner))
     }
 
@@ -82,21 +84,19 @@ impl Scanner {
     ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports = {
-            let mut ports = self.0
-                .port_strategy
-                .order();
+            let mut ports = self.0.port_strategy.order();
             ports.retain(|port| !self.0.exclude_ports.contains(port));
             ports
         };
 
         let mut socket_iterator = SocketIterator::new(&self.0.ips, &ports);
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        let mut ftrs = JoinSet::new();
+        let mut ftrs = FuturesParallelUnordered::new();
         let mut errors: HashSet<String> = HashSet::new();
 
         for _ in 0..self.0.batch_size {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.spawn(self.clone().scan_socket(socket));
+                ftrs.push(self.clone().scan_socket(socket));
             } else {
                 break;
             }
@@ -108,14 +108,14 @@ impl Scanner {
             &ports.len(),
             self.0.ips.len() * ports.len());
 
-        while let Some(result) = ftrs.join_next().await {
+        while let Some(result) = ftrs.next().await {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.spawn(self.clone().scan_socket(socket));
+                ftrs.push(self.clone().scan_socket(socket));
             }
 
-            match result.map_err(io::Error::from) {
-                Ok(Ok(socket)) => open_sockets.push(socket),
-                Err(err) | Ok(Err(err)) => {
+            match result {
+                Ok(socket) => open_sockets.push(socket),
+                Err(err) => {
                     let error_string = err.to_string();
                     if errors.len() < self.0.ips.len() * 1000 {
                         errors.insert(error_string);
@@ -197,20 +197,23 @@ impl Scanner {
     /// ```
     ///
     async fn connect(&self, socket: SocketAddr) -> io::Result<TcpStream> {
-        let stream = tokio::time::timeout(
-            self.0.timeout,
-            async move { TcpStream::connect(socket).await },
-        )
-        .await??;
+        let stream =
+            tokio::time::timeout(
+                self.0.timeout,
+                async move { TcpStream::connect(socket).await },
+            )
+            .await??;
         Ok(stream)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::input::{PortRange, ScanOrder};
     use std::{net::IpAddr, time::Duration};
+
+    use crate::input::{PortRange, ScanOrder};
+
+    use super::*;
 
     #[tokio::test]
     async fn scanner_runs() {

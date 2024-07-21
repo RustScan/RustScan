@@ -139,12 +139,9 @@ fn get_resolver(resolver: &Option<String>) -> Resolver {
             }
             Resolver::new(config, ResolverOpts::default()).unwrap()
         }
-        None => match Resolver::from_system_conf() {
-            Ok(resolver) => resolver,
-            Err(_) => {
-                Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap()
-            }
-        },
+        None => Resolver::from_system_conf().unwrap_or_else(|_| {
+            Resolver::new(ResolverConfig::cloudflare_tls(), ResolverOpts::default()).unwrap()
+        }),
     }
 }
 
@@ -161,7 +158,7 @@ fn read_resolver_from_file(path: &str) -> Result<Vec<IpAddr>, std::io::Error> {
 #[cfg(not(tarpaulin_include))]
 /// Parses an input file of IPs and uses those
 fn read_ips_from_file(
-    ips: &std::path::Path,
+    ips: &Path,
     backup_resolver: &Resolver,
 ) -> Result<Vec<IpAddr>, std::io::Error> {
     let file = File::open(ips)?;
@@ -182,13 +179,16 @@ fn read_ips_from_file(
 
 #[cfg(test)]
 mod tests {
-    use super::{get_resolver, parse_addresses, Opts};
     use std::net::Ipv4Addr;
+
+    use super::{get_resolver, parse_addresses, Opts};
 
     #[test]
     fn parse_correct_addresses() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()];
+        let opts = Opts {
+            addresses: vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(
@@ -205,8 +205,10 @@ mod tests {
 
     #[test]
     fn parse_correct_host_addresses() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["google.com".to_owned()];
+        let opts = Opts {
+            addresses: vec!["google.com".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips.len(), 1);
@@ -214,8 +216,10 @@ mod tests {
 
     #[test]
     fn parse_correct_and_incorrect_addresses() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()];
+        let opts = Opts {
+            addresses: vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(ips, [Ipv4Addr::new(127, 0, 0, 1),]);
@@ -223,8 +227,10 @@ mod tests {
 
     #[test]
     fn parse_incorrect_addresses() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()];
+        let opts = Opts {
+            addresses: vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert!(ips.is_empty());
@@ -232,8 +238,10 @@ mod tests {
     #[test]
     fn parse_hosts_file_and_incorrect_hosts() {
         // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
-        let mut opts = Opts::default();
-        opts.addresses = vec!["fixtures/hosts.txt".to_owned()];
+        let opts = Opts {
+            addresses: vec!["fixtures/hosts.txt".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 3);
     }
@@ -241,8 +249,10 @@ mod tests {
     #[test]
     fn parse_empty_hosts_file() {
         // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
-        let mut opts = Opts::default();
-        opts.addresses = vec!["fixtures/empty_hosts.txt".to_owned()];
+        let opts = Opts {
+            addresses: vec!["fixtures/empty_hosts.txt".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 0);
     }
@@ -250,8 +260,10 @@ mod tests {
     #[test]
     fn parse_naughty_host_file() {
         // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
-        let mut opts = Opts::default();
-        opts.addresses = vec!["fixtures/naughty_string.txt".to_owned()];
+        let opts = Opts {
+            addresses: vec!["fixtures/naughty_string.txt".to_owned()],
+            ..Opts::default()
+        };
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 0);
     }
@@ -269,9 +281,11 @@ mod tests {
 
     #[test]
     fn resolver_args_google_dns() {
-        let mut opts = Opts::default();
+        let opts = Opts {
+            resolver: Some("8.8.8.8,8.8.4.4".to_owned()),
+            ..Opts::default()
+        };
         // https://developers.google.com/speed/public-dns
-        opts.resolver = Some("8.8.8.8,8.8.4.4".to_owned());
 
         let resolver = get_resolver(&opts.resolver);
         let lookup = resolver.lookup_ip("www.example.com.").unwrap();

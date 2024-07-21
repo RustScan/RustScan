@@ -2,7 +2,7 @@
 name = "rustscan"
 version = "2.2.3"
 authors = ["Autumn <autumn@skerritt.blog>"]
-edition = "2018"
+edition = "2021"
 description = "Faster Nmap Scanning with Rust"
 homepage = "https://github.com/rustscan/rustscan"
 repository = "https://github.com/rustscan/rustscan"
@@ -17,12 +17,12 @@ exclude = [
 ]
 
 [dependencies]
-tokio = { version = "1.37.0", features = ["net", "io-util"] }
+tokio = { version = "1.38.1", features = ["net", "io-util"] }
 colored = "2.1.0"
 structopt = "0.3.20"
 futures = "0.3"
 rlimit = "0.10.1"
-log = "0.4.21"
+log = "0.4.22"
 env_logger = "0.11.3"
 dirs = "5.0.1"
 gcd = "2.0.1"
@@ -33,14 +33,15 @@ toml = "0.8.12"
 serde = "1.0.201"
 serde_derive = "1.0.116"
 cidr-utils = "0.6.1"
-itertools = "0.12.1"
+itertools = "0.13.0"
 hickory-resolver = { version = "0.24.1", features = ["dns-over-rustls"] }
 anyhow = "1.0.83"
 subprocess = "0.2.9"
 text_placeholder = { version = "0.5", features = ["struct_context"] }
+tokio-par-stream = "0.1.1"
 
 [dev-dependencies]
-tokio = { version = "1.37.0", features = ["rt", "macros"] }
+tokio = { version = "1.38.1", features = ["rt", "macros"] }
 wait-timeout = "0.2.0"
 
 [package.metadata.deb]

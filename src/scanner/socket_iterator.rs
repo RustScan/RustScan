@@ -1,6 +1,7 @@
 use std::iter::Copied;
-use itertools::{iproduct, Product};
 use std::net::{IpAddr, SocketAddr};
+
+use itertools::{iproduct, Product};
 
 pub struct SocketIterator<'s> {
     // product_it is a cartesian product iterator over
@@ -11,8 +12,7 @@ pub struct SocketIterator<'s> {
     // all the IPs for one port before moving on to the next one
     // ("hold the port, go through all the IPs, then advance the port...").
     // See also the comments in the iterator implementation for an example.
-    product_it:
-        Product<Copied<std::slice::Iter<'s, u16>>, Copied<std::slice::Iter<'s, IpAddr>>>,
+    product_it: Product<Copied<std::slice::Iter<'s, u16>>, Copied<std::slice::Iter<'s, IpAddr>>>,
 }
 
 /// An iterator that receives a slice of IPs and ports and returns a Socket
@@ -53,8 +53,9 @@ impl<'s> Iterator for SocketIterator<'s> {
 
 #[cfg(test)]
 mod tests {
-    use super::SocketIterator;
     use std::net::{IpAddr, SocketAddr};
+
+    use super::SocketIterator;
 
     #[test]
     fn goes_through_every_ip_port_combination() {

@@ -1,8 +1,9 @@
 //! Provides a means to read, parse and hold configuration options for scans.
-use serde_derive::Deserialize;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
+
+use serde_derive::Deserialize;
 use structopt::{clap::arg_enum, StructOpt};
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -280,10 +281,7 @@ impl Config {
         let mut content = String::new();
         let config_path = custom_config_path.unwrap_or_else(default_config_path);
         if config_path.exists() {
-            content = match fs::read_to_string(config_path) {
-                Ok(content) => content,
-                Err(_) => String::new(),
-            }
+            content = fs::read_to_string(config_path).unwrap_or_default()
         }
 
         let config: Config = match toml::from_str(&content) {
@@ -310,6 +308,7 @@ pub fn default_config_path() -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::{Config, Opts, PortRange, ScanOrder, ScriptsRequired};
+
     impl Config {
         fn default() -> Self {
             Self {
@@ -338,11 +337,11 @@ mod tests {
 
         opts.merge(&config);
 
-        assert_eq!(opts.addresses, vec![] as Vec<String>);
+        assert_eq!(opts.addresses, Vec::<String>::new());
         assert!(opts.greppable);
         assert!(!opts.accessible);
         assert_eq!(opts.timeout, 0);
-        assert_eq!(opts.command, vec![] as Vec<String>);
+        assert_eq!(opts.command, Vec::<String>::new());
         assert_eq!(opts.scan_order, ScanOrder::Serial);
     }
 
@@ -365,13 +364,15 @@ mod tests {
     #[test]
     fn opts_merge_optional_arguments() {
         let mut opts = Opts::default();
-        let mut config = Config::default();
-        config.range = Some(PortRange {
-            start: 1,
-            end: 1_000,
-        });
-        config.ulimit = Some(1_000);
-        config.resolver = Some("1.1.1.1".to_owned());
+        let config = Config {
+            range: Some(PortRange {
+                start: 1,
+                end: 1_000,
+            }),
+            ulimit: Some(1_000),
+            resolver: Some("1.1.1.1".to_owned()),
+            ..Config::default()
+        };
 
         opts.merge_optional(&config);
 

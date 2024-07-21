@@ -2,6 +2,19 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::doc_markdown, clippy::if_not_else, clippy::non_ascii_literal)]
 
+extern crate colorful;
+extern crate dirs;
+#[macro_use]
+extern crate log;
+use std::collections::HashMap;
+use std::net::IpAddr;
+use std::string::ToString;
+use std::time::Duration;
+
+use colorful::{Color, Colorful};
+use futures::executor::block_on;
+
+use rustscan::address::parse_addresses;
 use rustscan::benchmark::{Benchmark, NamedTimer};
 use rustscan::input::{self, Config, Opts, ScriptsRequired};
 use rustscan::port_strategy::PortStrategy;
@@ -9,26 +22,11 @@ use rustscan::scanner::Scanner;
 use rustscan::scripts::{init_scripts, Script, ScriptFile};
 use rustscan::{detail, funny_opening, output, warning};
 
-use colorful::{Color, Colorful};
-use futures::executor::block_on;
-use std::collections::HashMap;
-use std::net::IpAddr;
-use std::string::ToString;
-use std::time::Duration;
-
-use rustscan::address::parse_addresses;
-
-extern crate colorful;
-extern crate dirs;
-
 // Average value for Ubuntu
 #[cfg(unix)]
 const DEFAULT_FILE_DESCRIPTORS_LIMIT: u64 = 8000;
 // Safest batch size based on experimentation
 const AVERAGE_BATCH_SIZE: u16 = 3000;
-
-#[macro_use]
-extern crate log;
 
 #[cfg(not(tarpaulin_include))]
 #[allow(clippy::too_many_lines)]
@@ -82,7 +80,6 @@ fn main() {
 
     // Added by wasuaje - 01/26/2024:
     // exclude_ports  is an exclusion port list
-    //
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -352,9 +349,10 @@ mod tests {
 
     #[test]
     fn test_print_opening_no_panic() {
-        let mut opts = Opts::default();
-        opts.ulimit = Some(2_000);
         // print opening should not panic
-        print_opening(&opts);
+        print_opening(&Opts {
+            ulimit: Some(2_000),
+            ..Opts::default()
+        });
     }
 }
