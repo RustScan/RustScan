@@ -4,7 +4,7 @@
  *
  * The tests are #[ignore] to avoid running them during normal development.
  *
- * Their tests in the timelimits module are run by travis during CI.
+ * The tests in the timelimits module are run by travis during CI.
  */
 
 use std::process::Command;
