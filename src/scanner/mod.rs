@@ -1,6 +1,6 @@
 //! Core functionality for actual scanning behaviour.
+use crate::generated::get_parsed_data;
 use crate::port_strategy::PortStrategy;
-use crate::service_probe::f_btree;
 use log::debug;
 
 mod socket_iterator;
@@ -85,7 +85,7 @@ impl Scanner {
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
         let mut errors: HashSet<String> = HashSet::new();
-        let udp_map = f_btree();
+        let udp_map = get_parsed_data();
 
         for _ in 0..self.batch_size {
             if let Some(socket) = socket_iterator.next() {

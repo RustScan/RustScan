@@ -1442,6 +1442,7 @@ dependencies = [
  "gcd",
  "hickory-resolver",
  "itertools",
+ "lazy_static",
  "log",
  "parameterized",
  "rand",

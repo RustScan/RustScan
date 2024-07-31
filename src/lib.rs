@@ -55,4 +55,4 @@ pub mod scripts;
 
 pub mod address;
 
-pub mod service_probe;
+pub mod generated;

@@ -1,11 +1,13 @@
 use std::collections::BTreeMap;
-use std::fs::File;
+use std::fs::{self, File};
 
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use std::{env, i32, u16, u8};
 
-pub fn f_btree() -> BTreeMap<Vec<u16>, Vec<u8>> {
+pub fn main() {
+    let dest_path = PathBuf::from("src/generated.rs");
+
     // TODO fix file being in same dir thing
     let current_dir = env::current_dir().expect("cant find curr dir");
     let mut file_path = PathBuf::from(current_dir);
@@ -48,9 +50,29 @@ pub fn f_btree() -> BTreeMap<Vec<u16>, Vec<u8>> {
 
     let pb_linenr = ports_v(&fp_map);
     let payb_linenr = payloads_v(&fp_map);
-    let ppm = port_payload_map(pb_linenr, payb_linenr);
+    let map = port_payload_map(pb_linenr, payb_linenr);
 
-    ppm
+    let mut generated_code = String::new();
+    generated_code.push_str("use std::collections::BTreeMap;\n\n");
+    generated_code.push_str("pub fn get_parsed_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
+    generated_code.push_str("    let mut map = BTreeMap::new();\n");
+
+    for (ports, payloads) in map {
+        generated_code.push_str("    map.insert(vec![");
+        for port in ports {
+            generated_code.push_str(&format!("{},", port));
+        }
+        generated_code.push_str("], vec![");
+        for payload in payloads {
+            generated_code.push_str(&format!("{},", payload));
+        }
+        generated_code.push_str("]);\n");
+    }
+
+    generated_code.push_str("    map\n");
+    generated_code.push_str("}\n");
+
+    fs::write(dest_path, generated_code).unwrap();
 }
 
 fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
