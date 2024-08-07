@@ -88,11 +88,12 @@ use std::path::PathBuf;
 use std::string::ToString;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
+use std::str::FromStr;
 
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
-call_format = "nmap -vvv -p {{port}} {{ip}}"
+call_format = "nmap -vvv -p {{port}} -{{ipversion}} {{ip}}"
 "#;
 
 #[cfg(not(tarpaulin_include))]
@@ -193,12 +194,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
+    ipversion: String
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
+    ipversion: String
 }
 
 impl Script {
@@ -248,17 +251,28 @@ impl Script {
         let default_template: Template = Template::new(&final_call_format);
         let mut to_run = String::new();
 
+        //Get IP version
+        let ipversion = match std::net::Ipv4Addr::from_str(&self.ip.to_string()) {
+            Ok(_s) =>  4,
+            _ => match std::net::Ipv6Addr::from_str(&self.ip.to_string()) {
+                Ok(_s) => 6,
+                _ => panic!("Error finding IP version")
+            }
+        };
+
         if final_call_format.contains("{{script}}") {
             let exec_parts_script: ExecPartsScript = ExecPartsScript {
                 script: self.path.unwrap().to_str().unwrap().to_string(),
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: ipversion.to_string()
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
             let exec_parts: ExecParts = ExecParts {
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: ipversion.to_string()
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
