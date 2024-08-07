@@ -1,6 +1,7 @@
+use std::convert::TryInto;
+
 use gcd::Gcd;
 use rand::Rng;
-use std::convert::TryInto;
 
 pub struct RangeIterator {
     active: bool,
@@ -27,8 +28,7 @@ impl RangeIterator {
 
         // Randomly choose a number within the range to be the first
         // and assign it as a pick.
-        let mut rng = rand::thread_rng();
-        let normalized_first_pick = rng.gen_range(0..normalized_end);
+        let normalized_first_pick = rand::thread_rng().gen_range(0..normalized_end);
 
         Self {
             active: true,
@@ -103,23 +103,23 @@ mod tests {
     #[test]
     fn range_iterator_iterates_through_the_entire_range() {
         let result = generate_sorted_range(1, 10);
-        let expected_range = (1..=10).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=10).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 100);
-        let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=100).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 1000);
-        let expected_range = (1..=1000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=1000).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 65_535);
-        let expected_range = (1..=65_535).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=65_535).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1000, 2000);
-        let expected_range = (1000..=2000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1000..=2000).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
     }
 
