@@ -210,7 +210,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [toc-community]: https://github.com/RustScan/RustScan#-community "Community"
 [links-table-1]: https://github.com/RustScan/RustScan#-full-installation-guide "Full installation guide"
 [links-table-2]: https://rustscan.github.io/RustScan/ "Rustscan"
-[discord]: https://discord.skerritt.blog "Discord blog"
+[discord]: http://discord.skerritt.blog "Discord blog"
 [toc-install]: https://github.com/RustScan/RustScan/wiki/Installation-Guide "Installation Guide Wiki"
 [toc-docker-usage]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker- "Docker Installation Guide Wiki"
 [usage-guide]: https://github.com/RustScan/RustScan#-usage
