@@ -79,7 +79,6 @@ use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashSet;
 use std::convert::TryInto;
 use std::fs::{self, File};
 use std::io::{self, prelude::*};
@@ -96,60 +95,52 @@ call_format = "nmap -vvv -p {{port}} {{ip}}"
 "#;
 
 #[cfg(not(tarpaulin_include))]
-pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
+pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
     match scripts {
-        ScriptsRequired::None => Ok(scripts_to_run),
+        ScriptsRequired::None => {}
         ScriptsRequired::Default => {
             let default_script =
                 toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
             scripts_to_run.push(default_script);
-            Ok(scripts_to_run)
         }
         ScriptsRequired::Custom => {
-            let Some(scripts_dir_base) = dirs::home_dir() else {
-                return Err(anyhow!("Could not infer scripts path."));
-            };
-            let script_paths = match find_scripts(scripts_dir_base) {
-                Ok(script_paths) => script_paths,
-                Err(e) => return Err(anyhow!(e)),
-            };
+            let scripts_dir_base =
+                dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?;
+            let script_paths = find_scripts(scripts_dir_base)?;
             debug!("Scripts paths \n{:?}", script_paths);
 
             let parsed_scripts = parse_scripts(script_paths);
             debug!("Scripts parsed \n{:?}", parsed_scripts);
 
-            let script_config = match ScriptConfig::read_config() {
-                Ok(script_config) => script_config,
-                Err(e) => return Err(anyhow!(e)),
-            };
+            let script_config = ScriptConfig::read_config()?;
             debug!("Script config \n{:?}", script_config);
 
             // Only Scripts that contain all the tags found in ScriptConfig will be selected.
-            if script_config.tags.is_some() {
-                let config_hashset: HashSet<String> =
-                    script_config.tags.unwrap().into_iter().collect();
-                for script in &parsed_scripts {
-                    if script.tags.is_some() {
-                        let script_hashset: HashSet<String> =
-                            script.tags.clone().unwrap().into_iter().collect();
-                        if config_hashset.is_subset(&script_hashset) {
-                            scripts_to_run.push(script.clone());
+            if let Some(config_hashset) = script_config.tags {
+                for script in parsed_scripts {
+                    if let Some(script_hashset) = &script.tags {
+                        if script_hashset
+                            .iter()
+                            .all(|tag| config_hashset.contains(tag))
+                        {
+                            scripts_to_run.push(script);
                         } else {
                             debug!(
                                 "\nScript tags does not match config tags {:?} {}",
                                 &script_hashset,
-                                script.path.clone().unwrap().display()
+                                script.path.unwrap().display()
                             );
                         }
                     }
                 }
             }
             debug!("\nScript(s) to run {:?}", scripts_to_run);
-            Ok(scripts_to_run)
         }
     }
+
+    Ok(scripts_to_run)
 }
 
 pub fn parse_scripts(scripts: Vec<PathBuf>) -> Vec<ScriptFile> {
