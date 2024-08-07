@@ -68,9 +68,9 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
 )]
 #[allow(clippy::struct_excessive_bools)]
 /// Fast Port Scanner built in Rust.
-/// WARNING Do not use this program against sensitive infrastructure since the
-/// specified server may not be able to handle this many socket connections at once.
-/// - Discord  <http://discord.skerritt.blog>
+/// **WARNING** Do not use this program against sensitive infrastructure since the
+/// specified server may not be able to handle this many socket connections at once.{n}
+/// - Discord  <http://discord.skerritt.blog>{n}
 /// - GitHub <https://github.com/RustScan/RustScan>
 pub struct Opts {
     /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be scanned.
