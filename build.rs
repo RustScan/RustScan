@@ -59,13 +59,9 @@ pub fn main() {
 
     for (ports, payloads) in map {
         generated_code.push_str("    map.insert(vec![");
-        for port in ports {
-            generated_code.push_str(&format!("{},", port));
-        }
+        generated_code.push_str(&ports.iter().map(|&p| p.to_string()).collect::<Vec<_>>().join(","));
         generated_code.push_str("], vec![");
-        for payload in payloads {
-            generated_code.push_str(&format!("{},", payload));
-        }
+        generated_code.push_str(&payloads.iter().map(|&p| p.to_string()).collect::<Vec<_>>().join(","));
         generated_code.push_str("]);\n");
     }
 
