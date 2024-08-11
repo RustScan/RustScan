@@ -193,7 +193,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [kali]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali "Read the install guide"
 [Kali/Debian]: https://github.com/RustScan/RustScan/releases "Kali Debian"
 [Arch-Linux]: https://archlinux.org/packages/extra/x86_64/rustscan/ "Arch Linux installation of Rustscan"
-[Homebrew]: https://crates.io/crates/rustscan/ "Homebrew install of Rustscan"
+[Homebrew]: https://formulae.brew.sh/formula/rustscan "Homebrew install of Rustscan"
 [usage-1]: https://github.com/RustScan/RustScan/wiki/Usage "Basic Usage of Rustscan"
 [usage-0]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale "Use Docker Rustscan"
 [config-file-here]: https://github.com/RustScan/RustScan/wiki/Config-File "RustScan Configuration File"
