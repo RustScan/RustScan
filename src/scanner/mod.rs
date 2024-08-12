@@ -203,7 +203,7 @@ impl Scanner {
         Ok(stream)
     }
 
-    /// Binds to a UDP socket so we can send and recieve packets
+    /// Binds to a UDP socket so we can send and receive packets
     /// # Example
     ///
     /// ```compile_fail
