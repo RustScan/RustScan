@@ -255,7 +255,6 @@ impl Script {
                 script: self.path.unwrap().to_str().unwrap().to_string(),
                 ip: self.ip.to_string(),
                 port: ports_str,
-                //ipversion: ipversion.to_string()
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
                     IpAddr::V6(_) => String::from("6")
@@ -266,7 +265,6 @@ impl Script {
             let exec_parts: ExecParts = ExecParts {
                 ip: self.ip.to_string(),
                 port: ports_str,
-                //ipversion: ipversion.to_string()
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
                     IpAddr::V6(_) => String::from("6")
