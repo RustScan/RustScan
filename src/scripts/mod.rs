@@ -76,7 +76,6 @@
 #![allow(clippy::module_name_repetitions)]
 
 use crate::input::ScriptsRequired;
-use anstream::println;
 use anyhow::{anyhow, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
