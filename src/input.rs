@@ -208,11 +208,11 @@ impl Opts {
             }
         }
         // Only use defined ports in the configuration file
-        if config.ports.is_some() && !self.top{
+        if config.ports.is_some() && !self.top {
             self.ports = Some(Vec::new());
             for entry in config.ports.as_ref().unwrap().keys() {
                 self.ports.as_mut().unwrap().push(entry.parse().unwrap());
-            } 
+            }
         }
         // Only use top ports when the user asks for them
         if self.top {
