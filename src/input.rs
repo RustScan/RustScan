@@ -207,16 +207,20 @@ impl Opts {
                 )+
             }
         }
-
-        // Only use top ports when the user asks for them
-        if self.top && config.ports.is_some() {
-            let mut ports: Vec<u16> = Vec::with_capacity(config.ports.as_ref().unwrap().len());
+        // Only use defined ports in the configuration file
+        if config.ports.is_some() && !self.top{
+            self.ports = Some(Vec::new());
             for entry in config.ports.as_ref().unwrap().keys() {
-                ports.push(entry.parse().unwrap());
-            }
-            self.ports = Some(ports);
+                self.ports.as_mut().unwrap().push(entry.parse().unwrap());
+            } 
         }
-
+        // Only use top ports when the user asks for them
+        if self.top {
+            self.ports = Some(Vec::new());
+            for i in 1..=1000 {
+                self.ports.as_mut().unwrap().push(i);
+            }
+        }
         merge_optional!(range, resolver, ulimit, exclude_ports);
     }
 }
