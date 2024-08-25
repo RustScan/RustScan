@@ -58,3 +58,6 @@ strip = true
 [[bin]]
 name = "rustscan"
 path = "src/main.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
