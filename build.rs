@@ -53,19 +53,40 @@ pub fn main() {
     let map = port_payload_map(pb_linenr, payb_linenr);
 
     let mut generated_code = String::new();
-    generated_code.push_str("use std::collections::BTreeMap;\n\n");
-    generated_code.push_str("pub fn get_parsed_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
+    generated_code.push_str("use std::collections::BTreeMap;\n");
+    generated_code.push_str("use once_cell::sync::Lazy;\n\n");
+
+    generated_code.push_str("fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    let mut map = BTreeMap::new();\n");
 
     for (ports, payloads) in map {
         generated_code.push_str("    map.insert(vec![");
-        generated_code.push_str(&ports.iter().map(|&p| p.to_string()).collect::<Vec<_>>().join(","));
+        generated_code.push_str(
+            &ports
+                .iter()
+                .map(|&p| p.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+        );
         generated_code.push_str("], vec![");
-        generated_code.push_str(&payloads.iter().map(|&p| p.to_string()).collect::<Vec<_>>().join(","));
+        generated_code.push_str(
+            &payloads
+                .iter()
+                .map(|&p| p.to_string())
+                .collect::<Vec<_>>()
+                .join(","),
+        );
         generated_code.push_str("]);\n");
     }
 
     generated_code.push_str("    map\n");
+    generated_code.push_str("}\n\n");
+
+    generated_code.push_str(
+        "static PARSED_DATA: Lazy<BTreeMap<Vec<u16>, Vec<u8>>> = Lazy::new(generated_data);\n",
+    );
+    generated_code.push_str("pub fn get_parsed_data() -> &'static BTreeMap<Vec<u16>, Vec<u8>> {\n");
+    generated_code.push_str("    &PARSED_DATA\n");
     generated_code.push_str("}\n");
 
     fs::write(dest_path, generated_code).unwrap();

@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
+use once_cell::sync::Lazy;
 
-pub fn get_parsed_data() -> BTreeMap<Vec<u16>, Vec<u8>> {
+fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {
     let mut map = BTreeMap::new();
     map.insert(vec![7], vec![13,10,13,10]);
     map.insert(vec![53,69,5353,26198], vec![0,0,16,0,0,0,0,0,0,0,0,0]);
@@ -56,4 +57,9 @@ pub fn get_parsed_data() -> BTreeMap<Vec<u16>, Vec<u8>> {
     map.insert(vec![34555], vec![]);
     map.insert(vec![64738], vec![0,0,0,0,171,205,239]);
     map
+}
+
+static PARSED_DATA: Lazy<BTreeMap<Vec<u16>, Vec<u8>>> = Lazy::new(generated_data);
+pub fn get_parsed_data() -> &'static BTreeMap<Vec<u16>, Vec<u8>> {
+    &PARSED_DATA
 }
