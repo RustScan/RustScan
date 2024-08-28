@@ -122,4 +122,3 @@ fabric.properties
 .idea*
 
 settings.json
-src/generated.rs
