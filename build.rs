@@ -114,8 +114,10 @@ fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
                         port_list.push(port);
                     }
                 } else if !segment.is_empty() {
-                    let port: u16 = segment.parse().unwrap();
-                    port_list.push(port);
+                    match segment.parse::<u16>() {
+                        Ok(port) => port_list.push(port),
+                        Err(_) => println!("Error parsing port: {}", segment),
+                    }
                 }
             }
         }
