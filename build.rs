@@ -4,6 +4,7 @@ use std::fs::{self, File};
 use std::env;
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
+use std::process::Command;
 
 pub fn main() {
     let dest_path = PathBuf::from("src/generated.rs");
@@ -89,6 +90,13 @@ pub fn main() {
     generated_code.push_str("}\n");
 
     fs::write(dest_path, generated_code).unwrap();
+
+    // format the generated code
+    Command::new("cargo")
+        .arg("fmt")
+        .arg("--all")
+        .output()
+        .expect("Failed to execute cargo fmt");
 }
 
 fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
