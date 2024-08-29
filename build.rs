@@ -1,9 +1,9 @@
 use std::collections::BTreeMap;
 use std::fs::{self, File};
 
+use std::env;
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
-use std::env;
 
 pub fn main() {
     let dest_path = PathBuf::from("src/generated.rs");
