@@ -197,7 +197,7 @@ impl Scanner {
             }
         }
 
-        return Ok(socket);
+        Ok(socket)
     }
 
     /// Performs the connection to the socket with timeout

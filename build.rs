@@ -3,14 +3,13 @@ use std::fs::{self, File};
 
 use std::io::{BufReader, Read};
 use std::path::PathBuf;
-use std::{env, i32, u16, u8};
+use std::env;
 
 pub fn main() {
     let dest_path = PathBuf::from("src/generated.rs");
 
     // TODO fix file being in same dir thing
-    let current_dir = env::current_dir().expect("cant find curr dir");
-    let mut file_path = PathBuf::from(current_dir);
+    let mut file_path = env::current_dir().expect("cant find curr dir");
     file_path.push("./nmap-payloads");
 
     let mut data = String::new();
@@ -26,8 +25,8 @@ pub fn main() {
     let mut capturing = false;
     let mut curr = String::new();
 
-    for line in data.trim().split("\n") {
-        if line.contains("#") || line.is_empty() {
+    for line in data.trim().split('\n') {
+        if line.contains('#') || line.is_empty() {
             continue;
         }
 
@@ -99,14 +98,14 @@ fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     for (&line_nr, ports) in fp_map {
         if ports.contains("udp ") {
             let remain = &ports[4..];
-            let mut start = remain.split(" ");
+            let mut start = remain.split(' ');
 
             let ports = start.next().unwrap();
-            let port_segments: Vec<&str> = ports.split(",").collect();
+            let port_segments: Vec<&str> = ports.split(',').collect();
 
             for segment in port_segments {
-                if segment.contains("-") {
-                    let range: Vec<&str> = segment.trim().split("-").collect();
+                if segment.contains('-') {
+                    let range: Vec<&str> = segment.trim().split('-').collect();
                     let start = range[0].parse::<u16>().unwrap();
                     let end = range[1].parse::<u16>().unwrap();
 
@@ -133,10 +132,10 @@ fn payloads_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u8>> {
     let mut payb_linenr: BTreeMap<i32, Vec<u8>> = BTreeMap::new();
 
     for (&line_nr, data) in fp_map {
-        if data.contains("\"") {
-            let start = data.find("\"").expect("payload opening \" not found");
+        if data.contains('\"') {
+            let start = data.find('\"').expect("payload opening \" not found");
             let payloads = &data[start + 1..];
-            payb_linenr.insert(line_nr, parser(&payloads.trim()));
+            payb_linenr.insert(line_nr, parser(payloads.trim()));
         }
     }
 
@@ -152,7 +151,7 @@ fn parser(payload: &str) -> Vec<u8> {
     for (idx, char) in payload.chars().enumerate() {
         if char == '\\' && payload.chars().nth(idx + 1) == Some('x') {
             continue;
-        } else if char.is_digit(16) {
+        } else if char.is_ascii_digit() {
             tmp_str.push(char);
             if tmp_str.len() == 2 {
                 bytes.push(u8::from_str_radix(&tmp_str, 16).unwrap());
