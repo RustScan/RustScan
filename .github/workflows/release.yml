@@ -135,7 +135,7 @@ jobs:
             cp "target/${{ matrix.target }}/debian/rustscan_${TAG}_amd64.deb" "dist/" || true
           fi
 
-      - uses: actions/upload-artifact@v4.3.4
+      - uses: actions/upload-artifact@v4.4.0
         with:
           name: bins-${{ matrix.build }}
           path: dist
