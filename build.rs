@@ -6,6 +6,7 @@ use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use std::process::Command;
 
+/// Reads in a file with payloads based on port
 pub fn main() {
     let dest_path = PathBuf::from("src/generated.rs");
 
@@ -99,6 +100,7 @@ pub fn main() {
         .expect("Failed to execute cargo fmt");
 }
 
+/// Creates a BTreeMap of line numbers mapped to a Vec<u16>> of ports
 fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     let mut pb_linenr: BTreeMap<i32, Vec<u16>> = BTreeMap::new();
     let mut port_list: Vec<u16> = Vec::new();
@@ -136,6 +138,7 @@ fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     pb_linenr
 }
 
+/// Parses out the Payloads into a BTreeMap of line numbers mapped to strings of Payloads
 fn payloads_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u8>> {
     let mut payb_linenr: BTreeMap<i32, Vec<u8>> = BTreeMap::new();
 
@@ -150,7 +153,7 @@ fn payloads_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u8>> {
     payb_linenr
 }
 
-// I think this should return a vec of u8 instead then we just insert it everytime
+/// Converts a hexadecimal string to a Vec<u8>
 fn parser(payload: &str) -> Vec<u8> {
     let payload = payload.trim_matches('"');
     let mut tmp_str = String::new();
@@ -171,6 +174,7 @@ fn parser(payload: &str) -> Vec<u8> {
     bytes
 }
 
+/// Combines the ports BtreeMap and the Payloads BtreeMap
 fn port_payload_map(
     pb_linenr: BTreeMap<i32, Vec<u16>>,
     payb_linenr: BTreeMap<i32, Vec<u8>>,
