@@ -8,9 +8,6 @@ use std::process::Command;
 
 /// Reads in a file with payloads based on port
 pub fn main() {
-    let dest_path = PathBuf::from("src/generated.rs");
-
-    // TODO fix file being in same dir thing
     let mut file_path = env::current_dir().expect("cant find curr dir");
     file_path.push("./nmap-payloads");
 
@@ -53,6 +50,13 @@ pub fn main() {
     let payb_linenr = payloads_v(&fp_map);
     let map = port_payload_map(pb_linenr, payb_linenr);
 
+    generate_code(map);
+}
+
+/// Generates a file called Generated.rs, and calls cargo fmt from the command line
+fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
+    let dest_path = PathBuf::from("src/generated.rs");
+
     let mut generated_code = String::new();
     generated_code.push_str("use std::collections::BTreeMap;\n");
     generated_code.push_str("use once_cell::sync::Lazy;\n\n");
@@ -60,7 +64,7 @@ pub fn main() {
     generated_code.push_str("fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    let mut map = BTreeMap::new();\n");
 
-    for (ports, payloads) in map {
+    for (ports, payloads) in port_payload_map {
         generated_code.push_str("    map.insert(vec![");
         generated_code.push_str(
             &ports
