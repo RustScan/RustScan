@@ -6,7 +6,7 @@ use std::io::{BufReader, Read};
 use std::path::PathBuf;
 use std::process::Command;
 
-/// Reads in a file with payloads based on port
+// Reads in a file with payloads based on port
 pub fn main() {
     let mut file_path = env::current_dir().expect("cant find curr dir");
     file_path.push("./nmap-payloads");
@@ -53,7 +53,11 @@ pub fn main() {
     generate_code(map);
 }
 
-/// Generates a file called Generated.rs, and calls cargo fmt from the command line
+/// Generates a file called Generated.rs and calls cargo fmt from the command line
+///
+/// # Arguments
+///
+/// * `port_payload_map` - A BTreeMap mapping port numbers to payload data
 fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
     let dest_path = PathBuf::from("src/generated.rs");
 
@@ -104,7 +108,15 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
         .expect("Failed to execute cargo fmt");
 }
 
-/// Creates a BTreeMap of line numbers mapped to a Vec<u16>> of ports
+/// Creates a BTreeMap of line numbers mapped to a Vec<u16> of ports
+///
+/// # Arguments
+///
+/// * `fp_map` - A BTreeMap containing the parsed file data
+///
+/// # Returns
+///
+/// A BTreeMap where keys are line numbers and values are vectors of ports
 fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     let mut pb_linenr: BTreeMap<i32, Vec<u16>> = BTreeMap::new();
     let mut port_list: Vec<u16> = Vec::new();
@@ -142,7 +154,15 @@ fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     pb_linenr
 }
 
-/// Parses out the Payloads into a BTreeMap of line numbers mapped to strings of Payloads
+/// Parses out the Payloads into a BTreeMap of line numbers mapped to vectors of payload bytes
+///
+/// # Arguments
+///
+/// * `fp_map` - A BTreeMap containing the parsed file data
+///
+/// # Returns
+///
+/// A BTreeMap where keys are line numbers and values are vectors of payload bytes
 fn payloads_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u8>> {
     let mut payb_linenr: BTreeMap<i32, Vec<u8>> = BTreeMap::new();
 
@@ -158,6 +178,14 @@ fn payloads_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u8>> {
 }
 
 /// Converts a hexadecimal string to a Vec<u8>
+///
+/// # Arguments
+///
+/// * `payload` - A string slice containing the hexadecimal payload
+///
+/// # Returns
+///
+/// A vector of bytes representing the decoded payload
 fn parser(payload: &str) -> Vec<u8> {
     let payload = payload.trim_matches('"');
     let mut tmp_str = String::new();
@@ -178,7 +206,16 @@ fn parser(payload: &str) -> Vec<u8> {
     bytes
 }
 
-/// Combines the ports BtreeMap and the Payloads BtreeMap
+/// Combines the ports BTreeMap and the Payloads BTreeMap
+///
+/// # Arguments
+///
+/// * `pb_linenr` - A BTreeMap mapping line numbers to vectors of ports
+/// * `payb_linenr` - A BTreeMap mapping line numbers to vectors of payload bytes
+///
+/// # Returns
+///
+/// A BTreeMap mapping vectors of ports to vectors of payload bytes
 fn port_payload_map(
     pb_linenr: BTreeMap<i32, Vec<u16>>,
     payb_linenr: BTreeMap<i32, Vec<u8>>,
