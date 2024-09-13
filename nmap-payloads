@@ -1,0 +1,500 @@
+# Nmap nmap payload database -*- mode: fundamental; -*-
+# $Id$
+#
+# These payloads are sent with every host discovery or port scan probe
+# by default. This database should only include payloads that are
+# unlikely to crash services, trip IDS alerts, or change state on the
+# server. The idea behind these is to evoke a response using a payload.
+# Some of them are taken from nmap-service-probes.
+#
+# This collection of data is (C) 1996-2022 by Nmap Software LLC.  It
+# is distributed under the Nmap Public Source license as provided in
+# the LICENSE file of the source distribution or at
+# https://nmap.org/npsl/.  Note that this free license does not allow
+# incorporation of Nmap or its data files within proprietary
+# software. We sell a separate Nmap OEM for that as described
+# (including pricing) at https://nmap.org/npsl/.
+#
+# Each entry begins with a protocol (only "udp" is supported) followed
+# by a comma-separated list of ports, followed by one or more quoted
+# strings containing the payload. These elements may be broken across
+# several lines. For future expansion, additional keywords may follow
+# the payload data. Any data following one of these keywords must be on
+# the same line as the keyword so that unknown keywords can be ignored
+# by the parser. Currently this file contains some entries with the
+# "source" keyword to specify a desired source port, but it is not
+# honored by Nmap.
+#
+# Multiple payloads may be defined for a single protocol and port, in
+# which case they will be all be sent concurrently. There is a limit
+# of 255 payloads per port.
+#
+# Lines longer than 1024 characters will be ignored.
+#
+# Example:
+# udp 1234 "payloaddatapayloaddata"
+#   "payloaddatapayloaddata"
+# source 5678
+
+# GenericLines. Use for the echo service.
+udp 7 "\x0D\x0A\x0D\x0A"
+# DNSStatusRequest
+# Sent for TFTP (69) as well due to its ability to provoke an error response
+udp 53,69,5353,26198 "\x00\x00\x10\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+# DNS VER
+udp 53,5353,26198
+  "\x77\x77\x01\x00\x00"
+  "\x01\x00\x00\x00\x00\x00\x00\x07version\x04bind\x00\x00\x10\x00\x03"
+
+# DHCP INFORM
+udp 67
+  "\x01\x01\x06\x00"
+  "\x01\x23\x45\x67\x00\x00\x00\x00\xff\xff\xff\xff\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x0e\x35\xd4\xd8\x51\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x63\x82\x53\x63\x35\x01"
+  "\x08\xff"
+
+# TFTP GET
+udp 69 "\x00\x01r7tftp.txt\x00octet\x00"
+
+# QUIC packet with unsupported version Q999
+# Also found on 443, but need to check whether DTLS or QUIC is more prevalent
+udp 80 "\r12345678Q999\x00"
+# RPCCheck
+udp 111
+  "\x72\xFE\x1D\x13\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86\xA0"
+  "\x00\x01\x97\x7C\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00"
+# ONCRPC CALL
+udp 111,2049,4045,32768-65535
+  "\x3e\xec\xe3\xca\x00\x00\x00\x00\x00\x00\x00\x02\x00"
+  "\xbc\x61\x4e\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+# NTPRequest
+udp 123
+  "\xE3\x00\x04\xFA\x00\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\xC5\x4F\x23\x4B\x71\xB1\x52\xF3"
+# NTP REQ
+udp 123
+  "\xd9\x00\x0a\xfa\x00\x00\x00"
+  "\x00\x00\x01\x04\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xc6"
+  "\xf1\x5e\xdb\x78\x00\x00\x00"
+# DCERPC CALL
+udp 135,1025-1199
+  "\x05\x00\x0b\x03\x10\x00\x00\x00\x48\x00"
+  "\x00\x00\x01\x00\x00\x00\xb8\x10\xb8\x10\x00\x00\x00\x00\x01\x00\x00"
+  "\x00\x00\x00\x01\x00\x01\x23\x45\x67\x89\xab\xcd\xef\x01\x23\x45\x67"
+  "\x89\xab\xcd\xef\xe7\x03\x00\x00\xfe\xdc\xba\x98\x76\x54\x32\x10\x01"
+  "\x23\x45\x67\x89\xab\xcd\xef\xe7\x03\x00\x00"
+# NBTStat
+udp 137
+  "\x80\xF0\x00\x10\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x20CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x00\x00\x21\x00\x01"
+# CIFS NS NAME QUERY UC
+udp 137
+  "\x01\x91\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x20CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x00\x00\x21\x00\x01"
+# CIFS NS NAME QUERY BC
+udp 137
+  "\x01\x91\x00\x10\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x20CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\x00\x00\x21\x00\x01"
+# SNMPv3GetRequest
+udp 161,260,3401
+  "\x30\x3A\x02\x01\x03\x30\x0F\x02\x02\x4A\x69\x02\x03\x00\xFF\xE3"
+  "\x04\x01\x04\x02\x01\x03\x04\x10\x30\x0E\x04\x00\x02\x01\x00\x02"
+  "\x01\x00\x04\x00\x04\x00\x04\x00\x30\x12\x04\x00\x04\x00\xA0\x0C"
+  "\x02\x02\x37\xF0\x02\x01\x00\x02\x01\x00\x30\x00"
+# SNMP PUBLIC WALK
+udp 161,260,3401
+  "\x30\x1f\x02\x01\x00\x04\x06public\xa1\x12\x02\x01\x00\x02"
+  "\x01\x00\x02\x01\x00\x30\x07\x30\x05\x06\x01\x00\x05\x00"
+
+# Sqlping - disabled because it trips a Snort rule with SID 2049
+# ("MS-SQL ping attempt").
+# udp 1434 "\x02"
+
+# xdmcp - X Display Manager Control Protocol. Version 1, packet type
+# Query (2), no authorization names. We expect a Willing or Unwilling
+# packet in reply.
+# http://cgit.freedesktop.org/xorg/doc/xorg-docs/plain/hardcopy/XDMCP/xdmcp.PS.gz
+udp 177 "\x00\x01\x00\x02\x00\x01\x00"
+
+# Connectionless LDAP - used by Microsoft Active Directory
+udp 389
+  "\x30\x84\x00\x00\x00\x2d\x02\x01\x07\x63\x84\x00\x00\x00\x24\x04\x00"
+  "\x0a\x01\x00\x0a\x01\x00\x02\x01\x00\x02\x01\x64\x01\x01\x00\x87\x0b"
+  "objectClass0\x84\x00\x00\x00\x00"
+
+
+# svrloc
+udp 427
+  "\x02\x01\x00\x006 \x00\x00\x00\x00\x00\x01\x00\x02en\x00\x00\x00\x15"
+  "service:service-agent\x00\x07default\x00\x00\x00\x00"
+
+# DTLS
+udp 443,853,3391,4433,4740,5349,5684,5868,6514,6636,8232,10161,10162,12346,12446,12546,12646,12746,12846,12946,13046
+  # DTLS 1.0, length 52
+  "\x16\xfe\xff\x00\x00\x00\x00\x00\x00\x00\x00\x00\x36"
+  # ClientHello, length 40, sequence 0, offset 0
+  "\x01\x00\x00\x2a\x00\x00\x00\x00\x00\x00\x00\x2a"
+  # DTLS 1.2
+  "\xfe\xfd"
+  # Random
+  "\x00\x00\x00\x00\x7c\x77\x40\x1e\x8a\xc8\x22\xa0\xa0\x18\xff\x93"
+  "\x08\xca\xac\x0a\x64\x2f\xc9\x22\x64\xbc\x08\xa8\x16\x89\x19\x3f"
+  # Session id length 0, cookie length 0
+  "\x00\x00"
+  # Cipher suites, mandatory TLS_RSA_WITH_AES_128_CBC_SHA
+  "\x00\x02\x00\x2f"
+  # Compressors (NULL)
+  "\x01\x00"
+
+# Internet Key Exchange version 1, phase 1 Main Mode. We offer every
+# combination of (DES, 3DES) and (MD5, SHA) in the hope that one of them will
+# be acceptable. Because we use a fixed cookie, we set the association lifetime
+# to 1 second to reduce the chance that repeated probes will look like
+# retransmissions (and therefore not get a response). This payload comes from
+#   ike-scan --lifetime 1 --cookie 0011223344556677 --trans=5,2,1,2 --trans=5,1,1,2 --trans=1,2,1,2 --trans=1,1,1,2
+# We expect another phase 1 message in response. This payload works better with
+# a source port of 500 or a randomized initiator cookie.
+udp 500
+  # Initiator cookie 0x0011223344556677, responder cookie 0x0000000000000000.
+  "\x00\x11\x22\x33\x44\x55\x66\x77\x00\x00\x00\x00\x00\x00\x00\x00"
+  # Version 1, Main Mode, flags 0x00, message ID 0x00000000, length 192.
+  "\x01\x10\x02\x00\x00\x00\x00\x00\x00\x00\x00\xC0"
+  # Security Association payload, length 164, IPSEC, IDENTITY.
+  "\x00\x00\x00\xA4\x00\x00\x00\x01\x00\x00\x00\x01"
+  # Proposal 1, length 152, ISAKMP, 4 transforms.
+  "\x00\x00\x00\x98\x01\x01\x00\x04"
+  # Transform 1, 3DES-CBC, SHA, PSK, group 2.
+  "\x03\x00\x00\x24\x01\x01\x00\x00\x80\x01\x00\x05\x80\x02\x00\x02"
+  "\x80\x03\x00\x01\x80\x04\x00\x02"
+  "\x80\x0B\x00\x01\x00\x0C\x00\x04\x00\x00\x00\x01"
+  # Transform 2, 3DES-CBC, MD5, PSK, group 2.
+  "\x03\x00\x00\x24\x02\x01\x00\x00\x80\x01\x00\x05\x80\x02\x00\x01"
+  "\x80\x03\x00\x01\x80\x04\x00\x02"
+  "\x80\x0B\x00\x01\x00\x0C\x00\x04\x00\x00\x00\x01"
+  # Transform 3, DES-CBC, SHA, PSK, group 2.
+  "\x03\x00\x00\x24\x03\x01\x00\x00\x80\x01\x00\x01\x80\x02\x00\x02"
+  "\x80\x03\x00\x01\x80\x04\x00\x02"
+  "\x80\x0B\x00\x01\x00\x0C\x00\x04\x00\x00\x00\x01"
+  # Transform 4, DES-CBC, MD5, PSK, group 2.
+  "\x00\x00\x00\x24\x04\x01\x00\x00\x80\x01\x00\x01\x80\x02\x00\x01"
+  "\x80\x03\x00\x01\x80\x04\x00\x02"
+  "\x80\x0B\x00\x01\x00\x0C\x00\x04\x00\x00\x00\x01"
+# IPSEC START
+udp 500,4500
+  "\x31\x27\xfc"
+  "\xb0\x38\x10\x9e\x89\x00\x00\x00\x00\x00\x00\x00\x00\x01\x10\x02\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\xcc\x0d\x00\x00\x5c\x00\x00\x00\x01\x00"
+  "\x00\x00\x01\x00\x00\x00\x50\x01\x01\x00\x02\x03\x00\x00\x24\x01\x01"
+  "\x00\x00\x80\x01\x00\x05\x80\x02\x00\x02\x80\x04\x00\x02\x80\x03\x00"
+  "\x03\x80\x0b\x00\x01\x00\x0c\x00\x04\x00\x00\x0e\x10\x00\x00\x00\x24"
+  "\x02\x01\x00\x00\x80\x01\x00\x05\x80\x02\x00\x01\x80\x04\x00\x02\x80"
+  "\x03\x00\x03\x80\x0b\x00\x01\x00\x0c\x00\x04\x00\x00\x0e\x10\x0d\x00"
+  "\x00\x18\x1e\x2b\x51\x69\x05\x99\x1c\x7d\x7c\x96\xfc\xbf\xb5\x87\xe4"
+  "\x61\x00\x00\x00\x04\x0d\x00\x00\x14\x40\x48\xb7\xd5\x6e\xbc\xe8\x85"
+  "\x25\xe7\xde\x7f\x00\xd6\xc2\xd3\x0d\x00\x00\x14\x90\xcb\x80\x91\x3e"
+  "\xbb\x69\x6e\x08\x63\x81\xb5\xec\x42\x7b\x1f\x00\x00\x00\x14\x26\x24"
+  "\x4d\x38\xed\xdb\x61\xb3\x17\x2a\x36\xe3\xd0\xcf\xb8\x19"
+
+# Routing Information Protocol version 1. Special-case request for the entire
+# routing table (address family 0, address 0.0.0.0, metric 16). RFC 1058,
+# section 3.4.1.
+udp 520
+  "\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x10"
+
+# RMCP ASF ping
+udp 623
+  "\x06\x00\xff\x06" # RMCP version 6, sequence 0xff, normal RMCP class ASF
+  "\x00\x00\x11\xbe" # IAN ASF code 4542
+  "\x80\x00\x00\x00" # payload-less ASF presence ping
+
+# IPMI
+# RMCP Get Channel Auth Capabilities
+udp 623
+  "\x06\x00\xff\x07\x00\x00\x00\x00\x00\x00\x00\x00\x00\x09\x20\x18"
+  "\xc8\x81\x00\x38\x8e\x04\xb5"
+
+# serialnumberd. This service runs on Mac OS X Server. This probe
+# requests the serial number of another server. In response we expect a
+# packet starting with "SNRESPS:", followed by some data whose purpose
+# is not known.
+udp 626 "SNQUERY: 127.0.0.1:AAAAAA:xsvr"
+
+# OpenVPN P_CONTROL_HARD_RESET_CLIENT_V2
+# Byte 0; 0x38 opcode
+# Byte 1-8: Session ID, random
+# Byte 9: Message packet-id array length (0)
+# Byte 10-13: Message packet-id (0)
+udp 1194 "8d\xc1x\x01\xb8\x9b\xcb\x8f\0\0\0\0\0"
+# OpenVPN when in PKI mode and without the "HMAC Firewall" setting enabled
+# (tls-auth) should respond to the following probe, which is
+# 0x38<8 random bytes><4 null bytes>
+udp 1194
+  "\x38\x01\x02\x03\x04\x05\x06\x07\x08\x00\x00\x00\x00"
+
+# Citrix MetaFrame application browser service
+# Original idea from http://sh0dan.org/oldfiles/hackingcitrix.html
+# Payload contents copied from Wireshark capture of Citrix Program
+# Neighborhood client application.  The application uses this payload to
+# locate Citrix servers on the local network.  Response to this probe is
+# a 48 byte UDP payload as shown here:
+#
+# 0000   30 00 02 31 02 fd a8 e3 02 00 06 44 c0 a8 80 55
+# 0010   00 00 00 00 00 00 00 00 00 00 00 00 02 00 06 44
+# 0020   c0 a8 80 56 00 00 00 00 00 00 00 00 00 00 00 00
+#
+# The first 12 bytes appear to be the same in all responses.
+#
+# Bytes 0x00 appears to be a packet length field
+# Bytes 0x0C - 0x0F are the IP address of the server
+# Bytes 0x10 - 0x13 may vary, 0x14 - 0x1F do not appear to
+# Bytes 0x20 - 0x23 are the IP address of the primary system in a server farm
+#                   configuration
+# Bytes 0x24 - 0x27 can vary, 0x28 - 0x2F do not appear to
+udp 1604
+  "\x1e\x00\x01\x30\x02\xfd\xa8\xe3\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# RADIUS Access-Request. This is a degenerate packet with no username or
+# password; we expect an Access-Reject in response. The Identifier and Request
+# Authenticator are both 0. It was generated by running
+#   echo 'User-Password = ""' | radclient <ip> auth ""
+# and then manually stripping out the password.
+#
+# Section 2 of the RFC says "A request from a client for which the
+# RADIUS server does not have a shared secret MUST be silently
+# discarded." So this payload only works when the server is configured
+# (or misconfigured) to know the scanning machine as a client.
+#
+# RFC 2865: "The early deployment of RADIUS was done using UDP port
+# number 1645, which conflicts with the "datametrics" service. The
+# officially assigned port number for RADIUS is 1812.
+udp 1645,1812
+  "\x01\x00\x00\x14"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# L2TP ICRQ
+udp 1701
+  "\xc8\x02"
+  "\x00\x3c\x00\x00\x00\x00\x00\x00\x00\x00\x80\x08\x00\x00\x00\x00\x00"
+  "\x01\x80\x08\x00\x00\x00\x02\x01\x00\x80\x0e\x00\x00\x00\x07"
+  "nxp-scan\x80\x0a\x00\x00\x00\x03\x00\x00\x00\x03\x80"
+  "\x08\x00\x00\x00\x09\x00\x00"
+
+# UPNP MSEARCH
+udp 1900
+  "M-SEARCH * HTTP/1.1\r\nHost: 239.255.255.250:1900\r\n"
+  "Man: \"ssdp:discover\"\r\nMX: 5\r\nST: ssdp:all\r\n\r\n"
+
+# NFS version 2, RFC 1831. XID 0x00000000, program 100003 (NFS), procedure
+# NFSPROC_NULL (does nothing, see section 2.2.1), null authentication (see
+# section 9.1).
+udp 2049
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x01\x86\xA3"
+  "\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+  "\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# GPRS Tunneling Protocol (GTP)
+udp 2123,2152
+# GTPv1, protocol 1
+"\x32"
+# EchoRequest
+"\x01"
+# message length
+"\x00\x04"
+# Tunnel endpoint identifier
+"\x00\x00\x42\x00"
+# sequence number
+"\x13\x37"
+# N-PDU number
+"\x00"
+# next extension header type
+"\x00"
+
+# GPRS Tunneling Protocol (GTP) "prime" v2
+# This same packet can be used for GTP v2 on ports 2123 and 2152 if you change
+# the first byte from \x4e to \x40
+udp 3386
+# GTP'v2
+"\x4e"
+# EchoRequest
+"\x01"
+# message length
+"\x00\x04"
+# sequence number
+"\xde\xfe\xc8\x00"
+
+# Freelancer game server status query
+# http://sourceforge.net/projects/gameq/
+# (relevant files: games.ini, packets.ini, freelancer.php)
+udp 2302 "\x00\x02\xf1\x26\x01\x26\xf0\x90\xa6\xf0\x26\x57\x4e\xac\xa0\xec\xf8\x68\xe4\x8d\x21"
+
+# Apple Remote Desktop (ARD)
+udp 3283 "\0\x14\0\x01\x03"
+
+# STUN Binding request, see RFC 5389 Section 6
+# message type = 0x001, Binding (see Section 18.1)
+# message length = 0
+# magic cookie = 0x2112a442
+# transaction ID = "\x00"*12
+udp 3478 "\x00\x01\x00\x00\x21\x12\xa4\x42\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# Sun Service Tag Discovery protocol (stdiscover)
+# http://arc.opensolaris.org/caselog/PSARC/2006/638/stdiscover_protocolv2.pdf
+# Would work better with a varying cookie; the second and later sends of this
+# probe will be interpreted as resends by the server and will be ignored.
+udp 6481 "[PROBE] 0000"
+
+# NAT-PMP external IP address request. See section 3.2 of
+# http://files.dns-sd.org/draft-cheshire-nat-pmp.txt.
+udp 5351 "\x00\x00"
+
+# DNS Service Discovery (DNS-SD) service query, as used in Zeroconf.
+# Transaction ID 0x0000, flags 0x0000, 1 question: PTR query for
+# _services._dns-sd._udp.local. If the remote host supports DNS-SD it will send
+# back a list of all its services. This is the same as a packet capture of
+#   dns-sd -B _services._dns-sd._udp .
+# See section 9 of
+# http://files.dns-sd.org/draft-cheshire-dnsext-dns-sd.txt.
+# This first probe is a QU probe, meaning a unicast response is desired
+udp 5353
+  "\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x09_services\x07_dns-sd\x04_udp\x05local\x00\x00\x0C\x80\x01"
+# This second probe is a QM probe, meaning a unicast response is desired
+udp 5353
+  "\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00"
+  "\x09_services\x07_dns-sd\x04_udp\x05local\x00\x00\x0C\x00\x01"
+
+# PCANY STATUS
+udp 5632 "ST"
+
+# CoAP GET .well-known/core
+udp 5683 "@\x01\x01\xce\xbb.well-known\x04core"
+
+# UT2K PING
+udp 7777 "None\x00"
+
+# Ubiquiti Discovery Service - v1
+udp 10001 "\x01\x00\x00\x00"
+
+# Amanda backup service noop request. I think that this does nothing on the
+# server but only asks it to send back its feature list. In reply we expect an
+# ACK or (more likely) an ERROR. I couldn't find good online documentation of
+# the Amanda network protocol. There is parsing code in the Amanda source at
+# common-src/security-util.c. This is based on a packet capture of
+#   amcheck <config> <host>
+udp 10080
+  "Amanda 2.6 REQ HANDLE 000-00000000 SEQ 0\n"
+  "SERVICE noop\n"
+
+# VxWorks Wind River Debugger
+udp 17185
+# Random XID
+"\x00\x00\x00\x00"
+# RPC version 2 procedure call
+"\x00\x00\x00\x00\x00\x00\x00\x02"
+# WDB version 1
+"\x55\x55\x55\x55\x00\x00\x00\x01"
+# WDB_TARGET_PING
+"\x00\x00\x00\x00"
+# RPC Auth NULL
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+# Checksum
+"\xff\xff\x55\x13"
+# WDB wrapper (length and sequence number)
+"\x00\x00\x00\x30\x00\x00\x00\x01"
+# Empty data?
+"\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00"
+# VXWORKS DEBUG (alternative?)
+udp 17185
+  "\x72\x37\x72\x37\x00\x00\x00"
+  "\x00\x00\x00\x00\x02\x55\x55\x55\x55\x00\x00\x00\x01\x00\x00\x00\x01"
+  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xff"
+  "\xff\x55\x10\x00\x00\x00\x3c\x00\x00\x00\x03\x00\x00\x00\x02\x00\x00"
+  "\x00\x00\x00\x00\x00\x00"
+
+# Quake 2 and Quake 3 game servers (and servers of derived games like Nexuiz).
+# Gets game information from the server (see probe responses in
+# nmap-service-probes). These services typically run on a base port or a
+# few numbers higher.
+# Quake 2. Typical ports: 27910-27914.
+udp 27910-27914 "\xff\xff\xff\xffstatus"
+# Quake 3. Typical ports:
+# 26000-26004: Nexuiz
+# 27960-27964: Various games
+# 30720-30724: Tremulous
+# 44400: Warsow
+udp 26000-26004,27960-27964,30720-30724,44400 "\xff\xff\xff\xffgetstatus"
+
+# Murmur 1.2.X (Mumble server)
+# UDP ping. "abcdefgh" is an identifier. See
+# http://mumble.sourceforge.net/Protocol.
+udp 64738 "\x00\x00\x00\x00abcdefgh"
+
+# Ventrilo 2.1.2+
+# UDP general status request (encrypted).
+# See http://aluigi.altervista.org/papers.htm#ventrilo
+udp 3784
+"\x01\xe7\xe5\x75\x31\xa3\x17\x0b\x21\xcf\xbf\x2b\x99\x4e\xdd\x19\xac\xde\x08\x5f\x8b\x24\x0a\x11\x19\xb6\x73\x6f\xad\x28\x13\xd2\x0a\xb9\x12\x75"
+
+# Kademlia (kad) as used by various P2P applications.  Send a Kademlia ping
+# 4665, 4666, 4672, 6429: eDonkey/eMule and variants
+udp 4665,4666,4672,6429 "\xE4\x60"
+
+# TeamSpeak 2
+# UDP login request
+# See http://wiki.wireshark.org/TeamSpeak2
+udp 8767
+"\xf4\xbe\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x002x\xba\x85\tTeamSpeak\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\nWindows XP\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00 \x00<\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08nickname\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# TS3INIT1
+udp 9987
+"TS3INIT1\x00\x65\x00\x00\x88\x0a\x39\x7b\x0f\x00\x5b\x55\x72\xef\xdc\x78\x32\x6b\x00\x00\x00\x00\x00\x00\x00\x00"
+
+# TeamSpeak 3
+# UDP login request (encrypted)
+# http://seclists.org/nmap-dev/2013/q3/72
+udp 9987
+"\x05\xca\x7f\x16\x9c\x11\xf9\x89\x00\x00\x00\x00\x02\x9d\x74\x8b\x45\xaa\x7b\xef\xb9\x9e\xfe\xad\x08\x19\xba\xcf\x41\xe0\x16\xa2\x32\x6c\xf3\xcf\xf4\x8e\x3c\x44\x83\xc8\x8d\x51\x45\x6f\x90\x95\x23\x3e\x00\x97\x2b\x1c\x71\xb2\x4e\xc0\x61\xf1\xd7\x6f\xc5\x7e\xf6\x48\x52\xbf\x82\x6a\xa2\x3b\x65\xaa\x18\x7a\x17\x38\xc3\x81\x27\xc3\x47\xfc\xa7\x35\xba\xfc\x0f\x9d\x9d\x72\x24\x9d\xfc\x02\x17\x6d\x6b\xb1\x2d\x72\xc6\xe3\x17\x1c\x95\xd9\x69\x99\x57\xce\xdd\xdf\x05\xdc\x03\x94\x56\x04\x3a\x14\xe5\xad\x9a\x2b\x14\x30\x3a\x23\xa3\x25\xad\xe8\xe6\x39\x8a\x85\x2a\xc6\xdf\xe5\x5d\x2d\xa0\x2f\x5d\x9c\xd7\x2b\x24\xfb\xb0\x9c\xc2\xba\x89\xb4\x1b\x17\xa2\xb6"
+
+# Memcached
+# version request (shorter response than stats)
+# https://github.com/memcached/memcached/blob/master/doc/protocol.txt
+udp 11211
+"\0\x01\0\0\0\x01\0\0version\r\n"
+
+# Steam, typically using a port in 27015-27030.  Send a "Source Engine query"
+udp 27015-27030
+  "\xff\xff\xff\xffTSource Engine Query\x00"
+
+# TRIN00 UNIX PING
+udp 27444 "png l44adsl"
+
+# BO PING
+udp 31337
+  "\xce\x63\xd1\xd2\x16\xe7\x13\xcf\x38"
+  "\xa5\xa5\x86\xb2\x75\x4b\x99\xaa\x32\x58"
+
+# TRIN00 WIN PING
+udp 34555 "png []..Ks"
+
+# Beckhoff ADS discovery request
+# https://github.com/ONE75/adsclient/blob/master/src/AdsClient.Finder/DeviceFinder.cs#L49-L64
+udp 48899
+"\x03\x66\x14\x71\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x01\x10\x27\x00\x00\x00\x00"
