@@ -10,7 +10,7 @@ COPY src/ src/
 RUN cargo build --release
 
 # Release Stage
-FROM alpine:3.20.2 as release
+FROM alpine:3.20.3 as release
 LABEL author="Hydragyrum <https://github.com/Hydragyrum>"
 LABEL author="LeoFVO <https://github.com/LeoFVO>"
 
