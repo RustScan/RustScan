@@ -1,4 +1,5 @@
 //! Provides functions to parse input IP addresses, CIDRs or files.
+use std::collections::BTreeSet;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
@@ -27,6 +28,8 @@ use crate::warning;
 ///
 /// let ips = parse_addresses(&opts);
 /// ```
+///
+/// Finally, any duplicates are removed to avoid excessive scans.
 pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let mut ips: Vec<IpAddr> = Vec::new();
     let mut unresolved_addresses: Vec<&str> = Vec::new();
@@ -66,7 +69,10 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         }
     }
 
-    ips
+    ips.into_iter()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
 }
 
 /// Given a string, parse it as a host, IP address, or CIDR.
@@ -254,6 +260,16 @@ mod tests {
         opts.addresses = vec!["fixtures/naughty_string.txt".to_owned()];
         let ips = parse_addresses(&opts);
         assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn parse_duplicate_cidrs() {
+        let mut opts = Opts::default();
+        opts.addresses = vec!["79.98.104.0/21".to_owned(), "79.98.104.0/24".to_owned()];
+
+        let ips = parse_addresses(&opts);
+
+        assert_eq!(ips.len(), 2_048);
     }
 
     #[test]
