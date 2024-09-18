@@ -21,7 +21,7 @@ clap = { version = "4.5.9", features = ["derive", "wrap_help"] }
 colored = "2.1.0"
 async-std = "1.7.0"
 futures = "0.3"
-rlimit = "0.10.1"
+rlimit = "0.10.2"
 log = "0.4.22"
 env_logger = "0.11.5"
 anstream = "=0.6.14"
