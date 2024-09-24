@@ -31,32 +31,40 @@ pub enum ScriptsRequired {
 /// Represents the range of ports to be scanned.
 #[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
 pub struct PortRange {
-    pub start: u16,
-    pub end: u16,
+    pub ranges: Vec<(u16, u16)>,
 }
 
 #[cfg(not(tarpaulin_include))]
 fn parse_range(input: &str) -> Result<PortRange, String> {
-    let range = input
-        .split('-')
-        .map(str::parse)
-        .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
+    let mut ranges = Vec::new();
 
-    if range.is_err() {
-        return Err(String::from(
-            "the range format must be 'start-end'. Example: 1-1000.",
-        ));
+    for range_str in input.split(',') {
+        let range = range_str
+            .split('-')
+            .map(str::parse)
+            .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
+
+        match range {
+            // 匹配start-end形式
+            Ok(vec) => match vec.as_slice() {
+                [start, end] if start <= end => ranges.push((*start, *end)),
+                // 如果只有一个值，如33，将它处理为范围33-33
+                [single] => ranges.push((*single, *single)),
+                _ => {
+                    return Err(String::from(
+                        "Invalid range format. Correct format: 'start-end' or 'single'. Example: 1-1000,80.",
+                    ))
+                }
+            },
+            Err(_) => {
+                return Err(String::from(
+                    "Invalid range format. Correct format: 'start-end' or 'single'. Example: 1-1000,80.",
+                ))
+            }
+        }
     }
 
-    match range.unwrap().as_slice() {
-        [start, end] => Ok(PortRange {
-            start: *start,
-            end: *end,
-        }),
-        _ => Err(String::from(
-            "the range format must be 'start-end'. Example: 1-1000.",
-        )),
-    }
+    Ok(PortRange { ranges })
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -163,8 +171,7 @@ impl Opts {
 
         if opts.ports.is_none() && opts.range.is_none() {
             opts.range = Some(PortRange {
-                start: LOWEST_PORT_NUMBER,
-                end: TOP_PORT_NUMBER,
+                ranges: vec![(LOWEST_PORT_NUMBER, TOP_PORT_NUMBER)],
             });
         }
 
@@ -406,8 +413,7 @@ mod tests {
         let mut opts = Opts::default();
         let mut config = Config::default();
         config.range = Some(PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 65535)],
         });
         config.ulimit = Some(1_000);
         config.resolver = Some("1.1.1.1".to_owned());

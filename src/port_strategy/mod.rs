@@ -22,15 +22,13 @@ impl PortStrategy {
             ScanOrder::Serial if ports.is_none() => {
                 let range = range.as_ref().unwrap();
                 PortStrategy::Serial(SerialRange {
-                    start: range.start,
-                    end: range.end,
+                    ranges: range.ranges.clone(),
                 })
             }
             ScanOrder::Random if ports.is_none() => {
                 let range = range.as_ref().unwrap();
                 PortStrategy::Random(RandomRange {
-                    start: range.start,
-                    end: range.end,
+                    ranges: range.ranges.clone(),
                 })
             }
             ScanOrder::Serial => PortStrategy::Manual(ports.unwrap()),
@@ -62,13 +60,15 @@ trait RangeOrder {
 /// ascending order.
 #[derive(Debug)]
 pub struct SerialRange {
-    start: u16,
-    end: u16,
+    ranges: Vec<(u16, u16)>,
 }
 
 impl RangeOrder for SerialRange {
     fn generate(&self) -> Vec<u16> {
-        (self.start..=self.end).collect()
+        self.ranges
+            .iter()
+            .flat_map(|&(start, end)| (start..=end).collect::<Vec<u16>>())
+            .collect()
     }
 }
 
@@ -76,8 +76,7 @@ impl RangeOrder for SerialRange {
 /// a random order. This vector is built following the LCG algorithm.
 #[derive(Debug)]
 pub struct RandomRange {
-    start: u16,
-    end: u16,
+    ranges: Vec<(u16, u16)>,
 }
 
 impl RangeOrder for RandomRange {
@@ -91,7 +90,20 @@ impl RangeOrder for RandomRange {
     // port numbers close to each other are pretty slim due to the way the
     // algorithm works.
     fn generate(&self) -> Vec<u16> {
-        RangeIterator::new(self.start.into(), self.end.into()).collect()
+        // 通过 RangeIterator 收集每个范围内的端口
+        let mut all_ports: Vec<u16> = self
+            .ranges
+            .iter()
+            .flat_map(|&(start, end)| {
+                // 使用 RangeIterator 来生成每个范围内的随机顺序端口
+                RangeIterator::new(start.into(), end.into()).collect::<Vec<u16>>()
+            })
+            .collect();
+
+        // 将所有端口打乱顺序
+        all_ports.shuffle(&mut thread_rng());
+
+        all_ports
     }
 }
 
@@ -102,7 +114,9 @@ mod tests {
 
     #[test]
     fn serial_strategy_with_range() {
-        let range = PortRange { start: 1, end: 100 };
+        let range = PortRange {
+            ranges: vec![(1, 50), (80, 100)],
+        };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
         let result = strategy.order();
         let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
@@ -110,7 +124,9 @@ mod tests {
     }
     #[test]
     fn random_strategy_with_range() {
-        let range = PortRange { start: 1, end: 100 };
+        let range = PortRange {
+            ranges: vec![(1, 50), (80, 100)],
+        };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let mut result = strategy.order();
         let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
