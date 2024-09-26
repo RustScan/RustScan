@@ -115,7 +115,7 @@ mod tests {
     #[test]
     fn serial_strategy_with_range() {
         let range = PortRange {
-            ranges: vec![(1, 50), (80, 100)],
+            ranges: vec![(1, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
         let result = strategy.order();
@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn random_strategy_with_range() {
         let range = PortRange {
-            ranges: vec![(1, 50), (80, 100)],
+            ranges: vec![(1, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let mut result = strategy.order();

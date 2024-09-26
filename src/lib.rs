@@ -18,8 +18,7 @@
 //! fn main() {
 //!     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
 //!     let range = PortRange {
-//!         start: 1,
-//!         end: 1_000,
+//!         ranges: vec![(1, 100)],
 //!     };
 //!     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
 //!     let scanner = Scanner::new(

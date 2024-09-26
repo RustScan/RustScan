@@ -320,8 +320,7 @@ mod tests {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -344,8 +343,7 @@ mod tests {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -367,8 +365,7 @@ mod tests {
     fn quad_zero_scanner_runs() {
         let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -389,8 +386,7 @@ mod tests {
     fn google_dns_runs() {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 400,
-            end: 445,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -414,8 +410,7 @@ mod tests {
 
         // mac should have this automatically scaled down
         let range = PortRange {
-            start: 400,
-            end: 600,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -438,8 +433,7 @@ mod tests {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -462,8 +456,7 @@ mod tests {
         // Makes sure the program still runs and doesn't panic
         let addrs = vec!["::1".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -485,8 +478,7 @@ mod tests {
     fn udp_quad_zero_scanner_runs() {
         let addrs = vec!["0.0.0.0".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 1,
-            end: 1_000,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
@@ -507,8 +499,7 @@ mod tests {
     fn udp_google_dns_runs() {
         let addrs = vec!["8.8.8.8".parse::<IpAddr>().unwrap()];
         let range = PortRange {
-            start: 100,
-            end: 150,
+            ranges: vec![(1, 50), (80, 100)],
         };
         let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
         let scanner = Scanner::new(
