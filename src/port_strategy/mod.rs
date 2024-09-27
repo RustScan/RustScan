@@ -90,7 +90,6 @@ impl RangeOrder for RandomRange {
     // port numbers close to each other are pretty slim due to the way the
     // algorithm works.
     fn generate(&self) -> Vec<u16> {
-        // 通过 RangeIterator 收集每个范围内的端口
         let mut all_ports: Vec<u16> = self
             .ranges
             .iter()
@@ -100,7 +99,6 @@ impl RangeOrder for RandomRange {
             })
             .collect();
 
-        // 将所有端口打乱顺序
         all_ports.shuffle(&mut thread_rng());
 
         all_ports

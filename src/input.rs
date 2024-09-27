@@ -37,7 +37,6 @@ pub struct PortRange {
 #[cfg(not(tarpaulin_include))]
 fn parse_range(input: &str) -> Result<PortRange, String> {
     let mut ranges = Vec::new();
-
     for range_str in input.split(',') {
         let range = range_str
             .split('-')
@@ -45,10 +44,8 @@ fn parse_range(input: &str) -> Result<PortRange, String> {
             .collect::<Result<Vec<u16>, std::num::ParseIntError>>();
 
         match range {
-            // 匹配start-end形式
             Ok(vec) => match vec.as_slice() {
                 [start, end] if start <= end => ranges.push((*start, *end)),
-                // 如果只有一个值，如33，将它处理为范围33-33
                 [single] => ranges.push((*single, *single)),
                 _ => {
                     return Err(String::from(
