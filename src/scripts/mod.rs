@@ -91,7 +91,7 @@ use text_placeholder::Template;
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
-call_format = "nmap -vvv -p {{port}} {{ip}}"
+call_format = "nmap -vvv -p {{port}} -{{ipversion}} {{ip}}"
 "#;
 
 #[cfg(not(tarpaulin_include))]
@@ -184,12 +184,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
+    ipversion: String
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
+    ipversion: String
 }
 
 impl Script {
@@ -244,17 +246,24 @@ impl Script {
                 script: self.path.unwrap().to_str().unwrap().to_string(),
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: match &self.ip {
+                    IpAddr::V4(_) => String::from("4"),
+                    IpAddr::V6(_) => String::from("6")
+                }
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
             let exec_parts: ExecParts = ExecParts {
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: match &self.ip {
+                    IpAddr::V4(_) => String::from("4"),
+                    IpAddr::V6(_) => String::from("6")
+                }
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
         debug!("\nScript format to run {}", to_run);
-
         execute_script(&to_run)
     }
 }
