@@ -35,6 +35,9 @@ extern crate log;
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
+    #[cfg(not(unix))]
+    let _ = ansi_term::enable_ansi_support();
+
     env_logger::init();
     let mut benchmarks = Benchmark::init();
     let mut rustscan_bench = NamedTimer::start("RustScan");
