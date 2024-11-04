@@ -103,23 +103,23 @@ mod tests {
     #[test]
     fn range_iterator_iterates_through_the_entire_range() {
         let result = generate_sorted_range(1, 10);
-        let expected_range = (1..=10).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=10).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 100);
-        let expected_range = (1..=100).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=100).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 1000);
-        let expected_range = (1..=1000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=1000).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1, 65_535);
-        let expected_range = (1..=65_535).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1..=65_535).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
 
         let result = generate_sorted_range(1000, 2000);
-        let expected_range = (1000..=2000).into_iter().collect::<Vec<u16>>();
+        let expected_range = (1000..=2000).collect::<Vec<u16>>();
         assert_eq!(expected_range, result);
     }
 
