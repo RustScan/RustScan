@@ -8,9 +8,6 @@ on:
       - master
     paths-ignore:
       - '.github/**'
-  schedule:
-    - cron: '00 01 * * *'
-
 jobs:
   check:
     name: Check
@@ -77,20 +74,7 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
+      - name: Run Just
+        uses: extractions/setup-just@v2
         with:
-          command: fmt
-          args: --all -- --check
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
-        with:
-          command: clippy
-          args: -- -D warnings
-
-      - name: Run rustdoc lints
-        uses: actions-rs/cargo@v1
-        with:
-          command: doc
-          args: --workspace --all-features --no-deps --document-private-items
+          command: just
