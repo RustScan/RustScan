@@ -9,16 +9,6 @@
 
 ![Arch Linux package][badge-1] ![Built with Rust][badge-2] ![GitHub All Releases][badge-3] ![Crates.io][badge-4] ![Discord][badge-5] ![Actions][badge-6]
 
-
----
-
-|                     🐋 `(Recommended)`                      |              👩‍💻               |             🏗️              |             🔧              |
-| :---------------------------------------------------------: | :---------------------------: | :-------------------------: | :-------------------------: |
-|               [![Docker][DockerPic]][Docker]                | [![Kali][Kali1]][Kali/Debian] | [![Arch][Arch]][Arch-Linux] | [![apple][apple]][Homebrew] |
-| `docker pull rustscan/rustscan:latest`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
-
----
-
 </div>
 
 # 🤔 What is this?
@@ -26,6 +16,14 @@
 ![fast][speed-1]
 
 The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run scripts through our scripting engine (Python, Lua, Shell supported).
+
+# 🛠️ Installation
+
+RustScan is in many repositories already. Install it with whatever tools you wish:
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
+
+RustScan only officially supports Cargo installations, if you want to use that please install Rust and then `cargo install rustscanto use that please install Rust and then `cargo install rustscan
 
 # ✨ Features
 
