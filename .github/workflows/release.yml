@@ -7,13 +7,6 @@ on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
-  pull_request:
-    branches:
-      - master
-    paths:
-      - 'Cargo.toml'
-      - 'Cargo.lock'
-      - '.github/workflows/release.yml'
 
 env:
   BIN_NAME: rustscan
