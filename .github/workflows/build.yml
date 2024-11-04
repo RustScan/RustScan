@@ -51,5 +51,4 @@ jobs:
         uses: extractions/setup-just@v1
 
       - name: Run just
-        with:
-          command: just test
+        run: just test
