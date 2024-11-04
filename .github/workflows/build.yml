@@ -1,13 +1,10 @@
 name: Build
 on:
   pull_request:
-    paths-ignore:
-      - '.github/**'
+    branches: [master]
   push:
     branches:
       - master
-    paths-ignore:
-      - '.github/**'
 jobs:
   check:
     name: Check
