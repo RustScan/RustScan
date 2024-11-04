@@ -6,27 +6,6 @@ on:
     branches:
       - master
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-
   test:
     name: Test Suite
     strategy:
@@ -45,6 +24,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
           override: true
 
+      - uses: taiki-e/install-action@nextest
       - uses: Swatinem/rust-cache@v2
 
       - name: Install Just
