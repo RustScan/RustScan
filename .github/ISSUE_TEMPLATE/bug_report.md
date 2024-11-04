@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+IMPORTANT: If you do not fill this out, your issue will be automatically closed.
+
+As of November 2024, RustScan no longer offiically supports any packages other than `cargo`. If you have an issue with Docker or a `.deb`, please bring it up with whoever created it :)
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
