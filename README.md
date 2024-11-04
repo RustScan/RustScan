@@ -45,7 +45,6 @@ RustScan only officially supports Cargo installations, if you want to use that p
 - 🐋 [Docker Usage][toc-docker-usage]
 - 🦜 [Discord][discord]
 - 🤸 [Usage][usage-1]
-- 🎪 [Community][toc-community]
 
 # 🔭 Why RustScan?
 
@@ -102,21 +101,6 @@ RustScan is one of the first penetration testing tools that aims to be entirely 
 [Most penetration testing tools are not accessible][accessible-2], which negatively affects the whole industry.
 
 RustScan has continuous integration testing that aims to ensure it is accessible, and we are constantly working on ways to improve our accessibility and ensure _everyone_ can use RustScan.
-
-# 📖 Full Installation Guide
-
-You can find our guide [here][install-1].
-
-## 🦊 Community Distributions
-
-Here are all of RustScan's community distributions.
-
-If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however, you want to let us know.
-
-- [Open Suse][distributions-1]
-- [Fedora/CentOS][distributions-2]
-
-[![Packaging status][rustscan-svg]][repology-1]
 
 # 🤸 Usage
 
