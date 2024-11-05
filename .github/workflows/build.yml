@@ -28,7 +28,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Install Just
-        uses: extractions/setup-just@v1
+        uses: extractions/setup-just@v2
 
       - name: Run just
         run: just test
