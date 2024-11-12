@@ -1,6 +1,6 @@
 //! Core functionality for actual scanning behaviour.
+use crate::generated::get_parsed_data;
 use crate::port_strategy::PortStrategy;
-use crate::udp_packets::udp_payload::cust_payload;
 use log::debug;
 
 mod socket_iterator;
@@ -11,6 +11,7 @@ use async_std::prelude::*;
 use async_std::{io, net::UdpSocket};
 use colored::Colorize;
 use futures::stream::FuturesUnordered;
+use std::collections::BTreeMap;
 use std::{
     collections::HashSet,
     net::{IpAddr, Shutdown, SocketAddr},
@@ -84,10 +85,11 @@ impl Scanner {
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
         let mut ftrs = FuturesUnordered::new();
         let mut errors: HashSet<String> = HashSet::new();
+        let udp_map = get_parsed_data();
 
         for _ in 0..self.batch_size {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.push(self.scan_socket(socket));
+                ftrs.push(self.scan_socket(socket, udp_map.clone()));
             } else {
                 break;
             }
@@ -101,7 +103,7 @@ impl Scanner {
 
         while let Some(result) = ftrs.next().await {
             if let Some(socket) = socket_iterator.next() {
-                ftrs.push(self.scan_socket(socket));
+                ftrs.push(self.scan_socket(socket, udp_map.clone()));
             }
 
             match result {
@@ -133,19 +135,13 @@ impl Scanner {
     /// ```
     ///
     /// Note: `self` must contain `self.ip`.
-    async fn scan_socket(&self, socket: SocketAddr) -> io::Result<SocketAddr> {
+    async fn scan_socket(
+        &self,
+        socket: SocketAddr,
+        udp_map: BTreeMap<Vec<u16>, Vec<u8>>,
+    ) -> io::Result<SocketAddr> {
         if self.udp {
-            let payload = cust_payload(socket.port());
-
-            let tries = self.tries.get();
-            for _ in 1..=tries {
-                match self.udp_scan(socket, &payload, self.timeout).await {
-                    Ok(true) => return Ok(socket),
-                    Ok(false) => continue,
-                    Err(e) => return Err(e),
-                }
-            }
-            return Ok(socket);
+            return self.scan_udp_socket(socket, udp_map).await;
         }
 
         let tries = self.tries.get();
@@ -178,6 +174,30 @@ impl Scanner {
             };
         }
         unreachable!();
+    }
+
+    async fn scan_udp_socket(
+        &self,
+        socket: SocketAddr,
+        udp_map: BTreeMap<Vec<u16>, Vec<u8>>,
+    ) -> io::Result<SocketAddr> {
+        let mut payload: Vec<u8> = Vec::new();
+        for (key, value) in udp_map {
+            if key.contains(&socket.port()) {
+                payload = value;
+            }
+        }
+
+        let tries = self.tries.get();
+        for _ in 1..=tries {
+            match self.udp_scan(socket, &payload, self.timeout).await {
+                Ok(true) => return Ok(socket),
+                Ok(false) => continue,
+                Err(e) => return Err(e),
+            }
+        }
+
+        Ok(socket)
     }
 
     /// Performs the connection to the socket with timeout

@@ -9,16 +9,6 @@
 
 ![Arch Linux package][badge-1] ![Built with Rust][badge-2] ![GitHub All Releases][badge-3] ![Crates.io][badge-4] ![Discord][badge-5] ![Actions][badge-6]
 
-
----
-
-|                     🐋 `(Recommended)`                      |              👩‍💻               |             🏗️              |             🔧              |
-| :---------------------------------------------------------: | :---------------------------: | :-------------------------: | :-------------------------: |
-|               [![Docker][DockerPic]][Docker]                | [![Kali][Kali1]][Kali/Debian] | [![Arch][Arch]][Arch-Linux] | [![apple][apple]][Homebrew] |
-| `docker pull rustscan/rustscan:latest`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
-
----
-
 </div>
 
 # 🤔 What is this?
@@ -27,6 +17,13 @@
 
 The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run scripts through our scripting engine (Python, Lua, Shell supported).
 
+# 🛠️ Installation
+
+RustScan is in many repositories already. Install it with whatever tools you wish:
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
+
+RustScan only officially supports Cargo installations, if you want to use that please install Rust and then `cargo install rustscan`
 # ✨ Features
 
 - Scans all 65k ports in **3 seconds**.
@@ -47,7 +44,6 @@ The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run 
 - 🐋 [Docker Usage][toc-docker-usage]
 - 🦜 [Discord][discord]
 - 🤸 [Usage][usage-1]
-- 🎪 [Community][toc-community]
 
 # 🔭 Why RustScan?
 
@@ -104,21 +100,6 @@ RustScan is one of the first penetration testing tools that aims to be entirely 
 [Most penetration testing tools are not accessible][accessible-2], which negatively affects the whole industry.
 
 RustScan has continuous integration testing that aims to ensure it is accessible, and we are constantly working on ways to improve our accessibility and ensure _everyone_ can use RustScan.
-
-# 📖 Full Installation Guide
-
-You can find our guide [here][install-1].
-
-## 🦊 Community Distributions
-
-Here are all of RustScan's community distributions.
-
-If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however, you want to let us know.
-
-- [Open Suse][distributions-1]
-- [Fedora/CentOS][distributions-2]
-
-[![Packaging status][rustscan-svg]][repology-1]
 
 # 🤸 Usage
 
@@ -232,4 +213,4 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [badge-3]: https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads
 [badge-4]: https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads
 [badge-5]: https://img.shields.io/discord/754001738184392704
-[badge-6]: https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master
+[badge-6]: https://github.com/RustScan/RustScan/workflows/Build/badge.svg?branch=master

@@ -35,6 +35,9 @@ extern crate log;
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
 fn main() {
+    #[cfg(not(unix))]
+    let _ = ansi_term::enable_ansi_support();
+
     env_logger::init();
     let mut benchmarks = Benchmark::init();
     let mut rustscan_bench = NamedTimer::start("RustScan");
@@ -45,7 +48,7 @@ fn main() {
 
     debug!("Main() `opts` arguments are {:?}", opts);
 
-    let scripts_to_run: Vec<ScriptFile> = match init_scripts(opts.scripts) {
+    let scripts_to_run: Vec<ScriptFile> = match init_scripts(&opts.scripts) {
         Ok(scripts_to_run) => scripts_to_run,
         Err(e) => {
             warning!(
