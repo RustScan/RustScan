@@ -24,6 +24,21 @@ RustScan is in many repositories already. Install it with whatever tools you wis
 [![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
 
 RustScan only officially supports Cargo installations, if you want to use that please install Rust and then `cargo install rustscan`
+
+Example installations include:
+
+MacOS:
+
+```
+  brew install rustscan
+```
+
+Arch:
+
+```
+  yay rustscan
+```
+
 # ✨ Features
 
 - Scans all 65k ports in **3 seconds**.
