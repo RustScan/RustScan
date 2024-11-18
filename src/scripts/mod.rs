@@ -76,7 +76,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use crate::input::ScriptsRequired;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
 use std::convert::TryInto;
@@ -87,6 +87,7 @@ use std::path::PathBuf;
 use std::string::ToString;
 use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
+use which::which;
 
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
@@ -101,8 +102,12 @@ pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
     match scripts {
         ScriptsRequired::None => {}
         ScriptsRequired::Default => {
+            which("nmap")
+                .with_context(|| "nmap: command not found. See <https://nmap.org/download>")?;
+
             let default_script =
                 toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
+
             scripts_to_run.push(default_script);
         }
         ScriptsRequired::Custom => {
@@ -184,14 +189,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 impl Script {
@@ -248,8 +253,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
@@ -258,8 +263,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
