@@ -42,7 +42,7 @@ Arch:
 Gentoo:
 
 ```
-  emerge net-analyzer/RustScan
+  emerge net-analyzer/rustscan
 ```
 
 # ✨ Features
