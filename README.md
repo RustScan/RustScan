@@ -39,6 +39,12 @@ Arch:
   yay rustscan
 ```
 
+Gentoo:
+
+```
+  emerge net-analyzer/RustScan
+```
+
 # ✨ Features
 
 - Scans all 65k ports in **3 seconds**.
