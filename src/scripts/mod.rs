@@ -85,7 +85,7 @@ use std::io::{self, prelude::*};
 use std::net::IpAddr;
 use std::path::PathBuf;
 use std::string::ToString;
-use subprocess::{Exec, ExitStatus};
+use subprocess::{Exec, ExitStatus, Redirection};
 use text_placeholder::Template;
 
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
@@ -184,14 +184,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 impl Script {
@@ -248,8 +248,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
@@ -258,8 +258,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
@@ -271,7 +271,9 @@ impl Script {
 #[cfg(not(tarpaulin_include))]
 fn execute_script(script: &str) -> Result<String> {
     debug!("\nScript arguments {}", script);
-    let process = Exec::shell(script);
+    let process = Exec::shell(script)
+        .stdout(Redirection::Pipe)
+        .stderr(Redirection::Pipe);
     match process.capture() {
         Ok(c) => {
             let es = match c.exit_status {
