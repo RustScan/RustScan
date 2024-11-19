@@ -184,14 +184,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
-    ipversion: String
+    ipversion: String,
 }
 
 impl Script {
@@ -248,8 +248,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
@@ -258,8 +258,8 @@ impl Script {
                 port: ports_str,
                 ipversion: match &self.ip {
                     IpAddr::V4(_) => String::from("4"),
-                    IpAddr::V6(_) => String::from("6")
-                }
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }

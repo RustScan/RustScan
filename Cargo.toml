@@ -44,6 +44,7 @@ once_cell = "1.20.2"
 [dev-dependencies]
 parameterized = "2.0.0"
 wait-timeout = "0.2"
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [package.metadata.deb]
 depends = "$auto, nmap"
@@ -61,3 +62,7 @@ path = "src/main.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ["cfg(tarpaulin_include)"] }
+
+[[bench]]
+name = "benchmark_portscan"
+harness = false
