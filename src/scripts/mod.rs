@@ -79,14 +79,16 @@ use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
-use std::convert::TryInto;
 use std::fs::{self, File};
 use std::io::{self, prelude::*};
 use std::net::IpAddr;
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 use std::string::ToString;
-use subprocess::{Exec, ExitStatus, Redirection};
 use text_placeholder::Template;
+
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
 
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
@@ -271,21 +273,41 @@ impl Script {
 #[cfg(not(tarpaulin_include))]
 fn execute_script(script: &str) -> Result<String> {
     debug!("\nScript arguments {}", script);
-    let process = Exec::shell(script)
-        .stdout(Redirection::Pipe)
-        .stderr(Redirection::Pipe);
-    match process.capture() {
-        Ok(c) => {
-            let es = match c.exit_status {
-                ExitStatus::Exited(c) => c.try_into().unwrap(),
-                ExitStatus::Signaled(c) => c.into(),
-                ExitStatus::Other(c) => c,
-                ExitStatus::Undetermined => -1,
+
+    let (cmd, arg) = if cfg!(unix) {
+        ("sh", "-c")
+    } else {
+        ("cmd.exe", "/c")
+    };
+
+    match Command::new(cmd)
+        .args(&[arg, script])
+        .stdin(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+    {
+        Ok(output) => {
+            let status = output.status;
+
+            let es = match status.code() {
+                Some(code) => code,
+                _ => {
+                    #[cfg(unix)]
+                    {
+                        status.signal().unwrap()
+                    }
+
+                    #[cfg(windows)]
+                    {
+                        return Err(anyhow!("Unknown exit status"));
+                    }
+                }
             };
+
             if es != 0 {
                 return Err(anyhow!("Exit code = {}", es));
             }
-            Ok(c.stdout_str())
+            Ok(String::from_utf8_lossy(&output.stdout).into_owned())
         }
         Err(error) => {
             debug!("Command error {}", error.to_string());
