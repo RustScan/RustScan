@@ -1,6 +1,6 @@
 test:
     cargo nextest run
-    cargo clippy 
+    cargo clippy -- --deny warnings
     cargo fmt --check
     cargo doc --workspace --all-features --no-deps --document-private-items
 
