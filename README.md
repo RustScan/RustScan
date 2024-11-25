@@ -19,6 +19,10 @@ The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run 
 
 # 🛠️ Installation
 
+You can install RustScan's binary from our [releases page](https://github.com/RustScan/RustScan/releases).
+
+We would prefer you to install with a package manager so it is tested and works for your system.
+
 RustScan is in many repositories already. Install it with whatever tools you wish:
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
