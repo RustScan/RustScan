@@ -1,4 +1,5 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use async_std::task::block_on;
+use criterion::{criterion_group, criterion_main, Criterion};
 use rustscan::input::{PortRange, ScanOrder};
 use rustscan::port_strategy::PortStrategy;
 use rustscan::scanner::Scanner;
@@ -9,10 +10,10 @@ fn portscan_tcp() {
     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
     let range = PortRange {
         start: 1,
-        end: 60_000,
+        end: 1023,
     };
     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
-    let _scanner = Scanner::new(
+    let scanner = Scanner::new(
         &addrs,
         10,
         Duration::from_millis(100),
@@ -23,17 +24,18 @@ fn portscan_tcp() {
         vec![],
         false,
     );
-    // Perform the actual scan or logic here if needed
+
+    let _ = block_on(scanner.run());
 }
 
 fn portscan_udp() {
     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
     let range = PortRange {
         start: 1,
-        end: 60_000,
+        end: 1023,
     };
     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
-    let _scanner = Scanner::new(
+    let scanner = Scanner::new(
         &addrs,
         10,
         Duration::from_millis(100),
@@ -44,7 +46,8 @@ fn portscan_udp() {
         vec![],
         true,
     );
-    // Perform the actual scan or logic here if needed
+
+    let _ = block_on(scanner.run());
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
