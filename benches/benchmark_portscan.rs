@@ -1,16 +1,55 @@
-use criterion::{criterion_group, criterion_main, Criterion};
-use std::hint::black_box;
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use rustscan::input::{PortRange, ScanOrder};
+use rustscan::port_strategy::PortStrategy;
+use rustscan::scanner::Scanner;
+use std::net::IpAddr;
+use std::time::Duration;
 
-fn fibonacci(n: u64) -> u64 {
-    match n {
-        0 => 1,
-        1 => 1,
-        n => fibonacci(n - 1) + fibonacci(n - 2),
-    }
+fn portscan_tcp() {
+    let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+    let range = PortRange {
+        start: 1,
+        end: 60_000,
+    };
+    let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
+    let _scanner = Scanner::new(
+        &addrs,
+        10,
+        Duration::from_millis(100),
+        1,
+        false,
+        strategy,
+        true,
+        vec![],
+        false,
+    );
+    // Perform the actual scan or logic here if needed
+}
+
+fn portscan_udp() {
+    let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+    let range = PortRange {
+        start: 1,
+        end: 60_000,
+    };
+    let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
+    let _scanner = Scanner::new(
+        &addrs,
+        10,
+        Duration::from_millis(100),
+        1,
+        false,
+        strategy,
+        true,
+        vec![],
+        true,
+    );
+    // Perform the actual scan or logic here if needed
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("fib 20", |b| b.iter(|| fibonacci(black_box(20))));
+    c.bench_function("portscan tcp", |b| b.iter(|| portscan_tcp()));
+    c.bench_function("portscan udp", |b| b.iter(|| portscan_udp()));
 }
 
 criterion_group!(benches, criterion_benchmark);
