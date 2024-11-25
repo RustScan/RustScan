@@ -281,7 +281,7 @@ fn execute_script(script: &str) -> Result<String> {
     };
 
     match Command::new(cmd)
-        .args(&[arg, script])
+        .args([arg, script])
         .stdin(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
