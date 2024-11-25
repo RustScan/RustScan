@@ -1,6 +1,8 @@
 name: CD Pipeline
-
-on: [push]
+on:
+  push:
+    tags:
+      - '*'
 
 jobs:
   build-nix:
