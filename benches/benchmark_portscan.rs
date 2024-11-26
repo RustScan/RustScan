@@ -51,7 +51,10 @@ fn criterion_benchmark(c: &mut Criterion) {
         true,
     );
 
-    c.bench_function("portscan udp", |b| {
+    let mut udp_group = c.benchmark_group("portscan udp");
+    udp_group.measurement_time(Duration::from_secs(20));
+
+    udp_group.bench_function("portscan udp", |b| {
         b.iter(|| portscan_udp(black_box(&scanner_udp)))
     });
 }
