@@ -72,9 +72,9 @@ fn criterion_benchmark(c: &mut Criterion) {
 
     // Benching helper functions
 
-    c.bench_function("parse address", |b| b.iter(|| bench_address));
+    parse_address.bench_function("parse address", |b| b.iter(|| bench_address));
 
-    c.bench_function("parse address", |b| b.iter(|| bench_port_strategy));
+    let mut port_strategy = c.benchmark_group("port strategy");
 }
 
 criterion_group!(benches, criterion_benchmark);
