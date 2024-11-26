@@ -14,6 +14,18 @@ fn portscan_udp(scanner: &Scanner) {
     let _scan_result = block_on(scanner.run());
 }
 
+fn bench_address() {
+    vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+}
+
+fn bench_port_strategy() {
+    let range = PortRange {
+        start: 1,
+        end: 1_000,
+    };
+    PortStrategy::pick(&Some(range.clone()), None, ScanOrder::Serial);
+}
+
 fn criterion_benchmark(c: &mut Criterion) {
     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
     let range = PortRange {
@@ -57,6 +69,12 @@ fn criterion_benchmark(c: &mut Criterion) {
     udp_group.bench_function("portscan udp", |b| {
         b.iter(|| portscan_udp(black_box(&scanner_udp)))
     });
+
+    // Benching helper functions
+
+    c.bench_function("parse address", |b| b.iter(|| bench_address));
+
+    c.bench_function("parse address", |b| b.iter(|| bench_port_strategy));
 }
 
 criterion_group!(benches, criterion_benchmark);
