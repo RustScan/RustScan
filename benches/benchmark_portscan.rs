@@ -3,17 +3,19 @@ use criterion::{criterion_group, criterion_main, Criterion};
 use rustscan::input::{PortRange, ScanOrder};
 use rustscan::port_strategy::PortStrategy;
 use rustscan::scanner::Scanner;
+use std::hint::black_box;
 use std::net::IpAddr;
 use std::time::Duration;
 
-fn portscan_tcp() {
+fn get_scanner(udp: bool) -> Scanner {
     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
     let range = PortRange {
         start: 1,
         end: 1023,
     };
     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
-    let scanner = Scanner::new(
+
+    return Scanner::new(
         &addrs,
         10,
         Duration::from_millis(100),
@@ -22,38 +24,28 @@ fn portscan_tcp() {
         strategy,
         true,
         vec![],
-        false,
+        udp,
     );
-
-    let _ = block_on(scanner.run());
 }
 
-fn portscan_udp() {
-    let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
-    let range = PortRange {
-        start: 1,
-        end: 1023,
-    };
-    let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Serial);
-    let scanner = Scanner::new(
-        &addrs,
-        10,
-        Duration::from_millis(100),
-        1,
-        false,
-        strategy,
-        true,
-        vec![],
-        true,
-    );
+fn benchmark_tcp_scanner(c: &mut Criterion) {
+    let tcp_scanner = get_scanner(false);
 
-    let _ = block_on(scanner.run());
+    c.bench_function("portscan tcp", |b| {
+        b.iter(|| black_box(block_on(tcp_scanner.run())))
+    });
 }
 
-fn criterion_benchmark(c: &mut Criterion) {
-    c.bench_function("portscan tcp", |b| b.iter(|| portscan_tcp()));
-    c.bench_function("portscan udp", |b| b.iter(|| portscan_udp()));
+fn benchmark_udp_scanner(c: &mut Criterion) {
+    let mut group = c.benchmark_group("portscan udp");
+    group.measurement_time(Duration::from_secs(10));
+
+    let udp_scanner = get_scanner(true);
+
+    group.bench_function("portscan udp", |b| {
+        b.iter(|| black_box(block_on(udp_scanner.run())))
+    });
 }
 
-criterion_group!(benches, criterion_benchmark);
+criterion_group!(benches, benchmark_tcp_scanner, benchmark_udp_scanner);
 criterion_main!(benches);
