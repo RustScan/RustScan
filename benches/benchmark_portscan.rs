@@ -26,7 +26,7 @@ fn criterion_benchmark(c: &mut Criterion) {
     let scanner_tcp = Scanner::new(
         &addrs,
         10,
-        Duration::from_millis(100),
+        Duration::from_millis(10),
         1,
         false,
         strategy_tcp,
