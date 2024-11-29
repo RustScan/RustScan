@@ -17,15 +17,10 @@ exclude = [
 ]
 
 [dependencies]
-<<<<<<< HEAD
 tokio = { version = "1.38.1", features = ["net", "io-util"] }
 colored = "2.1.0"
-structopt = "0.3.20"
-=======
 clap = { version = "4.5.13", features = ["derive", "wrap_help"] }
-colored = "2.1.0"
 async-std = "1.13.0"
->>>>>>> master
 futures = "0.3"
 rlimit = "0.10.2"
 log = "0.4.22"
@@ -36,37 +31,22 @@ gcd = "2.0.1"
 rand = "0.8.5"
 colorful = "0.3.2"
 ansi_term = "0.12.1"
-<<<<<<< HEAD
-toml = "0.8.12"
-serde = "1.0.201"
-serde_derive = "1.0.116"
-cidr-utils = "0.6.1"
-itertools = "0.13.0"
-hickory-resolver = { version = "0.24.1", features = ["dns-over-rustls"] }
-anyhow = "1.0.83"
-subprocess = "0.2.9"
-text_placeholder = { version = "0.5", features = ["struct_context"] }
-tokio-par-stream = "0.1.1"
-
-[dev-dependencies]
-tokio = { version = "1.38.1", features = ["rt", "macros"] }
-wait-timeout = "0.2.0"
-=======
 toml = "0.8.19"
 serde = "1.0.124"
 serde_derive = "1.0.116"
 cidr-utils = "0.6.1"
 itertools = "0.13.0"
-hickory-resolver = { version = "0.24.0", features = ["dns-over-rustls"] }
-anyhow = "1.0.40"
+hickory-resolver = { version = "0.24.1", features = ["dns-over-rustls"] }
+anyhow = "1.0.83"
 text_placeholder = { version = "0.5", features = ["struct_context"] }
 once_cell = "1.20.2"
+subprocess = "0.2.9"
+tokio-par-stream = "0.1.1"
 
 [dev-dependencies]
 parameterized = "2.0.0"
 wait-timeout = "0.2"
 criterion = { version = "0.5", features = ["html_reports"] }
->>>>>>> master
 
 [package.metadata.deb]
 depends = "$auto, nmap"

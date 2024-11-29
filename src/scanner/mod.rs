@@ -1,10 +1,10 @@
 //! Core functionality for actual scanning behaviour.
-use std::collections::HashSet;
-use std::fmt::{Debug, Formatter};
-use std::sync::Arc;
 use crate::generated::get_parsed_data;
 use crate::port_strategy::PortStrategy;
 use log::debug;
+use std::collections::HashSet;
+use std::fmt::{Debug, Formatter};
+use std::sync::Arc;
 
 mod socket_iterator;
 use socket_iterator::SocketIterator;
