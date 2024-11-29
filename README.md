@@ -9,16 +9,6 @@
 
 ![Arch Linux package][badge-1] ![Built with Rust][badge-2] ![GitHub All Releases][badge-3] ![Crates.io][badge-4] ![Discord][badge-5] ![Actions][badge-6]
 
-
----
-
-|                     🐋 `(Recommended)`                      |              👩‍💻               |             🏗️              |             🔧              |
-| :---------------------------------------------------------: | :---------------------------: | :-------------------------: | :-------------------------: |
-|               [![Docker][DockerPic]][Docker]                | [![Kali][Kali1]][Kali/Debian] | [![Arch][Arch]][Arch-Linux] | [![apple][apple]][Homebrew] |
-| `docker pull rustscan/rustscan:latest`</br>[Docker][usage-0] | [Link to Documentation][kali] |      `yay -S rustscan`      |   `brew install rustscan`   |
-
----
-
 </div>
 
 # 🤔 What is this?
@@ -26,6 +16,32 @@
 ![fast][speed-1]
 
 The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run scripts through our scripting engine (Python, Lua, Shell supported).
+
+# 🛠️ Installation
+
+You can install RustScan's binary from our [releases page](https://github.com/RustScan/RustScan/releases).
+
+We would prefer you to install with a package manager so it is tested and works for your system.
+
+RustScan is in many repositories already. Install it with whatever tools you wish:
+
+[![Packaging status](https://repology.org/badge/vertical-allrepos/rustscan.svg)](https://repology.org/project/rustscan/versions)
+
+RustScan only officially supports Cargo installations, if you want to use that please install Rust and then `cargo install rustscan`
+
+Example installations include:
+
+MacOS:
+
+```
+  brew install rustscan
+```
+
+Arch:
+
+```
+  yay rustscan
+```
 
 # ✨ Features
 
@@ -47,7 +63,6 @@ The Modern Port Scanner. **Find ports quickly (3 seconds at its fastest)**. Run 
 - 🐋 [Docker Usage][toc-docker-usage]
 - 🦜 [Discord][discord]
 - 🤸 [Usage][usage-1]
-- 🎪 [Community][toc-community]
 
 # 🔭 Why RustScan?
 
@@ -105,21 +120,6 @@ RustScan is one of the first penetration testing tools that aims to be entirely 
 
 RustScan has continuous integration testing that aims to ensure it is accessible, and we are constantly working on ways to improve our accessibility and ensure _everyone_ can use RustScan.
 
-# 📖 Full Installation Guide
-
-You can find our guide [here][install-1].
-
-## 🦊 Community Distributions
-
-Here are all of RustScan's community distributions.
-
-If you maintain a community distribution and want it listed here, leave an issue / pull request / Discord message or however, you want to let us know.
-
-- [Open Suse][distributions-1]
-- [Fedora/CentOS][distributions-2]
-
-[![Packaging status][rustscan-svg]][repology-1]
-
 # 🤸 Usage
 
 We have 2 usage guides. [Basic Usage][usage-1] and [Things you may want to do][usage-2].
@@ -145,7 +145,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <!-- markdownlint-disable -->
 <table>
   <tr>
-    <td align="center"><a href="https://skerritt.blog"><img src="https://avatars3.githubusercontent.com/u/10378052?v=4" width="100px;" alt=""/><br /><sub><b>Brandon</b></sub></a><br /><a href="#infra-brandonskerritt" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RustScan/RustScan/commits?author=brandonskerritt" title="Tests">⚠️</a> <a href="https://github.com/RustScan/RustScan/commits?author=brandonskerritt" title="Code">💻</a> <a href="#design-brandonskerritt" title="Design">🎨</a></td>
+    <td align="center"><a href="https://skerritt.blog"><img src="https://avatars3.githubusercontent.com/u/10378052?v=4" width="100px;" alt=""/><br /><sub><b>Bee</b></sub></a><br /><a href="#infra-beeskerritt" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a> <a href="https://github.com/RustScan/RustScan/commits?author=beeskerritt" title="Tests">⚠️</a> <a href="https://github.com/RustScan/RustScan/commits?author=beesan" title="Code">💻</a> <a href="#design-beeskerritt" title="Design">🎨</a></td>
     <td align="center"><a href="https://sakiir.ovh"><img src="https://avatars1.githubusercontent.com/u/9950578?v=4" width="100px;" alt=""/><br /><sub><b>SakiiR</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=SakiiR" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/issues?q=author%3ASakiiR" title="Bug reports">🐛</a></td>
     <td align="center"><a href="https://github.com/smackhack"><img src="https://avatars2.githubusercontent.com/u/48143394?v=4" width="100px;" alt=""/><br /><sub><b>smackhack</b></sub></a><br /><a href="#ideas-smackhack" title="Ideas, Planning, & Feedback">🤔</a> <a href="#example-smackhack" title="Examples">💡</a></td>
     <td align="center"><a href="http://bernardoamc.github.io/"><img src="https://avatars0.githubusercontent.com/u/428984?v=4" width="100px;" alt=""/><br /><sub><b>Bernardo Araujo</b></sub></a><br /><a href="https://github.com/RustScan/RustScan/commits?author=bernardoamc" title="Code">💻</a> <a href="https://github.com/RustScan/RustScan/issues?q=author%3Abernardoamc" title="Bug reports">🐛</a> <a href="#design-bernardoamc" title="Design">🎨</a></td>
@@ -193,7 +193,7 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [kali]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#%EF%B8%8F-debian--kali "Read the install guide"
 [Kali/Debian]: https://github.com/RustScan/RustScan/releases "Kali Debian"
 [Arch-Linux]: https://archlinux.org/packages/extra/x86_64/rustscan/ "Arch Linux installation of Rustscan"
-[Homebrew]: https://crates.io/crates/rustscan/ "Homebrew install of Rustscan"
+[Homebrew]: https://formulae.brew.sh/formula/rustscan "Homebrew install of Rustscan"
 [usage-1]: https://github.com/RustScan/RustScan/wiki/Usage "Basic Usage of Rustscan"
 [usage-0]: https://github.com/RustScan/RustScan/wiki/Installation-Guide#docker-whale "Use Docker Rustscan"
 [config-file-here]: https://github.com/RustScan/RustScan/wiki/Config-File "RustScan Configuration File"
@@ -232,4 +232,4 @@ This project follows the [all-contributors](https://github.com/all-contributors/
 [badge-3]: https://img.shields.io/github/downloads/rustscan/rustscan/total?label=GitHub%20Downloads
 [badge-4]: https://img.shields.io/crates/d/rustscan?label=Cargo%20Downloads
 [badge-5]: https://img.shields.io/discord/754001738184392704
-[badge-6]: https://github.com/RustScan/RustScan/workflows/Continuous%20integration/badge.svg?branch=master
+[badge-6]: https://github.com/RustScan/RustScan/workflows/Build/badge.svg?branch=master

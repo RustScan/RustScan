@@ -1,96 +1,179 @@
-name: Build
-on:
-  pull_request:
-    paths-ignore:
-      - '.github/**'
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - '.github/**'
-  schedule:
-    - cron: '00 01 * * *'
+name: CD Pipeline
+
+on: [push]
 
 jobs:
-  check:
-    name: Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
-
-  test:
-    name: Test Suite
+  build-nix:
+    env:
+      IN_PIPELINE: true
+    runs-on: ${{ matrix.os }}
+    if: github.ref == 'refs/heads/master'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        rust: [stable]
-    runs-on: ${{ matrix.os }}
+        type: [ubuntu-x64, ubuntu-x86, armv7, aarch64]
+        include:
+          - type: ubuntu-x64
+            os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            name: x86_64-linux-rustscan
+            path: target/x86_64-unknown-linux-musl/release/rustscan
+            pkg_config_path: /usr/lib/x86_64-linux-gnu/pkgconfig
+          - type: ubuntu-x86
+            os: ubuntu-latest
+            target: i686-unknown-linux-musl
+            name: x86-linux-rustscan
+            path: target/i686-unknown-linux-musl/release/rustscan
+            pkg_config_path: /usr/lib/i686-linux-gnu/pkgconfig
+          - type: armv7
+            os: ubuntu-latest
+            target: armv7-unknown-linux-gnueabihf
+            name: armv7-linux-rustscan
+            path: target/armv7-unknown-linux-gnueabihf/release/rustscan
+            pkg_config_path: /usr/lib/x86_64-linux-gnu/pkgconfig
+          - type: aarch64
+            os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            name: aarch64-linux-rustscan
+            path: target/aarch64-unknown-linux-gnu/release/rustscan
+            pkg_config_path: /usr/lib/x86_64-linux-gnu/pkgconfig
     steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - name: Cache cargo & target directories
+        uses: Swatinem/rust-cache@v2
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
         with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          override: true
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Run cargo test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-
-  lints:
-    name: Lints
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
+          command: build
+          target: ${{ matrix.target }}
+          args: "--locked --release"
+          strip: true
           toolchain: stable
-          override: true
-          components: rustfmt, clippy
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: Run cargo fmt
-        uses: actions-rs/cargo@v1
+      - name: Build tar.gz for homebrew installs
+        if: matrix.type == 'ubuntu-x64'
+        run: |
+          tar czf ${{ matrix.name }}.tar.gz -C target/x86_64-unknown-linux-musl/release rustscan
+      - uses: actions/upload-artifact@v4
         with:
-          command: fmt
-          args: --all -- --check
-
-      - name: Run cargo clippy
-        uses: actions-rs/cargo@v1
+          name: ${{ matrix.name }}
+          path: ${{ matrix.path }}
+      - uses: actions/upload-artifact@v4
+        if: matrix.type == 'ubuntu-x64'
         with:
-          command: clippy
-          args: -- -D warnings
-
-      - name: Run rustdoc lints
-        uses: actions-rs/cargo@v1
+          name: ${{ matrix.name }}.tar.gz
+          path: ${{ matrix.name }}.tar.gz
+  build-deb:
+    needs: [build-nix]
+    runs-on: ubuntu-latest
+    env:
+      IN_PIPELINE: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-deb
+        run: cargo install -f cargo-deb
+      - uses: awalsh128/cache-apt-pkgs-action@v1
         with:
-          command: doc
-          args: --workspace --all-features --no-deps --document-private-items
+          packages: musl-tools # provides musl-gcc
+          version: 1.0
+      - name: Install musl toolchain
+        run: rustup target add x86_64-unknown-linux-musl
+      - name: Deb Build
+        run: cargo deb --target=x86_64-unknown-linux-musl
+      - name: Upload Deb Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rustscan.deb
+          path: ./target/x86_64-unknown-linux-musl/debian/*
+
+  build-macos:
+    env:
+      IN_PIPELINE: true
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache cargo & target directories
+        uses: Swatinem/rust-cache@v2
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: build
+          target: x86_64-apple-darwin
+          args: "--locked --release"
+          strip: true
+          toolchain: stable
+      - name: Build tar.gz for homebrew installs
+        run: |
+          tar czf x86_64-macos-rustscan.tar.gz -C target/x86_64-apple-darwin/release rustscan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: x86_64-macos-rustscan
+          path: target/x86_64-apple-darwin/release/rustscan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: x86_64-macos-rustscan.tar.gz
+          path: x86_64-macos-rustscan.tar.gz
+  
+  build-macos-aarch64:
+    env:
+      IN_PIPELINE: true
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache cargo & target directories
+        uses: Swatinem/rust-cache@v2
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: build
+          target: aarch64-apple-darwin
+          args: "--locked --release"
+          strip: true
+          toolchain: stable
+      - name: Build tar.gz for homebrew installs
+        run: |
+          tar czf aarch64-macos-rustscan.tar.gz -C target/aarch64-apple-darwin/release rustscan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aarch64-macos-rustscan
+          path: target/aarch64-apple-darwin/release/rustscan
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aarch64-macos-rustscan.tar.gz
+          path: aarch64-macos-rustscan.tar.gz
+
+  build-windows:
+    env:
+      IN_PIPELINE: true
+    runs-on: ${{ matrix.os }}
+    if: github.ref == 'refs/heads/master'
+    strategy:
+      matrix:
+        type: [windows-x64, windows-x86]
+        include:
+          - type: windows-x64
+            os: windows-latest
+            target: x86_64-pc-windows-msvc
+            name: x86_64-windows-rustscan.exe
+            path: target\x86_64-pc-windows-msvc\release\rustscan.exe
+          - type: windows-x86
+            os: windows-latest
+            target: i686-pc-windows-msvc
+            name: x86-windows-rustscan.exe
+            path: target\i686-pc-windows-msvc\release\rustscan.exe
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache cargo & target directories
+        uses: Swatinem/rust-cache@v2
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v0
+        with:
+          command: build
+          target:  ${{ matrix.target }}
+          args: "--locked --release"
+          strip: true
+          toolchain: stable
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: ${{ matrix.path }}

@@ -79,77 +79,70 @@ use crate::input::ScriptsRequired;
 use anyhow::{anyhow, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
-use std::collections::HashSet;
-use std::convert::TryInto;
 use std::fs::{self, File};
 use std::io::{self, prelude::*};
 use std::net::IpAddr;
 use std::path::PathBuf;
+use std::process::{Command, Stdio};
 use std::string::ToString;
-use subprocess::{Exec, ExitStatus};
 use text_placeholder::Template;
+
+#[cfg(unix)]
+use std::os::unix::process::ExitStatusExt;
 
 static DEFAULT: &str = r#"tags = ["core_approved", "RustScan", "default"]
 developer = [ "RustScan", "https://github.com/RustScan" ]
 ports_separator = ","
-call_format = "nmap -vvv -p {{port}} {{ip}}"
+call_format = "nmap -vvv -p {{port}} -{{ipversion}} {{ip}}"
 "#;
 
 #[cfg(not(tarpaulin_include))]
-pub fn init_scripts(scripts: ScriptsRequired) -> Result<Vec<ScriptFile>> {
+pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
     let mut scripts_to_run: Vec<ScriptFile> = Vec::new();
 
     match scripts {
-        ScriptsRequired::None => Ok(scripts_to_run),
+        ScriptsRequired::None => {}
         ScriptsRequired::Default => {
             let default_script =
                 toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
             scripts_to_run.push(default_script);
-            Ok(scripts_to_run)
         }
         ScriptsRequired::Custom => {
-            let Some(scripts_dir_base) = dirs::home_dir() else {
-                return Err(anyhow!("Could not infer scripts path."));
-            };
-            let script_paths = match find_scripts(scripts_dir_base) {
-                Ok(script_paths) => script_paths,
-                Err(e) => return Err(anyhow!(e)),
-            };
+            let scripts_dir_base =
+                dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?;
+            let script_paths = find_scripts(scripts_dir_base)?;
             debug!("Scripts paths \n{:?}", script_paths);
 
             let parsed_scripts = parse_scripts(script_paths);
             debug!("Scripts parsed \n{:?}", parsed_scripts);
 
-            let script_config = match ScriptConfig::read_config() {
-                Ok(script_config) => script_config,
-                Err(e) => return Err(anyhow!(e)),
-            };
+            let script_config = ScriptConfig::read_config()?;
             debug!("Script config \n{:?}", script_config);
 
             // Only Scripts that contain all the tags found in ScriptConfig will be selected.
-            if script_config.tags.is_some() {
-                let config_hashset: HashSet<String> =
-                    script_config.tags.unwrap().into_iter().collect();
-                for script in &parsed_scripts {
-                    if script.tags.is_some() {
-                        let script_hashset: HashSet<String> =
-                            script.tags.clone().unwrap().into_iter().collect();
-                        if config_hashset.is_subset(&script_hashset) {
-                            scripts_to_run.push(script.clone());
+            if let Some(config_hashset) = script_config.tags {
+                for script in parsed_scripts {
+                    if let Some(script_hashset) = &script.tags {
+                        if script_hashset
+                            .iter()
+                            .all(|tag| config_hashset.contains(tag))
+                        {
+                            scripts_to_run.push(script);
                         } else {
                             debug!(
                                 "\nScript tags does not match config tags {:?} {}",
                                 &script_hashset,
-                                script.path.clone().unwrap().display()
+                                script.path.unwrap().display()
                             );
                         }
                     }
                 }
             }
             debug!("\nScript(s) to run {:?}", scripts_to_run);
-            Ok(scripts_to_run)
         }
     }
+
+    Ok(scripts_to_run)
 }
 
 pub fn parse_scripts(scripts: Vec<PathBuf>) -> Vec<ScriptFile> {
@@ -193,12 +186,14 @@ struct ExecPartsScript {
     script: String,
     ip: String,
     port: String,
+    ipversion: String,
 }
 
 #[derive(Serialize)]
 struct ExecParts {
     ip: String,
     port: String,
+    ipversion: String,
 }
 
 impl Script {
@@ -253,17 +248,24 @@ impl Script {
                 script: self.path.unwrap().to_str().unwrap().to_string(),
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: match &self.ip {
+                    IpAddr::V4(_) => String::from("4"),
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts_script)?;
         } else {
             let exec_parts: ExecParts = ExecParts {
                 ip: self.ip.to_string(),
                 port: ports_str,
+                ipversion: match &self.ip {
+                    IpAddr::V4(_) => String::from("4"),
+                    IpAddr::V6(_) => String::from("6"),
+                },
             };
             to_run = default_template.fill_with_struct(&exec_parts)?;
         }
         debug!("\nScript format to run {}", to_run);
-
         execute_script(&to_run)
     }
 }
@@ -271,19 +273,41 @@ impl Script {
 #[cfg(not(tarpaulin_include))]
 fn execute_script(script: &str) -> Result<String> {
     debug!("\nScript arguments {}", script);
-    let process = Exec::shell(script);
-    match process.capture() {
-        Ok(c) => {
-            let es = match c.exit_status {
-                ExitStatus::Exited(c) => c.try_into().unwrap(),
-                ExitStatus::Signaled(c) => c.into(),
-                ExitStatus::Other(c) => c,
-                ExitStatus::Undetermined => -1,
+
+    let (cmd, arg) = if cfg!(unix) {
+        ("sh", "-c")
+    } else {
+        ("cmd.exe", "/c")
+    };
+
+    match Command::new(cmd)
+        .args([arg, script])
+        .stdin(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+    {
+        Ok(output) => {
+            let status = output.status;
+
+            let es = match status.code() {
+                Some(code) => code,
+                _ => {
+                    #[cfg(unix)]
+                    {
+                        status.signal().unwrap()
+                    }
+
+                    #[cfg(windows)]
+                    {
+                        return Err(anyhow!("Unknown exit status"));
+                    }
+                }
             };
+
             if es != 0 {
                 return Err(anyhow!("Exit code = {}", es));
             }
-            Ok(c.stdout_str())
+            Ok(String::from_utf8_lossy(&output.stdout).into_owned())
         }
         Err(error) => {
             debug!("Command error {}", error.to_string());
