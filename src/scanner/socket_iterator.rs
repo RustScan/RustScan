@@ -30,7 +30,7 @@ impl<'s> SocketIterator<'s> {
 }
 
 #[allow(clippy::doc_link_with_quotes)]
-impl<'s> Iterator for SocketIterator<'s> {
+impl Iterator for SocketIterator<'_> {
     type Item = SocketAddr;
 
     /// Returns a socket based on the combination of one of the provided
