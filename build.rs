@@ -62,8 +62,7 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
     let dest_path = PathBuf::from("src/generated.rs");
 
     let mut generated_code = String::new();
-    generated_code.push_str("use std::collections::BTreeMap;\n");
-    generated_code.push_str("use once_cell::sync::Lazy;\n\n");
+    generated_code.push_str("use std::{collections::BTreeMap, sync::LazyLock};\n\n");
 
     generated_code.push_str("fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    let mut map = BTreeMap::new();\n");
@@ -92,7 +91,7 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
     generated_code.push_str("}\n\n");
 
     generated_code.push_str(
-        "static PARSED_DATA: Lazy<BTreeMap<Vec<u16>, Vec<u8>>> = Lazy::new(generated_data);\n",
+        "static PARSED_DATA: LazyLock<BTreeMap<Vec<u16>, Vec<u8>>> = LazyLock::new(generated_data);\n",
     );
     generated_code.push_str("pub fn get_parsed_data() -> &'static BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    &PARSED_DATA\n");

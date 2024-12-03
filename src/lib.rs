@@ -41,6 +41,8 @@
 //! ```
 #![allow(clippy::needless_doctest_main)]
 
+use std::sync::OnceLock;
+
 pub mod tui;
 
 pub mod input;
@@ -60,7 +62,7 @@ pub mod generated;
 /// Static variable defining the current state of execution. The cli binary should
 /// set it to true by calling set_cli_mode.
 #[doc(hidden)]
-pub static IS_CLI_MODE: once_cell::sync::OnceCell<bool> = once_cell::sync::OnceCell::new();
+pub static IS_CLI_MODE: OnceLock<bool> = OnceLock::new();
 
 /// Set IS_CLI_MODE to true.
 #[doc(hidden)]
