@@ -93,7 +93,7 @@ pub fn parse_address(address: &str, resolver: &Resolver) -> Vec<IpAddr> {
         .map(|cidr| cidr.iter().map(|c| c.address()).collect())
         .ok()
         .or_else(|| {
-            format!("{}:{}", &address, 80)
+            format!("{}:80", &address)
                 .to_socket_addrs()
                 .ok()
                 .map(|mut iter| vec![iter.next().unwrap().ip()])
