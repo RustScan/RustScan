@@ -200,22 +200,17 @@ fn main() {
 #[allow(clippy::items_after_statements, clippy::needless_raw_string_hashes)]
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
-    let s = format!(
-        "{}\n{}\n{}\n{}\n{}",
-        r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-."#,
-        r#"| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |"#,
-        r#"| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |"#,
-        r#"`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'"#,
-        r#"The Modern Day Port Scanner."#
-    );
+    let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
+| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
+| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
+`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
+The Modern Day Port Scanner."#;
+
     println!("{}", s.gradient(Color::Green).bold());
-    let info = format!(
-        "{}\n{}\n{}\n{}",
-        r#"________________________________________"#,
-        r#": http://discord.skerritt.blog         :"#,
-        r#": https://github.com/RustScan/RustScan :"#,
-        r#" --------------------------------------"#
-    );
+    let info = r#"________________________________________
+: http://discord.skerritt.blog         :
+: https://github.com/RustScan/RustScan :
+ --------------------------------------"#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 
