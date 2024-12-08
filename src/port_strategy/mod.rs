@@ -1,10 +1,12 @@
 //! Provides a means to hold configuration options specifically for port scanning.
-mod range_iterator;
-use crate::input::{PortRange, ScanOrder};
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+
 use range_iterator::RangeIterator;
 
+use crate::input::{PortRange, ScanOrder};
+
+mod range_iterator;
 /// Represents options of port scanning.
 ///
 /// Right now all these options involve ranges, but in the future
@@ -97,8 +99,8 @@ impl RangeOrder for RandomRange {
 
 #[cfg(test)]
 mod tests {
-    use super::PortStrategy;
     use crate::input::{PortRange, ScanOrder};
+    use crate::port_strategy::PortStrategy;
 
     #[test]
     fn serial_strategy_with_range() {
