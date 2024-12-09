@@ -154,6 +154,10 @@ pub struct Opts {
     /// UDP scanning mode, finds UDP ports that send back responses
     #[arg(long)]
     pub udp: bool,
+
+    /// Scan interval per port (in seconds)
+    #[structopt(long, default_value = "0")]
+    pub interval: u64,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -242,6 +246,7 @@ impl Default for Opts {
             config_path: None,
             exclude_ports: None,
             udp: false,
+            interval: 0,
         }
     }
 }
@@ -267,6 +272,7 @@ pub struct Config {
     scripts: Option<ScriptsRequired>,
     exclude_ports: Option<Vec<u16>>,
     udp: Option<bool>,
+    interval: Option<u64>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -341,6 +347,7 @@ mod tests {
                 scripts: None,
                 exclude_ports: None,
                 udp: Some(false),
+                interval: None,
             }
         }
     }

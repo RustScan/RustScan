@@ -88,6 +88,8 @@ fn main() {
     //
     // Added by brendanglancy - 5/19/2024:
     // udp is an option to do a udp scan
+    // Added by onsali - 09/12/2024:
+    // interval is an interval defined in seconds between each port scan
     let scanner = Scanner::new(
         &ips,
         batch_size,
@@ -98,6 +100,7 @@ fn main() {
         opts.accessible,
         opts.exclude_ports.unwrap_or_default(),
         opts.udp,
+        Duration::from_secs(opts.interval),
     );
     debug!("Scanner finished building: {:?}", scanner);
 
@@ -201,16 +204,16 @@ fn main() {
 fn print_opening(opts: &Opts) {
     debug!("Printing opening");
     let s = r#".----. .-. .-. .----..---.  .----. .---.   .--.  .-. .-.
-| {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
-| .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
-`-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
-The Modern Day Port Scanner."#;
+    | {}  }| { } |{ {__ {_   _}{ {__  /  ___} / {} \ |  `| |
+    | .-. \| {_} |.-._} } | |  .-._} }\     }/  /\  \| |\  |
+    `-' `-'`-----'`----'  `-'  `----'  `---' `-'  `-'`-' `-'
+    The Modern Day Port Scanner."#;
 
     println!("{}", s.gradient(Color::Green).bold());
     let info = r#"________________________________________
-: http://discord.skerritt.blog         :
-: https://github.com/RustScan/RustScan :
- --------------------------------------"#;
+    : http://discord.skerritt.blog         :
+    : https://github.com/RustScan/RustScan :
+     --------------------------------------"#;
     println!("{}", info.gradient(Color::Yellow).bold());
     funny_opening!();
 

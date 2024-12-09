@@ -8,6 +8,7 @@ use socket_iterator::SocketIterator;
 
 use async_std::net::TcpStream;
 use async_std::prelude::*;
+use async_std::task::sleep;
 use async_std::{io, net::UdpSocket};
 use colored::Colorize;
 use futures::stream::FuturesUnordered;
@@ -25,6 +26,8 @@ use std::{
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// greppable is whether or not RustScan should print things, or wait until the end to print only the ip and open ports.
+/// Added by ons - 12/09/2024:
+///     interval is a user defined cli flag for time between scans on each port
 /// Added by wasuaje - 01/26/2024:
 ///     exclude_ports  is an exclusion port list
 #[cfg(not(tarpaulin_include))]
@@ -39,6 +42,7 @@ pub struct Scanner {
     accessible: bool,
     exclude_ports: Vec<u16>,
     udp: bool,
+    interval: Duration,
 }
 
 // Allowing too many arguments for clippy.
@@ -54,6 +58,7 @@ impl Scanner {
         accessible: bool,
         exclude_ports: Vec<u16>,
         udp: bool,
+        interval: Duration,
     ) -> Self {
         Self {
             batch_size,
@@ -65,6 +70,7 @@ impl Scanner {
             accessible,
             exclude_ports,
             udp,
+            interval,
         }
     }
 
@@ -81,19 +87,10 @@ impl Scanner {
             .filter(|&port| !self.exclude_ports.contains(port))
             .copied()
             .collect();
-        let mut socket_iterator: SocketIterator = SocketIterator::new(&self.ips, &ports);
+
         let mut open_sockets: Vec<SocketAddr> = Vec::new();
-        let mut ftrs = FuturesUnordered::new();
         let mut errors: HashSet<String> = HashSet::new();
         let udp_map = get_parsed_data();
-
-        for _ in 0..self.batch_size {
-            if let Some(socket) = socket_iterator.next() {
-                ftrs.push(self.scan_socket(socket, udp_map.clone()));
-            } else {
-                break;
-            }
-        }
 
         debug!("Start scanning sockets. \nBatch size {}\nNumber of ip-s {}\nNumber of ports {}\nTargets all together {} ",
             self.batch_size,
@@ -101,21 +98,35 @@ impl Scanner {
             &ports.len(),
             (self.ips.len() * ports.len()));
 
-        while let Some(result) = ftrs.next().await {
-            if let Some(socket) = socket_iterator.next() {
+        // Scan one port at a time
+        for port in ports {
+            let mut ftrs = FuturesUnordered::new();
+
+            // Scan this port across all IPs simultaneously
+            for ip in &self.ips {
+                let socket = SocketAddr::new(*ip, port);
                 ftrs.push(self.scan_socket(socket, udp_map.clone()));
             }
 
-            match result {
-                Ok(socket) => open_sockets.push(socket),
-                Err(e) => {
-                    let error_string = e.to_string();
-                    if errors.len() < self.ips.len() * 1000 {
-                        errors.insert(error_string);
+            // Wait for all IPs to complete for this port
+            while let Some(result) = ftrs.next().await {
+                match result {
+                    Ok(socket) => open_sockets.push(socket),
+                    Err(e) => {
+                        let error_string = e.to_string();
+                        if errors.len() < self.ips.len() * 1000 {
+                            errors.insert(error_string);
+                        }
                     }
                 }
             }
+
+            // Wait for interval before moving to next port
+            if self.interval > Duration::from_secs(0) {
+                sleep(self.interval).await;
+            }
         }
+
         debug!("Typical socket connection errors {:?}", errors);
         debug!("Open Sockets found: {:?}", &open_sockets);
         open_sockets
