@@ -25,8 +25,6 @@ use std::{
 /// batch_size is how many ports at a time should be scanned
 /// Timeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 /// greppable is whether or not RustScan should print things, or wait until the end to print only the ip and open ports.
-/// Added by wasuaje - 01/26/2024:
-///     exclude_ports  is an exclusion port list
 #[cfg(not(tarpaulin_include))]
 #[derive(Debug)]
 pub struct Scanner {
@@ -71,8 +69,6 @@ impl Scanner {
     /// Runs scan_range with chunk sizes
     /// If you want to run RustScan normally, this is the entry point used
     /// Returns all open ports as `Vec<u16>`
-    /// Added by wasuaje - 01/26/2024:
-    ///    Filtering port against exclude port list
     pub async fn run(&self) -> Vec<SocketAddr> {
         let ports: Vec<u16> = self
             .port_strategy
