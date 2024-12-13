@@ -300,8 +300,10 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn batch_size_lowered() {
-        let mut opts = Opts::default();
-        opts.batch_size = 50_000;
+        let opts = Opts {
+            batch_size: 50_000,
+            ..Default::default()
+        };
         let batch_size = infer_batch_size(&opts, 120);
 
         assert!(batch_size < opts.batch_size);
@@ -310,8 +312,10 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn batch_size_lowered_average_size() {
-        let mut opts = Opts::default();
-        opts.batch_size = 50_000;
+        let opts = Opts {
+            batch_size: 50_000,
+            ..Default::default()
+        };
         let batch_size = infer_batch_size(&opts, 9_000);
 
         assert!(batch_size == 3_000);
@@ -321,8 +325,10 @@ mod tests {
     fn batch_size_equals_ulimit_lowered() {
         // because ulimit and batch size are same size, batch size is lowered
         // to ULIMIT - 100
-        let mut opts = Opts::default();
-        opts.batch_size = 50_000;
+        let opts = Opts {
+            batch_size: 50_000,
+            ..Default::default()
+        };
         let batch_size = infer_batch_size(&opts, 5_000);
 
         assert!(batch_size == 4_900);
@@ -331,9 +337,11 @@ mod tests {
     #[cfg(unix)]
     fn batch_size_adjusted_2000() {
         // ulimit == batch_size
-        let mut opts = Opts::default();
-        opts.batch_size = 50_000;
-        opts.ulimit = Some(2_000);
+        let opts = Opts {
+            batch_size: 50_000,
+            ulimit: Some(2_000),
+            ..Default::default()
+        };
         let batch_size = adjust_ulimit_size(&opts);
 
         assert!(batch_size == 2_000);
@@ -342,9 +350,11 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn test_high_ulimit_no_greppable_mode() {
-        let mut opts = Opts::default();
-        opts.batch_size = 10;
-        opts.greppable = false;
+        let opts = Opts {
+            batch_size: 10,
+            greppable: false,
+            ..Default::default()
+        };
 
         let batch_size = infer_batch_size(&opts, 1_000_000);
 
@@ -353,8 +363,10 @@ mod tests {
 
     #[test]
     fn test_print_opening_no_panic() {
-        let mut opts = Opts::default();
-        opts.ulimit = Some(2_000);
+        let opts = Opts {
+            ulimit: Some(2_000),
+            ..Default::default()
+        };
         // print opening should not panic
         print_opening(&opts);
     }
