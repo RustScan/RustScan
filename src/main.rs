@@ -83,11 +83,6 @@ fn main() {
     #[cfg(not(unix))]
     let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
-    // Added by wasuaje - 01/26/2024:
-    // exclude_ports  is an exclusion port list
-    //
-    // Added by brendanglancy - 5/19/2024:
-    // udp is an option to do a udp scan
     let scanner = Scanner::new(
         &ips,
         batch_size,
