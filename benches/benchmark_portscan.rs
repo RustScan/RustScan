@@ -15,7 +15,7 @@ fn portscan_udp(scanner: &Scanner) {
 }
 
 fn bench_address() {
-    let _addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+    let _addrs = ["127.0.0.1".parse::<IpAddr>().unwrap()];
 }
 
 fn bench_port_strategy() {
@@ -71,9 +71,9 @@ fn criterion_benchmark(c: &mut Criterion) {
     udp_group.finish();
 
     // Benching helper functions
-    c.bench_function("parse address", |b| b.iter(|| bench_address()));
+    c.bench_function("parse address", |b| b.iter(bench_address));
 
-    c.bench_function("port strategy", |b| b.iter(|| bench_port_strategy()));
+    c.bench_function("port strategy", |b| b.iter(bench_port_strategy));
 }
 
 criterion_group!(benches, criterion_benchmark);
