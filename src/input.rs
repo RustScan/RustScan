@@ -1,8 +1,9 @@
 //! Provides a means to read, parse and hold configuration options for scans.
 use clap::{Parser, ValueEnum};
 use serde_derive::Deserialize;
-use std::collections::HashMap;
+use std::collections::{Bound, HashMap};
 use std::fs;
+use std::ops::RangeBounds;
 use std::path::PathBuf;
 
 const LOWEST_PORT_NUMBER: u16 = 1;
@@ -29,10 +30,20 @@ pub enum ScriptsRequired {
 }
 
 /// Represents the range of ports to be scanned.
-#[derive(Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Deserialize, Debug, Copy, Clone, PartialEq, Eq)]
 pub struct PortRange {
     pub start: u16,
     pub end: u16,
+}
+
+impl RangeBounds<u16> for PortRange {
+    fn start_bound(&self) -> Bound<&u16> {
+        Bound::Included(&self.start)
+    }
+
+    fn end_bound(&self) -> Bound<&u16> {
+        Bound::Included(&self.end)
+    }
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -182,9 +193,9 @@ impl Opts {
 
     fn merge_required(&mut self, config: &Config) {
         macro_rules! merge_required {
-            ($($field: ident),+) => {
+            ($($field: ident),+ $(,)?) => {
                 $(
-                    if let Some(e) = &config.$field {
+                    if let Some(ref e) = config.$field {
                         self.$field = e.clone();
                     }
                 )+
@@ -271,7 +282,6 @@ pub struct Config {
 
 #[cfg(not(tarpaulin_include))]
 #[allow(clippy::doc_link_with_quotes)]
-#[allow(clippy::manual_unwrap_or_default)]
 impl Config {
     /// Reads the configuration file with TOML format and parses it into a
     /// Config struct.
@@ -289,10 +299,7 @@ impl Config {
         let mut content = String::new();
         let config_path = custom_config_path.unwrap_or_else(default_config_path);
         if config_path.exists() {
-            content = match fs::read_to_string(config_path) {
-                Ok(content) => content,
-                Err(_) => String::new(),
-            }
+            content = fs::read_to_string(config_path).unwrap_or_default()
         }
 
         let config: Config = match toml::from_str(&content) {
@@ -377,11 +384,11 @@ mod tests {
 
         opts.merge(&config);
 
-        assert_eq!(opts.addresses, vec![] as Vec<String>);
+        assert_eq!(*opts.addresses, [] as [String; 0]);
         assert!(opts.greppable);
         assert!(!opts.accessible);
         assert_eq!(opts.timeout, 0);
-        assert_eq!(opts.command, vec![] as Vec<String>);
+        assert_eq!(*opts.command, [] as [String; 0]);
         assert_eq!(opts.scan_order, ScanOrder::Serial);
     }
 

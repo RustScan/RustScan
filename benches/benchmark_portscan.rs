@@ -1,39 +1,26 @@
-use async_std::task::block_on;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use rustscan::input::{PortRange, ScanOrder};
 use rustscan::port_strategy::PortStrategy;
 use rustscan::scanner::Scanner;
-use std::net::IpAddr;
+use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
-
-fn portscan_tcp(scanner: &Scanner) {
-    let _scan_result = block_on(scanner.run());
-}
-
-fn portscan_udp(scanner: &Scanner) {
-    let _scan_result = block_on(scanner.run());
-}
-
-fn bench_address() {
-    let _addrs = ["127.0.0.1".parse::<IpAddr>().unwrap()];
-}
 
 fn bench_port_strategy() {
     let range = PortRange {
         start: 1,
         end: 1_000,
     };
-    let _strategy = PortStrategy::pick(&Some(range.clone()), None, ScanOrder::Serial);
+    let _strategy = PortStrategy::range(black_box(range), ScanOrder::Serial);
 }
 
 fn criterion_benchmark(c: &mut Criterion) {
-    let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+    let addrs = [IpAddr::V4(Ipv4Addr::LOCALHOST)];
     let range = PortRange {
         start: 1,
         end: 1_000,
     };
-    let strategy_tcp = PortStrategy::pick(&Some(range.clone()), None, ScanOrder::Serial);
-    let strategy_udp = PortStrategy::pick(&Some(range.clone()), None, ScanOrder::Serial);
+    let strategy_tcp = PortStrategy::range(range, ScanOrder::Serial);
+    let strategy_udp = PortStrategy::range(range, ScanOrder::Serial);
 
     let scanner_tcp = Scanner::new(
         &addrs,
@@ -43,13 +30,19 @@ fn criterion_benchmark(c: &mut Criterion) {
         false,
         strategy_tcp,
         true,
-        vec![],
+        &[],
         false,
     );
 
-    c.bench_function("portscan tcp", |b| {
-        b.iter(|| portscan_tcp(black_box(&scanner_tcp)))
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+
+    let mut tcp_group = c.benchmark_group("portscan tcp");
+    tcp_group.measurement_time(Duration::from_secs(20));
+    tcp_group.sample_size(10);
+    tcp_group.bench_function("portscan tcp", |b| {
+        b.to_async(&runtime).iter(|| black_box(&scanner_tcp).run())
     });
+    tcp_group.finish();
 
     let scanner_udp = Scanner::new(
         &addrs,
@@ -59,20 +52,18 @@ fn criterion_benchmark(c: &mut Criterion) {
         false,
         strategy_udp,
         true,
-        vec![],
+        &[],
         true,
     );
 
     let mut udp_group = c.benchmark_group("portscan udp");
     udp_group.measurement_time(Duration::from_secs(20));
+    udp_group.sample_size(25);
     udp_group.bench_function("portscan udp", |b| {
-        b.iter(|| portscan_udp(black_box(&scanner_udp)))
+        b.to_async(&runtime).iter(|| black_box(&scanner_udp).run())
     });
     udp_group.finish();
-
-    // Benching helper functions
-    c.bench_function("parse address", |b| b.iter(bench_address));
-
+    
     c.bench_function("port strategy", |b| b.iter(bench_port_strategy));
 }
 
