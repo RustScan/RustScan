@@ -281,7 +281,7 @@ impl Config {
     /// addresses = ["127.0.0.1", "127.0.0.1"]
     /// ports = [80, 443, 8080]
     /// greppable = true
-    /// scan_order: "Serial"
+    /// scan_order = "Serial"
     /// exclude_ports = [8080, 9090, 80]
     /// udp = false
     ///
