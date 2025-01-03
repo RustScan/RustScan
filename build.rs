@@ -3,7 +3,7 @@ use std::fs::{self, File};
 
 use std::env;
 use std::io::{BufReader, Read};
-use std::path::PathBuf;
+use std::path::Path;
 use std::process::Command;
 
 // Reads in a file with payloads based on port
@@ -59,11 +59,11 @@ pub fn main() {
 ///
 /// * `port_payload_map` - A BTreeMap mapping port numbers to payload data
 fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
-    let dest_path = PathBuf::from("src/generated.rs");
+    let dest_path = Path::new("src/generated.rs");
 
     let mut generated_code = String::new();
     generated_code.push_str("use std::collections::BTreeMap;\n");
-    generated_code.push_str("use once_cell::sync::Lazy;\n\n");
+    generated_code.push_str("use std::sync::LazyLock;\n\n");
 
     generated_code.push_str("fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    let mut map = BTreeMap::new();\n");
@@ -92,7 +92,7 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
     generated_code.push_str("}\n\n");
 
     generated_code.push_str(
-        "static PARSED_DATA: Lazy<BTreeMap<Vec<u16>, Vec<u8>>> = Lazy::new(generated_data);\n",
+        "static PARSED_DATA: LazyLock<BTreeMap<Vec<u16>, Vec<u8>>> = LazyLock::new(generated_data);\n",
     );
     generated_code.push_str("pub fn get_parsed_data() -> &'static BTreeMap<Vec<u16>, Vec<u8>> {\n");
     generated_code.push_str("    &PARSED_DATA\n");
@@ -101,10 +101,9 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
     fs::write(dest_path, generated_code).unwrap();
 
     // format the generated code
-    Command::new("cargo")
-        .arg("fmt")
-        .arg("--all")
-        .output()
+    Command::new("rustfmt")
+        .arg(dest_path)
+        .status()
         .expect("Failed to execute cargo fmt");
 }
 

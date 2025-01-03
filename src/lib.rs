@@ -8,33 +8,33 @@
 //! [`PortStrategy`](crate::port_strategy::PortStrategy):
 //!
 //! ```rust
-//! use async_std::task::block_on;
 //! use std::{net::IpAddr, time::Duration};
 //!
 //! use rustscan::input::{PortRange, ScanOrder};
 //! use rustscan::port_strategy::PortStrategy;
 //! use rustscan::scanner::Scanner;
-//!
-//! fn main() {
+//! 
+//! #[tokio::main]
+//! async fn main() {
 //!     let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
 //!     let range = PortRange {
 //!         start: 1,
 //!         end: 1_000,
 //!     };
-//!     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random); // can be serial, random or manual https://github.com/RustScan/RustScan/blob/master/src/port_strategy/mod.rs
+//!     let strategy = PortStrategy::range(range, ScanOrder::Random); // can be serial, random or manual https://github.com/RustScan/RustScan/blob/master/src/port_strategy/mod.rs
 //!     let scanner = Scanner::new(
 //!         &addrs, // the addresses to scan
 //!         10, // batch_size is how many ports at a time should be scanned
 //!         Duration::from_millis(100), //T imeout is the time RustScan should wait before declaring a port closed. As datatype Duration.
 //!         1, // Tries, how many retries should RustScan do?
-//!         true, // greppable is whether or not RustScan should print things, or wait until the end to print only the ip
+//!         true, // greppable is whether RustScan should print things, or wait until the end to print only the ip
 //!         strategy, // the port strategy used
 //!         true, // accessible, should the output be A11Y compliant?
-//!         vec![9000], // What ports should RustScan exclude?
+//!         &[9000], // What ports should RustScan exclude?
 //!         false, // is this a UDP scan?
 //!     );
 //!
-//!     let scan_result = block_on(scanner.run());
+//!     let scan_result = scanner.run().await;
 //!
 //!     println!("{:?}", scan_result);
 //! }
