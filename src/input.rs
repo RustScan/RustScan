@@ -151,6 +151,10 @@ pub struct Opts {
     #[arg(short, long, value_delimiter = ',')]
     pub exclude_ports: Option<Vec<u16>>,
 
+    /// A list of comma separated CIDRs, IPs, or hosts to be excluded from scanning.
+    #[arg(short = 'x', long = "exclude-addresses", value_delimiter = ',')]
+    pub exclude_addresses: Option<Vec<String>>,
+
     /// UDP scanning mode, finds UDP ports that send back responses
     #[arg(long)]
     pub udp: bool,
@@ -217,7 +221,7 @@ impl Opts {
             self.ports = Some(ports);
         }
 
-        merge_optional!(range, resolver, ulimit, exclude_ports);
+        merge_optional!(range, resolver, ulimit, exclude_ports, exclude_addresses);
     }
 }
 
@@ -241,6 +245,7 @@ impl Default for Opts {
             scripts: ScriptsRequired::Default,
             config_path: None,
             exclude_ports: None,
+            exclude_addresses: None,
             udp: false,
         }
     }
@@ -266,6 +271,7 @@ pub struct Config {
     command: Option<Vec<String>>,
     scripts: Option<ScriptsRequired>,
     exclude_ports: Option<Vec<u16>>,
+    exclude_addresses: Option<Vec<String>>,
     udp: Option<bool>,
 }
 
@@ -340,6 +346,7 @@ mod tests {
                 scan_order: Some(ScanOrder::Random),
                 scripts: None,
                 exclude_ports: None,
+                exclude_addresses: None,
                 udp: Some(false),
             }
         }
