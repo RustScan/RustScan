@@ -10,7 +10,6 @@ use rustscan::scripts::{init_scripts, Script, ScriptFile};
 use rustscan::{detail, funny_opening, output, warning};
 
 use colorful::{Color, Colorful};
-use futures::executor::block_on;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::string::ToString;
@@ -34,7 +33,8 @@ extern crate log;
 #[allow(clippy::too_many_lines)]
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
-fn main() {
+#[tokio::main]
+async fn main() {
     #[cfg(not(unix))]
     let _ = ansi_term::enable_ansi_support();
 
@@ -66,7 +66,7 @@ fn main() {
         print_opening(&opts);
     }
 
-    let ips: Vec<IpAddr> = parse_addresses(&opts);
+    let ips: Vec<IpAddr> = parse_addresses(&opts).await;
 
     if ips.is_empty() {
         warning!(
@@ -83,21 +83,43 @@ fn main() {
     #[cfg(not(unix))]
     let batch_size: u16 = AVERAGE_BATCH_SIZE;
 
+    let port_strategy = match (opts.range, opts.ports) {
+        (Some(range), None) => PortStrategy::range(range, opts.scan_order),
+        (None, Some(list)) => PortStrategy::list(list, opts.scan_order),
+        (Some(_), Some(_)) => {
+            warning!(
+                "Rust-scan should be called with either ports or range, not both",
+                opts.greppable,
+                opts.accessible
+            );
+            std::process::exit(1);
+        },
+        (None, None) => {
+            warning!(
+                "Rust-scan needs either a range or ports",
+                opts.greppable,
+                opts.accessible
+            );
+            std::process::exit(1);
+        },
+    };
+    
+    
     let scanner = Scanner::new(
         &ips,
         batch_size,
         Duration::from_millis(opts.timeout.into()),
         opts.tries,
         opts.greppable,
-        PortStrategy::pick(&opts.range, opts.ports, opts.scan_order),
+        port_strategy,
         opts.accessible,
-        opts.exclude_ports.unwrap_or_default(),
+        &opts.exclude_ports.unwrap_or_default(),
         opts.udp,
     );
     debug!("Scanner finished building: {:?}", scanner);
 
     let mut portscan_bench = NamedTimer::start("Portscan");
-    let scan_result = block_on(scanner.run());
+    let scan_result = scanner.run().await;
     portscan_bench.end();
     benchmarks.push(portscan_bench);
 
