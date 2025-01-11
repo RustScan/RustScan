@@ -10,7 +10,6 @@ use rustscan::scripts::{init_scripts, Script, ScriptFile};
 use rustscan::{detail, funny_opening, output, warning};
 
 use colorful::{Color, Colorful};
-use futures::executor::block_on;
 use std::collections::HashMap;
 use std::net::IpAddr;
 use std::string::ToString;
@@ -34,7 +33,8 @@ extern crate log;
 #[allow(clippy::too_many_lines)]
 /// Faster Nmap scanning with Rust
 /// If you're looking for the actual scanning, check out the module Scanner
-fn main() {
+#[tokio::main]
+async fn main() {
     #[cfg(not(unix))]
     let _ = ansi_term::enable_ansi_support();
 
@@ -66,7 +66,7 @@ fn main() {
         print_opening(&opts);
     }
 
-    let ips: Vec<IpAddr> = parse_addresses(&opts);
+    let ips: Vec<IpAddr> = parse_addresses(&opts).await;
 
     if ips.is_empty() {
         warning!(
@@ -119,7 +119,7 @@ fn main() {
     debug!("Scanner finished building: {:?}", scanner);
 
     let mut portscan_bench = NamedTimer::start("Portscan");
-    let scan_result = block_on(scanner.run());
+    let scan_result = scanner.run().await;
     portscan_bench.end();
     benchmarks.push(portscan_bench);
 

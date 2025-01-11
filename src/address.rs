@@ -5,7 +5,6 @@ use std::net::{IpAddr, SocketAddr};
 use std::path::Path;
 use std::pin::Pin;
 use std::str::FromStr;
-use std::thread;
 use std::time::Duration;
 use cidr_utils::cidr::IpCidr;
 use futures::{FutureExt, StreamExt};
@@ -17,7 +16,21 @@ use tokio::io::AsyncBufReadExt;
 use crate::input::Opts;
 use crate::warning;
 
-async fn parse_addresses_inner(input: &Opts) -> Vec<IpAddr> {
+/// Parses the string(s) into IP addresses.
+///
+/// Goes through all possible IP inputs (files or via argparsing).
+///
+/// ```rust
+/// # use rustscan::input::Opts;
+/// # use rustscan::address::parse_addresses;
+/// let mut opts = Opts::default();
+/// opts.addresses = vec!["192.168.0.0/30".to_owned()];
+///
+/// let ips = parse_addresses(&opts);
+/// ```
+///
+/// Finally, any duplicates are removed to avoid excessive scans.
+pub async fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     let ips = &RefCell::new(Vec::new());
     let unresolved_addresses = &RefCell::new(Vec::new());
     let backup_resolver = &get_resolver(&input.resolver).await;
@@ -39,7 +52,7 @@ async fn parse_addresses_inner(input: &Opts) -> Vec<IpAddr> {
     futures::stream::iter(unresolved_addresses.take()).for_each_concurrent(Some(4), |file_path| async move {
         let file_path = Path::new(file_path);
 
-        if !tokio::fs::metadata(file_path).await.map_or(false, |m| m.is_file()) {
+        if !tokio::fs::metadata(file_path).await.is_ok_and(|m| m.is_file()) {
             warning!(
                 format!("Host {file_path:?} could not be resolved."),
                 input.greppable,
@@ -65,32 +78,6 @@ async fn parse_addresses_inner(input: &Opts) -> Vec<IpAddr> {
     ips.sort_unstable();
     ips.dedup();
     ips
-}
-
-/// Parses the string(s) into IP addresses.
-///
-/// Goes through all possible IP inputs (files or via argparsing).
-///
-/// ```rust
-/// # use rustscan::input::Opts;
-/// # use rustscan::address::parse_addresses;
-/// let mut opts = Opts::default();
-/// opts.addresses = vec!["192.168.0.0/30".to_owned()];
-///
-/// let ips = parse_addresses(&opts);
-/// ```
-///
-/// Finally, any duplicates are removed to avoid excessive scans.
-pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
-    thread::scope(|s| {
-        s.spawn(|| {
-            tokio::runtime::Runtime::new()
-                .unwrap()
-                .block_on(parse_addresses_inner(input))
-        })
-            .join()
-            .unwrap_or_else(|panic| std::panic::resume_unwind(panic))
-    })
 }
 
 /// Given a string, parse it as a host, IP address, or CIDR.
