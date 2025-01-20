@@ -69,9 +69,18 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         }
     }
 
+    // Finally, craft a list of addresses to be excluded from the scan.
+    let mut excluded_ips: Vec<IpAddr> = Vec::new();
+    if let Some(exclude_addresses) = &input.exclude_addresses {
+        for addr in exclude_addresses {
+            excluded_ips.extend(parse_address(addr, &backup_resolver));
+        }
+    }
+
     ips.into_iter()
         .collect::<BTreeSet<_>>()
         .into_iter()
+        .filter(|ip| !excluded_ips.contains(ip))
         .collect()
 }
 
@@ -213,6 +222,58 @@ mod tests {
     }
 
     #[test]
+    fn parse_addresses_with_address_exclusions() {
+        let mut opts = Opts::default();
+        opts.addresses = vec!["192.168.0.0/30".to_owned()];
+        opts.exclude_addresses = Some(vec!["192.168.0.1".to_owned()]);
+        let ips = parse_addresses(&opts);
+
+        assert_eq!(
+            ips,
+            [
+                Ipv4Addr::new(192, 168, 0, 0),
+                Ipv4Addr::new(192, 168, 0, 2),
+                Ipv4Addr::new(192, 168, 0, 3)
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_addresses_with_cidr_exclusions() {
+        let mut opts = Opts::default();
+        opts.addresses = vec!["192.168.0.0/29".to_owned()];
+        opts.exclude_addresses = Some(vec!["192.168.0.0/30".to_owned()]);
+        let ips = parse_addresses(&opts);
+
+        assert_eq!(
+            ips,
+            [
+                Ipv4Addr::new(192, 168, 0, 4),
+                Ipv4Addr::new(192, 168, 0, 5),
+                Ipv4Addr::new(192, 168, 0, 6),
+                Ipv4Addr::new(192, 168, 0, 7),
+            ]
+        );
+    }
+
+    #[test]
+    fn parse_addresses_with_incorrect_address_exclusions() {
+        let mut opts = Opts::default();
+        opts.addresses = vec!["192.168.0.0/30".to_owned()];
+        opts.exclude_addresses = Some(vec!["192.168.0.1".to_owned(), "im_wrong".to_owned()]);
+        let ips = parse_addresses(&opts);
+
+        assert_eq!(
+            ips,
+            [
+                Ipv4Addr::new(192, 168, 0, 0),
+                Ipv4Addr::new(192, 168, 0, 2),
+                Ipv4Addr::new(192, 168, 0, 3)
+            ]
+        );
+    }
+
+    #[test]
     fn parse_correct_host_addresses() {
         let opts = Opts {
             addresses: vec!["google.com".to_owned()],
@@ -247,6 +308,7 @@ mod tests {
 
         assert!(ips.is_empty());
     }
+
     #[test]
     fn parse_hosts_file_and_incorrect_hosts() {
         // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
