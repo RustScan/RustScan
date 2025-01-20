@@ -62,7 +62,7 @@ fn main() {
 
     debug!("Scripts initialized {:?}", &scripts_to_run);
 
-    if !opts.greppable && !opts.accessible {
+    if !opts.greppable && !opts.accessible && !opts.no_banner {
         print_opening(&opts);
     }
 

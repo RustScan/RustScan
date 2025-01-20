@@ -89,6 +89,10 @@ pub struct Opts {
     #[arg(short, long)]
     pub no_config: bool,
 
+    /// Hide the banner
+    #[arg(long)]
+    pub no_banner: bool,
+
     /// Custom path to config file
     #[arg(short, long, value_parser)]
     pub config_path: Option<PathBuf>,
@@ -237,6 +241,7 @@ impl Default for Opts {
             resolver: None,
             scan_order: ScanOrder::Serial,
             no_config: true,
+            no_banner: false,
             top: false,
             scripts: ScriptsRequired::Default,
             config_path: None,
