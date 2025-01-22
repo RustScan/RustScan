@@ -21,6 +21,8 @@
 //!         start: 1,
 //!         end: 1_000,
 //!     };
+//!     let deadman_addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+//!
 //!     let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random); // can be serial, random or manual https://github.com/RustScan/RustScan/blob/master/src/port_strategy/mod.rs
 //!     let scanner = Scanner::new(
 //!         &addrs, // the addresses to scan
@@ -32,6 +34,8 @@
 //!         true, // accessible, should the output be A11Y compliant?
 //!         vec![9000], // What ports should RustScan exclude?
 //!         false, // is this a UDP scan?
+//!         &deadman_addrs, // addresses for the deadman switch
+//!         Some(Duration::from_secs(5)), // ping timout for deadman
 //!     );
 //!
 //!     let scan_result = block_on(scanner.run());

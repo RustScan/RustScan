@@ -16,7 +16,7 @@ use std::net::IpAddr;
 use std::string::ToString;
 use std::time::Duration;
 
-use rustscan::address::parse_addresses;
+use rustscan::address::{parse_addresses, parse_deadman_addresses};
 
 extern crate colorful;
 extern crate dirs;
@@ -67,6 +67,7 @@ fn main() {
     }
 
     let ips: Vec<IpAddr> = parse_addresses(&opts);
+    let deadman_ips: Vec<IpAddr> = parse_deadman_addresses(&opts);
 
     if ips.is_empty() {
         warning!(
@@ -76,6 +77,8 @@ fn main() {
         );
         std::process::exit(1);
     }
+
+    let deadman_timeout = Duration::from_secs(opts.deadman_timeout as u64);
 
     #[cfg(unix)]
     let batch_size: u16 = infer_batch_size(&opts, adjust_ulimit_size(&opts));
@@ -93,8 +96,19 @@ fn main() {
         opts.accessible,
         opts.exclude_ports.unwrap_or_default(),
         opts.udp,
+        &deadman_ips,
+        Some(deadman_timeout),
     );
     debug!("Scanner finished building: {:?}", scanner);
+
+    // performing deadman fuctions if --deadman-switch is enabled
+    if opts.deadman_switch {
+        if scanner.deadman_preflight().is_err() {
+            println!("{}", "Deadmant preflight failed, terminating scan.".red());
+            return;
+        }
+        scanner.start_deadman_loop();
+    }
 
     let mut portscan_bench = NamedTimer::start("Portscan");
     let scan_result = block_on(scanner.run());

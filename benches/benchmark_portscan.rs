@@ -45,6 +45,8 @@ fn criterion_benchmark(c: &mut Criterion) {
         true,
         vec![],
         false,
+        &addrs,
+        None,
     );
 
     c.bench_function("portscan tcp", |b| {
@@ -61,6 +63,8 @@ fn criterion_benchmark(c: &mut Criterion) {
         true,
         vec![],
         true,
+        &addrs,
+        None,
     );
 
     let mut udp_group = c.benchmark_group("portscan udp");

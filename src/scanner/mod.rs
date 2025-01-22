@@ -11,11 +11,13 @@ use async_std::prelude::*;
 use async_std::{io, net::UdpSocket};
 use colored::Colorize;
 use futures::stream::FuturesUnordered;
+use ping_rs::send_ping;
 use std::collections::BTreeMap;
 use std::{
     collections::HashSet,
     net::{IpAddr, Shutdown, SocketAddr},
     num::NonZeroU8,
+    thread,
     time::Duration,
 };
 
@@ -37,6 +39,8 @@ pub struct Scanner {
     accessible: bool,
     exclude_ports: Vec<u16>,
     udp: bool,
+    deadman_addresses: Vec<IpAddr>,
+    deadman_timeout: Duration,
 }
 
 // Allowing too many arguments for clippy.
@@ -52,6 +56,8 @@ impl Scanner {
         accessible: bool,
         exclude_ports: Vec<u16>,
         udp: bool,
+        deadman_addresses: &[IpAddr],
+        deadman_timeout: Option<Duration>,
     ) -> Self {
         Self {
             batch_size,
@@ -63,6 +69,11 @@ impl Scanner {
             accessible,
             exclude_ports,
             udp,
+            deadman_addresses: deadman_addresses.to_vec(),
+            deadman_timeout: match deadman_timeout {
+                Some(e) => e,
+                None => Duration::from_secs(5),
+            },
         }
     }
 
@@ -302,6 +313,60 @@ impl Scanner {
             }
         }
     }
+
+    /// Loop that will run the deadman test and forcefully exit the program with std::process::exit(0)in case of falure.
+    /// Will spawn a new thread to run the loop.
+    ///
+    pub fn start_deadman_loop(&self) {
+        let addresses = self.deadman_addresses.clone();
+        let timeout = self.deadman_timeout.clone();
+        let sleep_time = Duration::from_secs(10);
+
+        thread::spawn(move || loop {
+            thread::sleep(sleep_time);
+
+            println!(
+                "{}",
+                "Deadman switch is testing ip addresses are still accessible.".blue()
+            );
+
+            for address in &addresses {
+                match send_ping(address, timeout, &[0; 8], None) {
+                    Ok(_) => println!("Ping to {} was successful.", address.to_string()),
+                    Err(_) => {
+                        let print_string =
+                            format!("Ping to {} was unsuccessful.", address.to_string());
+                        println!("{}", print_string.red().bold());
+                        println!("{}", "Terminating Scan!!!".red().bold());
+                        std::process::exit(1);
+                    }
+                };
+            }
+            println!(
+                "{}",
+                "Deadman test has succeeded, will test again in 10 seconds.".blue()
+            );
+        });
+    }
+
+    /// Preflight test to make sure all addresses are online.
+    /// Should be run before start_deadman_loop.
+    pub fn deadman_preflight(&self) -> Result<(), ()> {
+        println!("{}", "Testing Deadman addresses are acesable.".blue());
+
+        for address in &self.deadman_addresses {
+            match send_ping(address, self.deadman_timeout, &[0; 8], None) {
+                Ok(_) => println!("Ping to {} was successful.", address.to_string()),
+                Err(_) => {
+                    let print_string = format!("Ping to {} was unsuccessful.", address.to_string());
+                    println!("{}", print_string.red().bold());
+                    return Err(());
+                }
+            };
+        }
+
+        return Ok(());
+    }
 }
 
 #[cfg(test)]
@@ -330,6 +395,8 @@ mod tests {
             true,
             vec![9000],
             false,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -354,6 +421,8 @@ mod tests {
             true,
             vec![9000],
             false,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -377,6 +446,8 @@ mod tests {
             true,
             vec![9000],
             false,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -399,6 +470,8 @@ mod tests {
             true,
             vec![9000],
             false,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -424,6 +497,8 @@ mod tests {
             true,
             vec![9000],
             false,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -448,6 +523,8 @@ mod tests {
             true,
             vec![9000],
             true,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -472,6 +549,8 @@ mod tests {
             true,
             vec![9000],
             true,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         // if the scan fails, it wouldn't be able to assert_eq! as it panicked!
@@ -495,6 +574,8 @@ mod tests {
             true,
             vec![9000],
             true,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
@@ -517,8 +598,35 @@ mod tests {
             true,
             vec![9000],
             true,
+            &vec![],
+            None,
         );
         block_on(scanner.run());
         assert_eq!(1, 1);
+    }
+
+    #[test]
+    fn can_ping() {
+        let addrs = vec!["127.0.0.1".parse::<IpAddr>().unwrap()];
+        let range = PortRange {
+            start: 1,
+            end: 1_000,
+        };
+        let strategy = PortStrategy::pick(&Some(range), None, ScanOrder::Random);
+        let scanner = Scanner::new(
+            &addrs,
+            10,
+            Duration::from_millis(100),
+            1,
+            true,
+            strategy,
+            true,
+            vec![9000],
+            true,
+            &addrs,
+            None,
+        );
+
+        assert_eq!(scanner.deadman_preflight(), Ok(()));
     }
 }

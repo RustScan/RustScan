@@ -2,7 +2,7 @@
 use std::collections::BTreeSet;
 use std::fs::{self, File};
 use std::io::{prelude::*, BufReader};
-use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
 use std::path::Path;
 use std::str::FromStr;
 
@@ -81,6 +81,82 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
         .collect::<BTreeSet<_>>()
         .into_iter()
         .filter(|ip| !excluded_ips.contains(ip))
+        .collect()
+}
+
+/// Parses the string(s) into IP addresses for the deadman switch.
+///
+/// Goes through all possible IP inputs (files or via argparsing).
+///
+/// Unline parse_addresses() IP in the excluded_ips field will not be removed from the list.
+///
+/// ```rust
+/// # use rustscan::input::Opts;
+/// # use rustscan::address::parse_deadman_addresses;
+/// let mut opts = Opts::default();
+/// opts.deadman_addresses = Some(vec!["192.168.0.0/30".to_owned()]);
+///
+/// let ips = parse_deadman_addresses(&opts);
+/// ```
+///
+/// Finally, any duplicates are removed to avoid excessive scans.
+
+// Duplicaded parse_addresses to use for the deadman switch.
+// Removed the excluded_ips check.
+pub fn parse_deadman_addresses(input: &Opts) -> Vec<IpAddr> {
+    let mut ips: Vec<IpAddr> = Vec::new();
+    let mut unresolved_addresses: Vec<&str> = Vec::new();
+    let backup_resolver = get_resolver(&input.resolver);
+
+    // returning default deadman addresses if no deadman addresses set
+    let addresses = match &input.deadman_addresses {
+        Some(e) => e.clone(),
+        None => {
+            return [
+                IpAddr::V4(Ipv4Addr::new(1, 1, 1, 1)),
+                IpAddr::V4(Ipv4Addr::new(8, 8, 8, 8)),
+            ]
+            .to_vec()
+        }
+    };
+
+    for address in &addresses {
+        let parsed_ips = parse_address(address, &backup_resolver);
+        if !parsed_ips.is_empty() {
+            ips.extend(parsed_ips);
+        } else {
+            unresolved_addresses.push(address);
+        }
+    }
+
+    // If we got to this point this can only be a file path or the wrong input.
+    for file_path in unresolved_addresses {
+        let file_path = Path::new(file_path);
+
+        if !file_path.is_file() {
+            warning!(
+                format!("Host {file_path:?} could not be resolved."),
+                input.greppable,
+                input.accessible
+            );
+
+            continue;
+        }
+
+        if let Ok(x) = read_ips_from_file(file_path, &backup_resolver) {
+            ips.extend(x);
+        } else {
+            warning!(
+                format!("Host {file_path:?} could not be resolved."),
+                input.greppable,
+                input.accessible
+            );
+        }
+    }
+
+    ips.into_iter()
+        .collect::<BTreeSet<_>>()
+        .into_iter()
         .collect()
 }
 
@@ -197,7 +273,7 @@ fn read_ips_from_file(
 
 #[cfg(test)]
 mod tests {
-    use super::{get_resolver, parse_addresses, Opts};
+    use super::{get_resolver, parse_addresses, parse_deadman_addresses, Opts};
     use std::net::Ipv4Addr;
 
     #[test]
@@ -383,5 +459,117 @@ mod tests {
         let lookup = resolver.lookup_ip("www.example.com.").unwrap();
 
         assert!(lookup.iter().next().is_some());
+    }
+
+    // duplicating tests for parse_deadman_addresses
+    #[test]
+    fn deadman_parse_correct_addresses() {
+        let opts = Opts {
+            deadman_addresses: Some(vec!["127.0.0.1".to_owned(), "192.168.0.0/30".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(
+            ips,
+            [
+                Ipv4Addr::new(127, 0, 0, 1),
+                Ipv4Addr::new(192, 168, 0, 0),
+                Ipv4Addr::new(192, 168, 0, 1),
+                Ipv4Addr::new(192, 168, 0, 2),
+                Ipv4Addr::new(192, 168, 0, 3)
+            ]
+        );
+    }
+
+    #[test]
+    fn deadman_parse_correct_host_addresses() {
+        let opts = Opts {
+            deadman_addresses: Some(vec!["google.com".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips.len(), 1);
+    }
+
+    #[test]
+    fn deadman_parse_correct_and_incorrect_addresses() {
+        let opts = Opts {
+            deadman_addresses: Some(vec!["127.0.0.1".to_owned(), "im_wrong".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips, [Ipv4Addr::new(127, 0, 0, 1),]);
+    }
+
+    #[test]
+    fn deadman_parse_incorrect_addresses() {
+        let opts = Opts {
+            deadman_addresses: Some(vec!["im_wrong".to_owned(), "300.10.1.1".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert!(ips.is_empty());
+    }
+
+    #[test]
+    fn deadman_parse_hosts_file_and_incorrect_hosts() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let opts = Opts {
+            deadman_addresses: Some(vec!["fixtures/hosts.txt".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips.len(), 3);
+    }
+
+    #[test]
+    fn deadman_parse_empty_hosts_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let opts = Opts {
+            deadman_addresses: Some(vec!["fixtures/empty_hosts.txt".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn deadman_parse_naughty_host_file() {
+        // Host file contains IP, Hosts, incorrect IPs, incorrect hosts
+        let opts = Opts {
+            deadman_addresses: Some(vec!["fixtures/naughty_string.txt".to_owned()]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips.len(), 0);
+    }
+
+    #[test]
+    fn deadman_parse_duplicate_cidrs() {
+        let opts = Opts {
+            deadman_addresses: Some(vec![
+                "79.98.104.0/21".to_owned(),
+                "79.98.104.0/24".to_owned(),
+            ]),
+            ..Default::default()
+        };
+
+        let ips = parse_deadman_addresses(&opts);
+
+        assert_eq!(ips.len(), 2_048);
     }
 }

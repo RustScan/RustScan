@@ -162,6 +162,21 @@ pub struct Opts {
     /// UDP scanning mode, finds UDP ports that send back responses
     #[arg(long)]
     pub udp: bool,
+
+    /// A comma-delimited list or newline-delimited file of separated CIDRs, IPs, or hosts to be checked for the deadman switch.
+    #[arg(long, value_delimiter = ',')]
+    pub deadman_addresses: Option<Vec<String>>,
+
+    /// Number of seconds for ping timeout when using the deadman switch.
+    /// Default value is 5 seconds.
+    #[arg(long, default_value = "5")]
+    pub deadman_timeout: u32,
+
+    /// Enables a deadman switch.
+    /// A list of IP addresses will be pinged every 10 seconds, if any fail to ping the scan will stop.
+    /// Default IP's are 8.8.8.8 and 1.1.1.1.1, change this with the --deadman-address argument.
+    #[arg(long)]
+    pub deadman_switch: bool,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -252,6 +267,9 @@ impl Default for Opts {
             exclude_ports: None,
             exclude_addresses: None,
             udp: false,
+            deadman_addresses: None,
+            deadman_switch: false,
+            deadman_timeout: 5,
         }
     }
 }
@@ -278,6 +296,9 @@ pub struct Config {
     exclude_ports: Option<Vec<u16>>,
     exclude_addresses: Option<Vec<String>>,
     udp: Option<bool>,
+    deadman_addresses: Option<Vec<String>>,
+    deadman_switch: Option<bool>,
+    deadman_timeout: Option<u32>,
 }
 
 #[cfg(not(tarpaulin_include))]
@@ -353,6 +374,9 @@ mod tests {
                 exclude_ports: None,
                 exclude_addresses: None,
                 udp: Some(false),
+                deadman_addresses: None,
+                deadman_switch: Some(false),
+                deadman_timeout: Some(5),
             }
         }
     }
