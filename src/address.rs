@@ -223,9 +223,11 @@ mod tests {
 
     #[test]
     fn parse_addresses_with_address_exclusions() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["192.168.0.0/30".to_owned()];
-        opts.exclude_addresses = Some(vec!["192.168.0.1".to_owned()]);
+        let opts = Opts {
+            addresses: vec!["192.168.0.0/30".to_owned()],
+            exclude_addresses: Some(vec!["192.168.0.1".to_owned()]),
+            ..Default::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(
@@ -240,9 +242,11 @@ mod tests {
 
     #[test]
     fn parse_addresses_with_cidr_exclusions() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["192.168.0.0/29".to_owned()];
-        opts.exclude_addresses = Some(vec!["192.168.0.0/30".to_owned()]);
+        let opts = Opts {
+            addresses: vec!["192.168.0.0/29".to_owned()],
+            exclude_addresses: Some(vec!["192.168.0.0/30".to_owned()]),
+            ..Default::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(
@@ -258,9 +262,11 @@ mod tests {
 
     #[test]
     fn parse_addresses_with_incorrect_address_exclusions() {
-        let mut opts = Opts::default();
-        opts.addresses = vec!["192.168.0.0/30".to_owned()];
-        opts.exclude_addresses = Some(vec!["192.168.0.1".to_owned(), "im_wrong".to_owned()]);
+        let opts = Opts {
+            addresses: vec!["192.168.0.0/30".to_owned()],
+            exclude_addresses: Some(vec!["192.168.0.1".to_owned()]),
+            ..Default::default()
+        };
         let ips = parse_addresses(&opts);
 
         assert_eq!(
