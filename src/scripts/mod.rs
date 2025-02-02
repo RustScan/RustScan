@@ -76,7 +76,7 @@
 #![allow(clippy::module_name_repetitions)]
 
 use crate::input::ScriptsRequired;
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, Context, Result};
 use log::debug;
 use serde_derive::{Deserialize, Serialize};
 use std::fs::{self, File};
@@ -86,6 +86,7 @@ use std::path::PathBuf;
 use std::process::{Command, Stdio};
 use std::string::ToString;
 use text_placeholder::Template;
+use which::which;
 
 #[cfg(unix)]
 use std::os::unix::process::ExitStatusExt;
@@ -103,8 +104,12 @@ pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
     match scripts {
         ScriptsRequired::None => {}
         ScriptsRequired::Default => {
+            which("nmap")
+                .with_context(|| "nmap: command not found. See <https://nmap.org/download>")?;
+
             let default_script =
                 toml::from_str::<ScriptFile>(DEFAULT).expect("Failed to parse Script file.");
+
             scripts_to_run.push(default_script);
         }
         ScriptsRequired::Custom => {
