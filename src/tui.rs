@@ -68,7 +68,7 @@ macro_rules! output {
 macro_rules! funny_opening {
     // prints a funny quote / opening
     () => {
-        use rand::seq::SliceRandom;
+        use rand::seq::IndexedRandom;
         let quotes = vec![
             "Nmap? More like slowmap.🐢",
             "🌍HACK THE PLANET🌍",
@@ -98,7 +98,7 @@ macro_rules! funny_opening {
             "TreadStone was here 🚀",
             "With RustScan, I scan ports so fast, even my firewall gets whiplash 💨",
         ];
-        let random_quote = quotes.choose(&mut rand::thread_rng()).unwrap();
+        let random_quote = quotes.choose(&mut rand::rng()).unwrap();
 
         println!("{}\n", random_quote);
     };
