@@ -1,8 +1,8 @@
 //! Provides a means to hold configuration options specifically for port scanning.
 mod range_iterator;
 use crate::input::{PortRange, ScanOrder};
+use rand::rng;
 use rand::seq::SliceRandom;
-use rand::thread_rng;
 use range_iterator::RangeIterator;
 
 /// Represents options of port scanning.
@@ -35,7 +35,7 @@ impl PortStrategy {
             }
             ScanOrder::Serial => PortStrategy::Manual(ports.unwrap()),
             ScanOrder::Random => {
-                let mut rng = thread_rng();
+                let mut rng = rng();
                 let mut ports = ports.unwrap();
                 ports.shuffle(&mut rng);
                 PortStrategy::Manual(ports)
