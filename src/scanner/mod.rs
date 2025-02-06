@@ -1,6 +1,7 @@
 //! Core functionality for actual scanning behaviour.
 use crate::generated::get_parsed_data;
 use crate::port_strategy::PortStrategy;
+use crate::print_log;
 use log::debug;
 
 mod socket_iterator;
@@ -286,7 +287,7 @@ impl Scanner {
                 }
             }
             Err(e) => {
-                println!("Err E binding sock {:?}", e);
+                print_log!(error, "Err E binding sock {:?}", e);
                 Err(e)
             }
         }
@@ -296,9 +297,9 @@ impl Scanner {
     fn fmt_ports(&self, socket: SocketAddr) {
         if !self.greppable {
             if self.accessible {
-                println!("Open {socket}");
+                print_log!(info, "Open {socket}");
             } else {
-                println!("Open {}", socket.to_string().purple());
+                print_log!(info, "Open {}", socket.to_string().purple());
             }
         }
     }

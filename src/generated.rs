@@ -1,5 +1,4 @@
-use once_cell::sync::Lazy;
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, sync::LazyLock};
 
 fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {
     let mut map = BTreeMap::new();
@@ -2990,7 +2989,7 @@ fn generated_data() -> BTreeMap<Vec<u16>, Vec<u8>> {
     map
 }
 
-static PARSED_DATA: Lazy<BTreeMap<Vec<u16>, Vec<u8>>> = Lazy::new(generated_data);
+static PARSED_DATA: LazyLock<BTreeMap<Vec<u16>, Vec<u8>>> = LazyLock::new(generated_data);
 pub fn get_parsed_data() -> &'static BTreeMap<Vec<u16>, Vec<u8>> {
     &PARSED_DATA
 }

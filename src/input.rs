@@ -1,4 +1,6 @@
 //! Provides a means to read, parse and hold configuration options for scans.
+use crate::print_log;
+
 use clap::{Parser, ValueEnum};
 use serde_derive::Deserialize;
 use std::collections::HashMap;
@@ -309,7 +311,7 @@ impl Config {
         let config: Config = match toml::from_str(&content) {
             Ok(config) => config,
             Err(e) => {
-                println!("Found {e} in configuration file.\nAborting scan.\n");
+                print_log!(error, "Found {e} in configuration file.\nAborting scan.\n");
                 std::process::exit(1);
             }
         };

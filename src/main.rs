@@ -7,6 +7,7 @@ use rustscan::input::{self, Config, Opts, ScriptsRequired};
 use rustscan::port_strategy::PortStrategy;
 use rustscan::scanner::Scanner;
 use rustscan::scripts::{init_scripts, Script, ScriptFile};
+use rustscan::set_cli_mode;
 use rustscan::{detail, funny_opening, output, warning};
 
 use colorful::{Color, Colorful};
@@ -38,6 +39,7 @@ fn main() {
     #[cfg(not(unix))]
     let _ = ansi_term::enable_ansi_support();
 
+    set_cli_mode();
     env_logger::init();
     let mut benchmarks = Benchmark::init();
     let mut rustscan_bench = NamedTimer::start("RustScan");

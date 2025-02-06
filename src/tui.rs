@@ -5,16 +5,26 @@
 #[macro_export]
 macro_rules! warning {
     ($name:expr) => {
-        println!("{} {}", ansi_term::Colour::Red.bold().paint("[!]"), $name);
+        $crate::print_log!(
+            warn,
+            "{} {}",
+            ansi_term::Colour::Red.bold().paint("[!]"),
+            $name
+        );
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
         // if not greppable then print, otherwise no else statement so do not print.
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
-                println!("{}", $name);
+                $crate::print_log!(warn, "{}", $name);
             } else {
-                println!("{} {}", ansi_term::Colour::Red.bold().paint("[!]"), $name);
+                $crate::print_log!(
+                    warn,
+                    "{} {}",
+                    ansi_term::Colour::Red.bold().paint("[!]"),
+                    $name
+                );
             }
         }
     };
@@ -23,16 +33,26 @@ macro_rules! warning {
 #[macro_export]
 macro_rules! detail {
     ($name:expr) => {
-        println!("{} {}", ansi_term::Colour::Blue.bold().paint("[~]"), $name);
+        $crate::print_log!(
+            info,
+            "{} {}",
+            ansi_term::Colour::Blue.bold().paint("[~]"),
+            $name
+        );
     };
     ($name:expr, $greppable:expr, $accessible:expr) => {
         // if not greppable then print, otherwise no else statement so do not print.
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
-                println!("{}", $name);
+                $crate::print_log!(info, "{}", $name);
             } else {
-                println!("{} {}", ansi_term::Colour::Blue.bold().paint("[~]"), $name);
+                $crate::print_log!(
+                    info,
+                    "{} {}",
+                    ansi_term::Colour::Blue.bold().paint("[~]"),
+                    $name
+                );
             }
         }
     };
@@ -41,7 +61,8 @@ macro_rules! detail {
 #[macro_export]
 macro_rules! output {
     ($name:expr) => {
-        println!(
+        $crate::print_log!(
+            info,
             "{} {}",
             RGansi_term::Colour::RGB(0, 255, 9).bold().paint("[>]"),
             $name
@@ -52,9 +73,10 @@ macro_rules! output {
         if !$greppable {
             if $accessible {
                 // Don't print the ascii art
-                println!("{}", $name);
+                $crate::print_log!(info, "{}", $name);
             } else {
-                println!(
+                $crate::print_log!(
+                    info,
                     "{} {}",
                     ansi_term::Colour::RGB(0, 255, 9).bold().paint("[>]"),
                     $name
@@ -102,4 +124,24 @@ macro_rules! funny_opening {
 
         println!("{}\n", random_quote);
     };
+}
+
+/// Wrapper macro for printing/logging wraps println! and log::$level!
+/// 1. if rustscan::IS_CLI_MODE is true calls `println!`
+/// 2. if rustscan::IS_CLI_MODE is undefined or false `log::$level!` also sets IS_CLI_MODE
+/// to false if it was previously undefined.
+///
+/// Library code should call this macro to print information that the binary
+/// is expected to print to stdout and library is expected to log at a
+/// level specified by parameter $level.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! print_log {
+    ($level:ident, $($fmt_args:tt)*) => {
+        if *$crate::IS_CLI_MODE.get_or_init(|| false) {
+            println!($($fmt_args)*);
+        } else {
+            log::$level!($($fmt_args)*);
+        }
+    }
 }
