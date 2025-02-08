@@ -193,7 +193,10 @@ impl Scanner {
             }
         }
 
-        Ok(socket)
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("UDP scan timed-out for all tries on socket {}", socket),
+        ))
     }
 
     /// Performs the connection to the socket with timeout
