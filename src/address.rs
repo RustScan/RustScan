@@ -70,18 +70,18 @@ pub fn parse_addresses(input: &Opts) -> Vec<IpAddr> {
     }
 
     // Finally, craft a list of addresses to be excluded from the scan.
-    let mut excluded_ips: Vec<IpAddr> = Vec::new();
+    let mut excluded_ips: BTreeSet<IpAddr> = BTreeSet::new();
     if let Some(exclude_addresses) = &input.exclude_addresses {
         for addr in exclude_addresses {
             excluded_ips.extend(parse_address(addr, &backup_resolver));
         }
     }
 
-    ips.into_iter()
-        .collect::<BTreeSet<_>>()
-        .into_iter()
-        .filter(|ip| !excluded_ips.contains(ip))
-        .collect()
+    // Remove duplicated/excluded IPs.
+    let mut seen = BTreeSet::new();
+    ips.retain(|ip| seen.insert(*ip) && !excluded_ips.contains(ip));
+
+    ips
 }
 
 /// Given a string, parse it as a host, IP address, or CIDR.
