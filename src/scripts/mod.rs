@@ -108,16 +108,21 @@ pub fn init_scripts(scripts: &ScriptsRequired) -> Result<Vec<ScriptFile>> {
             scripts_to_run.push(default_script);
         }
         ScriptsRequired::Custom => {
-            let scripts_dir_base =
-                dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?;
-            let script_paths = find_scripts(scripts_dir_base)?;
+            let script_config = ScriptConfig::read_config()?;
+            debug!("Script config \n{:?}", script_config);
+
+            let script_dir_base = {
+                if let Some(config_directory) = script_config.directory {
+                    PathBuf::from(config_directory)
+                } else {
+                    dirs::home_dir().ok_or_else(|| anyhow!("Could not infer scripts path."))?
+                }
+            };
+            let script_paths = find_scripts(script_dir_base)?;
             debug!("Scripts paths \n{:?}", script_paths);
 
             let parsed_scripts = parse_scripts(script_paths);
             debug!("Scripts parsed \n{:?}", parsed_scripts);
-
-            let script_config = ScriptConfig::read_config()?;
-            debug!("Script config \n{:?}", script_config);
 
             // Only Scripts that contain all the tags found in ScriptConfig will be selected.
             if let Some(config_hashset) = script_config.tags {
@@ -382,6 +387,7 @@ pub struct ScriptConfig {
     pub tags: Option<Vec<String>>,
     pub ports: Option<Vec<String>>,
     pub developer: Option<Vec<String>>,
+    pub directory: Option<String>,
 }
 
 #[cfg(not(tarpaulin_include))]
