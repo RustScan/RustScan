@@ -119,21 +119,22 @@ fn generate_code(port_payload_map: BTreeMap<Vec<u16>, Vec<u8>>) {
 /// A BTreeMap where keys are line numbers and values are vectors of ports
 fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
     let mut pb_linenr: BTreeMap<i32, Vec<u16>> = BTreeMap::new();
-    let mut port_list: Vec<u16> = Vec::new();
 
     for (&line_nr, ports) in fp_map {
+        let mut port_list: Vec<u16> = Vec::new();
+
         if ports.contains("udp ") {
             let remain = &ports[4..];
             let mut start = remain.split(' ');
 
             let ports = start.next().unwrap();
-            let port_segments: Vec<&str> = ports.split(',').collect();
+            let port_segments = ports.split(',');
 
             for segment in port_segments {
                 if segment.contains('-') {
-                    let range: Vec<&str> = segment.trim().split('-').collect();
-                    let start = range[0].parse::<u16>().unwrap();
-                    let end = range[1].parse::<u16>().unwrap();
+                    let mut range = segment.trim().split('-');
+                    let start = range.next().unwrap().parse::<u16>().unwrap();
+                    let end = range.next().unwrap().parse::<u16>().unwrap();
 
                     for port in start..end {
                         port_list.push(port);
@@ -147,8 +148,7 @@ fn ports_v(fp_map: &BTreeMap<i32, String>) -> BTreeMap<i32, Vec<u16>> {
             }
         }
 
-        pb_linenr.insert(line_nr, port_list.clone());
-        port_list.clear();
+        pb_linenr.insert(line_nr, port_list);
     }
 
     pb_linenr
