@@ -33,14 +33,23 @@ Example installations include:
 
 MacOS:
 
-```
+```zsh
   brew install rustscan
 ```
 
 Arch:
 
-```
+```bash
   yay rustscan
+```
+
+
+Debian (Kali-Linux/ParrotOS):
+
+One-Liner to Install 
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/its-ashu-otf/Kali-Enhance/refs/heads/main/Install-Rustscan.sh | sudo bash
 ```
 
 # ✨ Features
