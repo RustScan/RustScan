@@ -405,7 +405,6 @@ impl ScriptConfig {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::Path;
 
     // Function for testing only, it inserts static values into ip and open_ports
     // Doesn't use impl in case it's implemented in the super module at some point
